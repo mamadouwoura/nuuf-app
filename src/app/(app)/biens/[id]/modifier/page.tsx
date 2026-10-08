@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { archiverBien, modifierBien } from "@/app/actions/biens";
+import { ajouterPhotos, supprimerPhoto } from "@/app/actions/photos";
+import { MAX_PHOTOS } from "@/lib/photos";
 import { db } from "@/lib/db";
 import { TYPE_LIBELLE } from "@/lib/immo";
 import { getUser } from "@/lib/session";
@@ -18,15 +20,15 @@ function Champ({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-async function Contenu({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ erreur?: string }> }) {
-  const [{ id }, { erreur }] = await Promise.all([params, searchParams]);
+async function Contenu({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ erreur?: string; ok?: string }> }) {
+  const [{ id }, { erreur, ok }] = await Promise.all([params, searchParams]);
   const user = await getUser();
   if (!user) redirect("/connexion");
   const membre = user.membres[0];
   if (membre.role === "LECTURE_SEULE") redirect(`/biens/${id}`);
   const bien = await db.bien.findFirst({
     where: { id, organisationId: membre.organisationId, archiveLe: null },
-    include: { baux: { where: { actif: true }, include: { locataire: true }, take: 1 } },
+    include: { baux: { where: { actif: true }, include: { locataire: true }, take: 1 }, photos: { orderBy: { creeLe: "asc" } } },
   });
   if (!bien) notFound();
   const bail = bien.baux[0];
@@ -42,6 +44,37 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
       </div>
 
       {erreur && <p role="alert" className="rounded-xl bg-error-container text-on-error-container px-space-md py-2 font-body-md text-body-md">{erreur}</p>}
+
+      {ok && <p className="rounded-xl bg-emerald-50 text-emerald-800 px-space-md py-2 font-body-md text-body-md">{ok}</p>}
+
+      <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md">
+        <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">Photos ({bien.photos.length}/{MAX_PHOTOS})</h2>
+        {bien.photos.length > 0 && (
+          <ul className="grid grid-cols-2 sm:grid-cols-4 gap-space-sm">
+            {bien.photos.map((p) => (
+              <li key={p.id} className="relative rounded-xl overflow-hidden bg-surface-container aspect-square">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/biens/${id}/photos/${p.id}`} alt={`Photo de ${bien.designation}`} className="w-full h-full object-cover" />
+                <form action={supprimerPhoto} className="absolute top-1.5 right-1.5">
+                  <input type="hidden" name="id" value={id} />
+                  <input type="hidden" name="photoId" value={p.id} />
+                  <button aria-label="Supprimer cette photo" title="Supprimer" className="w-8 h-8 rounded-full bg-surface-container-lowest/90 text-error flex items-center justify-center shadow-sm hover:bg-error-container">
+                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        )}
+        {bien.photos.length < MAX_PHOTOS && (
+          <form action={ajouterPhotos} className="flex flex-wrap items-center gap-space-sm">
+            <input type="hidden" name="id" value={id} />
+            <input type="file" name="photos" accept="image/jpeg,image/png,image/webp" multiple required aria-label="Choisir des photos" className="font-body-md text-body-md text-on-surface-variant file:mr-3 file:h-11 file:px-space-md file:rounded-xl file:border-0 file:bg-surface-container file:text-on-surface file:font-label-lg file:font-semibold file:cursor-pointer" />
+            <button className="h-11 px-space-md rounded-xl bg-primary text-on-primary font-label-lg text-label-lg font-bold hover:bg-primary-container transition-colors">Ajouter</button>
+          </form>
+        )}
+        <p className="font-body-sm text-body-sm text-on-surface-variant">JPEG, PNG ou WebP, 5 Mo maximum par photo.</p>
+      </section>
 
       <form action={modifierBien} className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md">
         <input type="hidden" name="id" value={id} />
@@ -108,7 +141,7 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
   );
 }
 
-export default function Page(props: { params: Promise<{ id: string }>; searchParams: Promise<{ erreur?: string }> }) {
+export default function Page(props: { params: Promise<{ id: string }>; searchParams: Promise<{ erreur?: string; ok?: string }> }) {
   return (
     <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">Chargement…</p>}>
       <Contenu {...props} />

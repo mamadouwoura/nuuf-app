@@ -24,6 +24,7 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
   const bien = await db.bien.findFirst({
     where: { id, organisationId: user.membres[0].organisationId },
     include: {
+      photos: { orderBy: { creeLe: "asc" } },
       baux: {
         where: { actif: true },
         include: { locataire: true, echeances: { orderBy: { mois: "desc" }, take: 12, include: { paiements: true } } },
@@ -81,6 +82,15 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
       </div>
 
       {ok && <p className="rounded-xl bg-emerald-50 text-emerald-800 px-space-md py-2 font-body-md text-body-md">Modifications enregistrées.</p>}
+
+      {bien.photos.length > 0 && (
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-space-sm">
+          {bien.photos.map((p, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={p.id} src={`/biens/${id}/photos/${p.id}`} alt={`${bien.designation} - photo ${i + 1}`} loading={i < 2 ? "eager" : "lazy"} className={`w-full object-cover rounded-xl bg-surface-container ${i === 0 ? "col-span-2 row-span-2 aspect-[4/3]" : "aspect-square"}`} />
+          ))}
+        </section>
+      )}
 
       <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md">
         <div className="flex items-center gap-2 text-on-surface-variant font-body-md text-body-md">

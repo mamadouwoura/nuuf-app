@@ -21,6 +21,11 @@ docker compose -f docker-compose.prod.yml exec -T db \
   pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc \
   | openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:BACKUP_PASSPHRASE -out "$FICHIER"
 
+# 1b. Photos des biens (volume « uploads »), chiffrées de la même façon.
+PHOTOS="${DOSSIER}/nuuf_photos_${HORODATAGE}.tar.enc"
+docker compose -f docker-compose.prod.yml exec -T app tar -C /data/uploads -cf - . \
+  | openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:BACKUP_PASSPHRASE -out "$PHOTOS"
+
 # 2. Contrôle : un fichier vide ou minuscule = sauvegarde ratée.
 TAILLE=$(stat -c %s "$FICHIER")
 if [ "$TAILLE" -lt 1024 ]; then
@@ -33,10 +38,11 @@ echo "Sauvegarde créée : $FICHIER (${TAILLE} octets)"
 # 3. Copie hors du serveur (indispensable : un disque perdu emporte aussi les sauvegardes locales).
 if [ -n "${BACKUP_RCLONE_REMOTE:-}" ]; then
   rclone copy "$FICHIER" "$BACKUP_RCLONE_REMOTE" --quiet
+  rclone copy "$PHOTOS" "$BACKUP_RCLONE_REMOTE" --quiet
   echo "Copie hors serveur envoyée vers $BACKUP_RCLONE_REMOTE"
 else
   echo "ATTENTION : BACKUP_RCLONE_REMOTE non défini, sauvegarde uniquement locale." >&2
 fi
 
 # 4. Rotation locale : 14 jours.
-find "$DOSSIER" -name 'nuuf_*.dump.enc' -mtime +14 -delete
+find "$DOSSIER" \( -name 'nuuf_*.dump.enc' -o -name 'nuuf_photos_*.tar.enc' \) -mtime +14 -delete

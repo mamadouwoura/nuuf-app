@@ -191,8 +191,24 @@ model Bien {
 
   organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   baux         Bail[]
+  photos       PhotoBien[]
 
   @@index([organisationId])
+}
+
+// Photos d'un bien : le fichier est sur disque (UPLOAD_DIR), seule sa référence est en base.
+model PhotoBien {
+  id             String   @id @default(cuid())
+  bienId         String
+  organisationId String
+  fichier        String   @unique // nom aléatoire sur disque
+  type           String // image/jpeg | image/png | image/webp
+  taille         Int
+  creeLe         DateTime @default(now())
+
+  bien Bien @relation(fields: [bienId], references: [id], onDelete: Cascade)
+
+  @@index([bienId])
 }
 
 model Locataire {

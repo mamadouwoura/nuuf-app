@@ -24,6 +24,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   experimental: {
     serverActions: {
+      bodySizeLimit: "6mb",
       // Domaine public derrière le proxy (en plus de l'en-tête X-Forwarded-Host).
       allowedOrigins: process.env.APP_URL ? [new URL(process.env.APP_URL).host] : undefined,
     },
