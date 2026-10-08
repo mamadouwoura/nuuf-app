@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PageLegale, { EDITEUR, Section } from "@/components/PageLegale";
 
-export const metadata: Metadata = { title: "Conditions d'utilisation — Nuuf" };
+export const metadata: Metadata = { title: "Conditions d'utilisation" };
 
 export default function Page() {
   return (

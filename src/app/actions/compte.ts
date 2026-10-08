@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import type { CanalPaiement, Role } from "@prisma/client";
 import { db } from "@/lib/db";
 import { FORFAITS } from "@/lib/forfaits";
+import { erreurMotDePasse } from "@/lib/mot-de-passe";
 import { hashPassword, normalizePhone, verifyPassword } from "@/lib/security";
 import { getUser, startSession } from "@/lib/session";
 
@@ -64,7 +65,8 @@ export async function ajouterMembre(form: FormData) {
   if (nom.length < 3) retour("Indiquez le nom de la personne.");
   if (!tel) retour("Numéro invalide. Exemple : 77 123 45 67");
   if (role !== "GESTIONNAIRE" && role !== "LECTURE_SEULE") retour("Choisissez un rôle.");
-  if (mdp.length < 8) retour("Le mot de passe provisoire doit contenir au moins 8 caractères.");
+  const faible = erreurMotDePasse(mdp, tel);
+  if (faible) retour(faible);
   if (await db.utilisateur.findUnique({ where: { telephone: tel! } })) retour("Un compte existe déjà avec ce numéro.");
 
   const cree = await db.utilisateur.create({
@@ -110,9 +112,19 @@ export async function changerMotDePasse(form: FormData) {
   const ancien = String(form.get("ancien") ?? "");
   const nouveau = String(form.get("nouveau") ?? "");
   if (!verifyPassword(ancien, user.motDePasse)) retour("Mot de passe actuel incorrect.");
-  if (nouveau.length < 8) retour("Le nouveau mot de passe doit contenir au moins 8 caractères.");
+  const faible = erreurMotDePasse(nouveau, user.telephone);
+  if (faible) retour(faible);
   await db.utilisateur.update({ where: { id: user.id }, data: { motDePasse: hashPassword(nouveau), sessionVersion: { increment: 1 } } });
   // La session en cours reste ouverte ; toutes les autres (autres appareils) sont coupées.
   await startSession(user.id);
   retour("Mot de passe modifié.", "ok");
+}
+
+/** Coupe toutes les sessions ouvertes (autres appareils) sans changer le mot de passe ; l'appareil actuel reste connecté. */
+export async function deconnecterAutresAppareils() {
+  const user = await getUser();
+  if (!user) redirect("/connexion");
+  await db.utilisateur.update({ where: { id: user.id }, data: { sessionVersion: { increment: 1 } } });
+  await startSession(user.id);
+  retour("Tous vos autres appareils ont été déconnectés.", "ok");
 }

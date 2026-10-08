@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import AjouterBienForm from "@/components/AjouterBienForm";
 
+export const metadata = { title: "Ajouter un bien" };
+
 async function Contenu({ searchParams }: { searchParams: Promise<{ erreur?: string }> }) {
   const { erreur } = await searchParams;
   return <AjouterBienForm erreur={erreur} />;

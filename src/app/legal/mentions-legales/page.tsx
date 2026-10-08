@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import PageLegale, { CONTACT_MAIL, EDITEUR, Section } from "@/components/PageLegale";
 
-export const metadata: Metadata = { title: "Mentions légales — Nuuf" };
+export const metadata: Metadata = { title: "Mentions légales" };
 
 export default function Page() {
   return (

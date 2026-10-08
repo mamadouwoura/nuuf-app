@@ -7,6 +7,8 @@ import { FORFAITS, prixAnnuel, prixMensuel } from "@/lib/forfaits";
 import { fcfa } from "@/lib/immo";
 import { getUser } from "@/lib/session";
 
+export const metadata = { title: "Choisir un forfait" };
+
 type Params = { erreur?: string };
 
 const CARTES = [

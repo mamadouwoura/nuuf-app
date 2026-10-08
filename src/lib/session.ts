@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { connection } from "next/server";
 import { db } from "./db";
@@ -31,7 +32,8 @@ export async function startSession(uid: string) {
 export async function endSession() {
   (await cookies()).delete(SESSION);
 }
-export async function getUser() {
+/** Utilisateur connecté : une seule lecture en base par requête, même appelée par la mise en page et la page. */
+export const getUser = cache(async function getUser() {
   await connection();
   const jeton = verify<Token>((await cookies()).get(SESSION)?.value);
   if (!jeton) return null;
@@ -42,7 +44,7 @@ export async function getUser() {
   // Mot de passe changé depuis l'ouverture de cette session : elle n'est plus valable.
   if (!user || user.sessionVersion !== (jeton.v ?? 0)) return null;
   return user;
-}
+});
 /** Dev uniquement : le code s'affiche à l'écran au lieu d'être envoyé par WhatsApp. */
 export async function setDevOtp(code: string) {
   if (secure) return;

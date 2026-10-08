@@ -4,6 +4,8 @@ import { PublicFooter, PublicHeader, lienContact } from "@/components/PublicLayo
 import { prixAnnuel, prixMensuel } from "@/lib/forfaits";
 import { fcfa } from "@/lib/immo";
 
+export const metadata = { title: "Tarifs" };
+
 type Params = { periode?: string };
 
 const PLANS = [

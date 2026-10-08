@@ -11,7 +11,8 @@ async function Contenu({ params, searchParams }: { params: Promise<{ jeton: stri
   const { ref } = await searchParams;
   const c = await chargerParJeton(jeton);
   if (!c) return <EcranEchec variante="invalide" />;
-  const p = ref ? await db.paiement.findUnique({ where: { referenceOperateur: ref } }) : null;
+  // La référence doit appartenir à CETTE échéance : un jeton valide ne donne pas accès aux paiements des autres.
+  const p = ref ? await db.paiement.findFirst({ where: { referenceOperateur: ref, echeanceId: c.e.id } }) : null;
   return (
     <EcranEchec
       variante="echec"

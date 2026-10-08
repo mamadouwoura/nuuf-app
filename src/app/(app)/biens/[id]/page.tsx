@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import { fcfa, initiales, statutLoyer, telAffiche, TYPE_LIBELLE } from "@/lib/immo";
 import { getUser } from "@/lib/session";
 
+export const metadata = { title: "Fiche du bien" };
+
 const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 const moisFr = (d: Date) => `${MOIS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 const dateFr = (d: Date) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });

@@ -4,6 +4,8 @@ import { exigerAdmin, listerBailleurs } from "@/lib/admin";
 import { FORFAITS } from "@/lib/forfaits";
 import { fcfa } from "@/lib/immo";
 
+export const metadata = { title: "Administration - Abonnements" };
+
 const dateFr = (d: Date) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
 
 async function Contenu() {

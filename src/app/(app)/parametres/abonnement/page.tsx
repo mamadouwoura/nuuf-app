@@ -8,6 +8,8 @@ import { FORFAITS, prixMensuel } from "@/lib/forfaits";
 import { fcfa } from "@/lib/immo";
 import { getUser } from "@/lib/session";
 
+export const metadata = { title: "Abonnement" };
+
 type Params = { ok?: string };
 const dateFr = (d: Date) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
 

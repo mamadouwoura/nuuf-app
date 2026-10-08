@@ -4,6 +4,8 @@ import TableBailleurs from "@/components/TableBailleurs";
 import { listerBailleurs, statsGlobales } from "@/lib/admin";
 import { fcfa } from "@/lib/immo";
 
+export const metadata = { title: "Administration" };
+
 const CANAL = { WAVE: "Wave", ORANGE_MONEY: "Orange Money", ESPECES: "Espèces", VIREMENT: "Virement" } as const;
 
 async function Contenu() {

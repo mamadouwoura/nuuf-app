@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { envoyerMessage } from "@/lib/messagerie";
+import { plafondCodesAtteint, plafondInscriptionsAtteint, tropDEchecsCode } from "@/lib/garde";
+import { erreurMotDePasse } from "@/lib/mot-de-passe";
 import { generateOtp, hashOtp, hashPassword, normalizePhone, verifyPassword } from "@/lib/security";
 import { endSession, getPendingUid, setDevOtp, setPending, startSession } from "@/lib/session";
 
@@ -16,7 +18,7 @@ const FAUX_HASH = hashPassword("mot-de-passe-factice");
 async function issueOtp(uid: string, telephone: string) {
   // Au plus 5 codes par 10 minutes et par compte (coût d'envoi, harcèlement).
   const recents = await db.codeOtp.count({ where: { utilisateurId: uid, creeLe: { gte: new Date(Date.now() - 10 * 60_000) } } });
-  if (recents >= 5) {
+  if (recents >= 5 || (await plafondCodesAtteint())) {
     await setPending(uid);
     return;
   }
@@ -57,10 +59,12 @@ export async function inscription(_: FormState, form: FormData): Promise<FormSta
   const tailleParc = ["1-5", "6-20", "21-50", "50+"].find((v) => v === form.get("tailleParc")) ?? null;
   if (nomComplet.length < 3) return { error: "Indiquez votre prénom et nom." };
   if (!telephone) return { error: "Numéro invalide. Exemple : 77 123 45 67" };
-  if (motDePasse.length < 8) return { error: "Le mot de passe doit contenir au moins 8 caractères." };
+  const faible = erreurMotDePasse(motDePasse, telephone);
+  if (faible) return { error: faible };
   if (await db.utilisateur.findUnique({ where: { telephone } })) {
     return { error: "Un compte existe déjà avec ce numéro." };
   }
+  if (await plafondInscriptionsAtteint()) return { error: "Le service est très sollicité en ce moment. Réessayez dans quelques minutes." };
   const user = await db.utilisateur.create({
     data: {
       telephone,
@@ -99,6 +103,7 @@ export async function verifierCode(_: FormState, form: FormData): Promise<FormSt
     where: { utilisateurId: uid, utiliseLe: null, expireLe: { gt: new Date() } },
     orderBy: { creeLe: "desc" },
   });
+  if (await tropDEchecsCode(uid)) return { error: "Trop d'essais. Réessayez dans une heure." };
   if (!otp || otp.tentatives >= 5) return { error: "Code expiré. Reconnectez-vous pour en recevoir un nouveau." };
   if (otp.codeHash !== hashOtp(code)) {
     await db.codeOtp.update({ where: { id: otp.id }, data: { tentatives: { increment: 1 } } });

@@ -32,6 +32,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Polices, images et icônes : changent rarement, gros poids sur réseau mobile.
+        source: "/(fonts|img|icons)/(.*)",
+        headers: [{ key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=86400" }],
+      },
+      {
         source: "/(.*)",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },

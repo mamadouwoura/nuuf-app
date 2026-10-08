@@ -6,6 +6,8 @@ import { FORFAITS, prixMensuel } from "@/lib/forfaits";
 import { fcfa } from "@/lib/immo";
 import { getUser } from "@/lib/session";
 
+export const metadata = { title: "Limite de logements" };
+
 async function Contenu() {
   const user = await getUser();
   if (!user) redirect("/connexion");

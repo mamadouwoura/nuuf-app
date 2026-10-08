@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import { fcfa, initiales, statutLoyer, telAffiche } from "@/lib/immo";
 import { getUser } from "@/lib/session";
 
+export const metadata = { title: "Fiche locataire" };
+
 const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 const PASTILLE = {
   PAYE: "bg-emerald-50 text-emerald-800",

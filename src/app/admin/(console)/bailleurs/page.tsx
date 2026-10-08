@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import TableBailleurs from "@/components/TableBailleurs";
 import { listerBailleurs, type FiltreBailleur } from "@/lib/admin";
 
+export const metadata = { title: "Administration - Bailleurs" };
+
 type Params = { q?: string; filtre?: string };
 const ONGLETS: [FiltreBailleur, string][] = [["tous", "Tous"], ["payant", "Payants"], ["essai", "Essais"], ["expire", "Expirés"]];
 

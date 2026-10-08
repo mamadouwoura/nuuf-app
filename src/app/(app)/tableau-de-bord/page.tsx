@@ -6,6 +6,8 @@ import { fcfa, initiales, telAffiche } from "@/lib/immo";
 import { assurerEcheances, courtMois, debutMois, encaissementsParMois, libelleMois, loyersDuMois } from "@/lib/loyers";
 import { getUser } from "@/lib/session";
 
+export const metadata = { title: "Tableau de bord" };
+
 const CANAL = { WAVE: "Wave", ORANGE_MONEY: "Orange Money", ESPECES: "Espèces", VIREMENT: "Virement" } as const;
 
 async function Contenu() {

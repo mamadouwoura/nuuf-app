@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Pagination, { decouper, numeroPage } from "@/components/Pagination";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import type { TypeBien } from "@prisma/client";
@@ -6,7 +7,9 @@ import { db } from "@/lib/db";
 import { fcfa, initiales, statutLoyer, telMasque, TYPE_LIBELLE } from "@/lib/immo";
 import { getUser } from "@/lib/session";
 
-type Params = { q?: string; quartier?: string; type?: string; archive?: string };
+export const metadata = { title: "Mes biens" };
+
+type Params = { q?: string; quartier?: string; type?: string; archive?: string; page?: string };
 
 const BADGE = {
   PAYE: "bg-emerald-50 text-emerald-800",
@@ -18,7 +21,8 @@ const BADGE = {
 const ICONE = { PAYE: "check_circle", EN_ATTENTE: "hourglass_top", PARTIEL: "hourglass_top", EN_RETARD: "error", VACANT: "domain_disabled" } as const;
 
 async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
-  const { q, quartier, type, archive } = await searchParams;
+  const { q, quartier, type, archive, page: pageBrut } = await searchParams;
+  const page = numeroPage(pageBrut);
   const user = await getUser();
   if (!user) redirect("/connexion");
   const orgId = user.membres[0].organisationId;
@@ -103,7 +107,7 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
           />
         </div>
         <select
-          name="quartier"
+          name="quartier" aria-label="Filtrer par quartier"
           defaultValue={quartier ?? ""}
           className="h-11 pl-3.5 pr-9 rounded-xl bg-surface text-on-surface font-label-md text-label-md font-medium focus:outline-none focus:ring-2 focus:ring-primary-container"
         >
@@ -113,7 +117,7 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
           ))}
         </select>
         <select
-          name="type"
+          name="type" aria-label="Filtrer par type de bien"
           defaultValue={type ?? ""}
           className="h-11 pl-3.5 pr-9 rounded-xl bg-surface text-on-surface font-label-md text-label-md font-medium focus:outline-none focus:ring-2 focus:ring-primary-container"
         >
@@ -147,7 +151,7 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-lg mb-space-xl">
-          {biens.map((b) => {
+          {decouper(biens, page).map((b) => {
             const bail = b.baux[0];
             const st = statutLoyer(bail?.echeances[0], now);
             return (
@@ -216,6 +220,7 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
           })}
         </div>
       )}
+      <Pagination page={page} total={biens.length} chemin="/biens" params={{ q, quartier, type }} />
     </div>
   );
 }

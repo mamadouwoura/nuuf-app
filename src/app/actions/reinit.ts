@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { envoyerMessage } from "@/lib/messagerie";
+import { plafondCodesAtteint, tropDEchecsCode } from "@/lib/garde";
+import { erreurMotDePasse } from "@/lib/mot-de-passe";
 import { generateOtp, hashOtp, hashPassword, normalizePhone } from "@/lib/security";
 import { lireJeton, poserJeton, retirerJeton, setDevOtp } from "@/lib/session";
 
@@ -17,7 +19,7 @@ export async function demanderReinitialisation(form: FormData) {
   const user = await db.utilisateur.findUnique({ where: { telephone: tel! } });
   if (user) {
     const recents = await db.codeOtp.count({ where: { utilisateurId: user.id, creeLe: { gte: new Date(Date.now() - 10 * 60_000) } } });
-    if (recents < 3) {
+    if (recents < 3 && !(await plafondCodesAtteint())) {
       const code = generateOtp();
       await db.codeOtp.create({ data: { utilisateurId: user.id, codeHash: hashOtp(code), expireLe: new Date(Date.now() + 10 * 60_000) } });
       await envoyerMessage({ type: "OTP", destinataire: tel!, texte: `Nuuf : votre code pour réinitialiser le mot de passe est ${code}. Il expire dans 10 minutes. Ne le partagez avec personne.` });
@@ -39,6 +41,7 @@ export async function verifierCodeReinit(form: FormData) {
     where: { utilisateurId: uid!, utiliseLe: null, expireLe: { gt: new Date() } },
     orderBy: { creeLe: "desc" },
   });
+  if (uid !== "inconnu" && (await tropDEchecsCode(uid!))) vers(2, "Trop d'essais. Réessayez dans une heure.");
   if (!otp || otp.tentatives >= 5) vers(2, "Code incorrect ou expiré.");
   if (otp!.codeHash !== hashOtp(code)) {
     await db.codeOtp.update({ where: { id: otp!.id }, data: { tentatives: { increment: 1 } } });
@@ -56,7 +59,8 @@ export async function nouveauMotDePasse(form: FormData) {
   if (!uid) vers(1, "Session expirée. Recommencez.");
   const a = String(form.get("motDePasse") ?? "");
   const b = String(form.get("confirmation") ?? "");
-  if (a.length < 8) vers(3, "Le mot de passe doit contenir au moins 8 caractères.");
+  const faible = erreurMotDePasse(a, await lireJeton("nuuf_reinit_tel"));
+  if (faible) vers(3, faible);
   if (a !== b) vers(3, "Les deux mots de passe ne correspondent pas.");
   await db.utilisateur.update({ where: { id: uid! }, data: { motDePasse: hashPassword(a), sessionVersion: { increment: 1 } } });
   await retirerJeton("nuuf_reinit_ok");

@@ -7,6 +7,8 @@ import { fcfa } from "@/lib/immo";
 import { assurerEcheances, debutMois, loyersDuMois } from "@/lib/loyers";
 import { getUser } from "@/lib/session";
 
+export const metadata = { title: "Bienvenue" };
+
 async function Contenu() {
   const user = await getUser();
   if (!user) redirect("/connexion");

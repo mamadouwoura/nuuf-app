@@ -47,7 +47,7 @@ export default function Inscription({ erreur }: { erreur?: string }) {
       
       <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-primary-container/40 p-1.5">
       <div className="relative rounded-xl overflow-hidden aspect-[16/10] bg-surface-container-highest">
-      <img className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" data-alt="Modern architectural villa in Dakar Almadies with warm terracotta walls, dark green tropical gardens, bougainvillea blossoms, stone patio leading to lap pool at golden hour sunset looking over the Atlantic Ocean in stylized warm flat lighting." src="/img/photo-3.jpg" />
+      <img className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" alt="Modern architectural villa in Dakar Almadies with warm terracotta walls, dark green tropical gardens, bougainvillea blossoms, stone patio leading to lap pool at golden hour sunset looking over the Atlantic Ocean in stylized warm flat lighting." src="/img/photo-3.jpg" />
       <div className="absolute inset-0 bg-gradient-to-t from-on-background/90 via-on-background/20 to-transparent"></div>
       <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-on-tertiary">
       <div className="flex items-center space-x-1.5">

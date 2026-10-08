@@ -329,7 +329,7 @@ export default function AjouterBien() {
       </div>
       
       <div className="rounded-xl overflow-hidden mb-space-md relative">
-      <img className="w-full h-44 object-cover" data-alt="A modern, luxurious interior living room in a Dakar Almadies apartment with large windows revealing palm trees, contemporary African art, polished terrazzo floors, and warm natural sunlight highlighting pristine green accents." src="/img/photo-7.jpg" />
+      <img className="w-full h-44 object-cover" alt="A modern, luxurious interior living room in a Dakar Almadies apartment with large windows revealing palm trees, contemporary African art, polished terrazzo floors, and warm natural sunlight highlighting pristine green accents." src="/img/photo-7.jpg" />
       <div className="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-transparent to-transparent flex items-end p-space-md">
       <div>
       <span className="font-label-md text-label-md text-secondary-container font-semibold uppercase tracking-wide">Almadies, Dakar</span>

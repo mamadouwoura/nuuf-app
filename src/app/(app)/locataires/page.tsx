@@ -1,11 +1,14 @@
 import Link from "next/link";
+import Pagination, { decouper, numeroPage } from "@/components/Pagination";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { fcfa, initiales, statutLoyer, telAffiche } from "@/lib/immo";
 import { getUser } from "@/lib/session";
 
-type Params = { q?: string };
+export const metadata = { title: "Locataires" };
+
+type Params = { q?: string; page?: string };
 
 const PASTILLE = {
   PAYE: "bg-emerald-50 text-emerald-800",
@@ -16,7 +19,8 @@ const PASTILLE = {
 } as const;
 
 async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
-  const { q } = await searchParams;
+  const { q, page: pageBrut } = await searchParams;
+  const page = numeroPage(pageBrut);
   const user = await getUser();
   if (!user) redirect("/connexion");
   const now = new Date();
@@ -71,7 +75,7 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
           </div>
         ) : (
           <div className="flex flex-col divide-y divide-surface-container">
-            {liste.map((l) => {
+            {decouper(liste, page).map((l) => {
               const bail = l.baux[0];
               const st = statutLoyer(bail?.echeances[0], now);
               return (
@@ -95,6 +99,7 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
           </div>
         )}
       </section>
+      <Pagination page={page} total={liste.length} chemin="/locataires" params={{ q }} />
     </div>
   );
 }

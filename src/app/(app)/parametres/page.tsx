@@ -5,6 +5,7 @@ import {
   ajouterCompteEncaissement,
   ajouterMembre,
   changerMotDePasse,
+  deconnecterAutresAppareils,
   changerRole,
   majProfil,
   retirerMembre,
@@ -14,6 +15,8 @@ import { db } from "@/lib/db";
 import { FORFAITS } from "@/lib/forfaits";
 import { initiales, telAffiche } from "@/lib/immo";
 import { getUser } from "@/lib/session";
+
+export const metadata = { title: "Paramètres" };
 
 type Params = { ok?: string; erreur?: string };
 const ROLE = { PROPRIETAIRE: "Propriétaire", GESTIONNAIRE: "Gestionnaire", LECTURE_SEULE: "Lecture seule" } as const;
@@ -91,7 +94,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
         )}
         {proprio && (
           <form action={ajouterCompteEncaissement} className="grid grid-cols-1 md:grid-cols-4 gap-space-sm items-end">
-            <select name="canal" className={champ}><option value="WAVE">Wave</option><option value="ORANGE_MONEY">Orange Money</option></select>
+            <select name="canal" aria-label="Opérateur" className={champ}><option value="WAVE">Wave</option><option value="ORANGE_MONEY">Orange Money</option></select>
             <input name="telephone" placeholder="77 123 45 67" required className={champ} />
             <input name="libelle" placeholder="Libellé (optionnel)" className={champ} />
             <button className={bouton}>Ajouter</button>
@@ -120,7 +123,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
                 <div className="flex items-center gap-2">
                   <form action={changerRole} className="flex items-center gap-2">
                     <input type="hidden" name="membreId" value={m.id} />
-                    <select name="role" defaultValue={m.role} className="h-10 px-3 rounded-xl bg-surface-container-low font-label-md text-label-md">
+                    <select name="role" aria-label="Rôle du membre" defaultValue={m.role} className="h-10 px-3 rounded-xl bg-surface-container-low font-label-md text-label-md">
                       <option value="GESTIONNAIRE">Gestionnaire</option>
                       <option value="LECTURE_SEULE">Lecture seule</option>
                     </select>
@@ -139,7 +142,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
           <form action={ajouterMembre} className="grid grid-cols-1 md:grid-cols-5 gap-space-sm items-end pt-space-sm">
             <input name="nomComplet" placeholder="Nom (ex. Awa, assistante)" required className={champ} />
             <input name="telephone" placeholder="77 123 45 67" required className={champ} />
-            <select name="role" className={champ}><option value="GESTIONNAIRE">Gestionnaire</option><option value="LECTURE_SEULE">Lecture seule</option></select>
+            <select name="role" aria-label="Rôle du nouveau membre" className={champ}><option value="GESTIONNAIRE">Gestionnaire</option><option value="LECTURE_SEULE">Lecture seule</option></select>
             <input name="motDePasse" type="password" placeholder="Mot de passe provisoire" minLength={8} required className={champ} />
             <button className={bouton}>Ajouter</button>
           </form>
@@ -160,6 +163,10 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
           <input name="ancien" type="password" placeholder="Mot de passe actuel" required className={champ} />
           <input name="nouveau" type="password" placeholder="Nouveau mot de passe (8 caractères min.)" minLength={8} required className={champ} />
           <button className={bouton}>Modifier</button>
+        </form>
+        <form action={deconnecterAutresAppareils} className="flex flex-wrap items-center gap-space-sm">
+          <button className="h-11 px-space-md rounded-xl bg-surface-container text-on-surface font-label-lg text-label-lg font-semibold hover:bg-surface-container-high">Déconnecter mes autres appareils</button>
+          <span className="font-body-sm text-body-sm text-on-surface-variant">Utile si vous avez perdu un téléphone ou utilisé un ordinateur partagé.</span>
         </form>
         <p className="font-body-sm text-body-sm text-on-surface-variant">Chaque connexion est confirmée par un code à 6 chiffres envoyé sur votre téléphone.</p>
       </section>

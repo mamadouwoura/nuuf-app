@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { getDevOtp, getPendingUid } from "@/lib/session";
 import Screen, { bodyClass } from "@/ports/VerificationNumero";
 
+export const metadata = { title: "Vérification du numéro" };
+
 async function Contenu({ searchParams }: { searchParams: Promise<{ erreur?: string }> }) {
   const { erreur } = await searchParams;
   const uid = await getPendingUid();

@@ -107,7 +107,7 @@ export default function AjouterBienForm({ erreur }: { erreur?: string }) {
       <div>
       <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">Quartier &amp; Ville</label>
       <div className="relative">
-      <select name="quartier" value={quartier} onChange={(e) => setQuartier(e.target.value)} className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none appearance-none pr-10 cursor-pointer">
+      <select name="quartier" aria-label="Quartier" value={quartier} onChange={(e) => setQuartier(e.target.value)} className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none appearance-none pr-10 cursor-pointer">
       <option>Almadies, Dakar</option>
       <option>Ngor, Dakar</option>
       <option>Ouakam, Dakar</option>
@@ -135,7 +135,7 @@ export default function AjouterBienForm({ erreur }: { erreur?: string }) {
       <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">Compteur Woyofal Senelec n°</label>
       <div className="relative">
       <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">bolt</span>
-      <input className="w-full h-11 pl-10 pr-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="compteurElec" />
+      <input className="w-full h-11 pl-10 pr-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="compteurElec" aria-label="Numéro du compteur d'électricité" />
       </div>
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Facultatif : numéro du compteur d'électricité, pour mémoire.</p>
       </div>
@@ -143,7 +143,7 @@ export default function AjouterBienForm({ erreur }: { erreur?: string }) {
       <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">Sous-compteur SEN'EAU</label>
       <div className="relative">
       <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">water_drop</span>
-      <input className="w-full h-11 pl-10 pr-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="compteurEau" />
+      <input className="w-full h-11 pl-10 pr-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="compteurEau" aria-label="Numéro du compteur d'eau" />
       </div>
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Facultatif : référence du compteur d'eau, pour mémoire.</p>
       </div>
@@ -187,18 +187,18 @@ export default function AjouterBienForm({ erreur }: { erreur?: string }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
       <div>
       <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">Numéro CNI / Passeport</label>
-      <input className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="locCni" />
+      <input className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="locCni" aria-label="Numéro de pièce d'identité du locataire" />
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Sera servent à générer ses quittances et à lui envoyer son lien de paiement.</p>
       </div>
       <div>
       <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">Courriel électronique <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">(Optionnel)</span></label>
-      <input className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="email" name="locEmail" />
+      <input className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="email" name="locEmail" aria-label="E-mail du locataire" />
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Une copie PDF de la quittance y sera transmise chaque mois.</p>
       </div>
       </div>
       <div>
       <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">Profession &amp; Employeur</label>
-      <input className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="locProfession" />
+      <input className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="locProfession" aria-label="Profession du locataire" />
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Garantie d'employabilité enregistrée au dossier de solvabilité Nuuf.</p>
       </div>
       </div>
@@ -243,14 +243,14 @@ export default function AjouterBienForm({ erreur }: { erreur?: string }) {
       <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">Date de prise d'effet (Entrée)</label>
       <div className="relative">
       <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">calendar_today</span>
-      <input className="w-full h-11 pl-10 pr-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="date" name="debut" required value={debut} onChange={(e) => setDebut(e.target.value)} />
+      <input className="w-full h-11 pl-10 pr-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="date" name="debut" aria-label="Date de prise d'effet" required value={debut} onChange={(e) => setDebut(e.target.value)} />
       </div>
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Date d'ouverture officielle du bail et remise des clés.</p>
       </div>
       <div>
       <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">Jour d'exigibilité mensuelle</label>
       <div className="relative">
-      <select name="jour" value={jour} onChange={(e) => setJour(e.target.value)} className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none appearance-none pr-10 cursor-pointer">
+      <select name="jour" aria-label="Jour d'échéance du loyer" value={jour} onChange={(e) => setJour(e.target.value)} className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none appearance-none pr-10 cursor-pointer">
       <option value="5">Le 05 de chaque mois</option>
       <option value="1">Le 01 de chaque mois</option>
       <option value="10">Le 10 de chaque mois</option>

@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import { exigerAdmin } from "@/lib/admin";
 import { fcfa } from "@/lib/immo";
 
+export const metadata = { title: "Administration - Paiements" };
+
 type Params = { statut?: string };
 const CANAL = { WAVE: "Wave", ORANGE_MONEY: "Orange Money", ESPECES: "Espèces", VIREMENT: "Virement" } as const;
 const STATUT = {

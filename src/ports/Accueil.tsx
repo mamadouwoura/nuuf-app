@@ -366,7 +366,7 @@ export default function Accueil() {
       </div>
       </div>
       <div className="lg:col-span-6 relative">
-      <img className="w-full h-80 md:h-96 rounded-2xl object-cover shadow-md" data-alt="Modern upscale residential building in Dakar Senegal Almadies neighborhood with lush tropical palms and minimalist architectural balconies under bright warm sunlight, reflecting real estate prosperity and order." src="/img/photo-6.jpg" />
+      <img className="w-full h-80 md:h-96 rounded-2xl object-cover shadow-md" alt="Modern upscale residential building in Dakar Senegal Almadies neighborhood with lush tropical palms and minimalist architectural balconies under bright warm sunlight, reflecting real estate prosperity and order." src="/img/photo-6.jpg" />
       <div className="absolute -bottom-4 -right-4 bg-surface-container-lowest p-4 rounded-xl shadow-lg border-none flex items-center gap-3">
       <span className="material-symbols-outlined text-primary text-[28px]">shield</span>
       <div>
@@ -402,7 +402,7 @@ export default function Accueil() {
                   </p>
       </div>
       <div className="flex items-center gap-3 pt-4 bg-surface-container-lowest">
-      <img className="w-12 h-12 rounded-full object-cover shadow-sm" data-alt="Portrait of Amadou Seck, a distinguished smiling Senegalese male landlord in his forties wearing an elegant smart-casual blazer in Dakar, natural daylight." src="/img/photo-5.jpg" />
+      <img className="w-12 h-12 rounded-full object-cover shadow-sm" alt="Portrait of Amadou Seck, a distinguished smiling Senegalese male landlord in his forties wearing an elegant smart-casual blazer in Dakar, natural daylight." src="/img/photo-5.jpg" />
       <div>
       <div className="flex items-center gap-1.5">
       <span className="font-label-lg text-label-lg font-bold text-on-surface">Amadou Seck</span>
@@ -427,7 +427,7 @@ export default function Accueil() {
                   </p>
       </div>
       <div className="flex items-center gap-3 pt-4 bg-surface-container-lowest">
-      <img className="w-12 h-12 rounded-full object-cover shadow-sm" data-alt="Portrait of Fatou Kine Ndiaye, a successful Senegalese businesswoman and property owner in a modern traditional outfit, confident expression in an office in Dakar." src="/img/photo-1.jpg" />
+      <img className="w-12 h-12 rounded-full object-cover shadow-sm" alt="Portrait of Fatou Kine Ndiaye, a successful Senegalese businesswoman and property owner in a modern traditional outfit, confident expression in an office in Dakar." src="/img/photo-1.jpg" />
       <div>
       <div className="flex items-center gap-1.5">
       <span className="font-label-lg text-label-lg font-bold text-on-surface">Fatou Kiné Ndiaye</span>

@@ -1,3 +1,4 @@
+import Pagination, { decouper, numeroPage } from "@/components/Pagination";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { relancer, sauverParametresRelance } from "@/app/actions/messages";
@@ -6,10 +7,13 @@ import { fcfa, initiales, telAffiche } from "@/lib/immo";
 import { assurerEcheances, debutMois, loyersDuMois } from "@/lib/loyers";
 import { getUser } from "@/lib/session";
 
-type Params = { ok?: string };
+export const metadata = { title: "Relances" };
+
+type Params = { ok?: string; page?: string };
 
 async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
-  const { ok } = await searchParams;
+  const { ok, page: pageBrut } = await searchParams;
+  const page = numeroPage(pageBrut);
   const user = await getUser();
   if (!user) redirect("/connexion");
   const orgId = user.membres[0].organisationId;
@@ -29,8 +33,11 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
   ]);
   const r = reglages ?? { avantEcheance: true, apresJ1: true, apresJ5: true };
   const retards = m.lignes.filter((l) => l.etat === "EN_RETARD").sort((a, b) => b.jours - a.jours);
+  const visibles = decouper(retards, page);
+  // Dernière relance de chaque loyer affiché (indépendante de l'historique récent).
+  const dernieres = await db.relance.groupBy({ by: ["echeanceId"], where: { echeanceId: { in: visibles.map((l) => l.id) } }, _max: { envoyeeLe: true } });
   const derniere = new Map<string, Date>();
-  for (const h of historique) if (!derniere.has(h.echeanceId)) derniere.set(h.echeanceId, h.envoyeeLe);
+  for (const d of dernieres) if (d._max.envoyeeLe) derniere.set(d.echeanceId, d._max.envoyeeLe);
 
   return (
     <div className="flex flex-col w-full gap-space-lg">
@@ -54,7 +61,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
             <p className="font-body-md text-body-md text-on-surface-variant">Aucun loyer en retard. 🎉</p>
           ) : (
             <div className="flex flex-col gap-3">
-              {retards.map((l) => {
+              {visibles.map((l) => {
                 const loc = l.bail.locataire;
                 const d = derniere.get(l.id);
                 return (
@@ -79,6 +86,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
               })}
             </div>
           )}
+          <Pagination page={page} total={retards.length} chemin="/relances" />
         </div>
 
         <form action={sauverParametresRelance} className="lg:col-span-5 bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md">

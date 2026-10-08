@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Pagination, { decouper, numeroPage } from "@/components/Pagination";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { encaisserEspeces } from "@/app/actions/paiements";
@@ -6,7 +7,9 @@ import { fcfa, initiales, telAffiche } from "@/lib/immo";
 import { assurerEcheances, cleMois, debutMois, depuisCle, libelleMois, loyersDuMois, moisPrecedent } from "@/lib/loyers";
 import { getUser } from "@/lib/session";
 
-type Params = { mois?: string; erreur?: string; ok?: string };
+export const metadata = { title: "Paiements" };
+
+type Params = { mois?: string; erreur?: string; ok?: string; page?: string };
 
 const ETAT = {
   PAYE: { classe: "bg-emerald-50 text-emerald-800", libelle: "Payé", icone: "check_circle" },
@@ -16,7 +19,8 @@ const ETAT = {
 const CANAL = { WAVE: "Wave", ORANGE_MONEY: "Orange Money", ESPECES: "Espèces", VIREMENT: "Virement" } as const;
 
 async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
-  const { mois: cle, erreur, ok } = await searchParams;
+  const { mois: cle, erreur, ok, page: pageBrut } = await searchParams;
+  const page = numeroPage(pageBrut);
   const user = await getUser();
   if (!user) redirect("/connexion");
   const orgId = user.membres[0].organisationId;
@@ -35,12 +39,12 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
         <div>
           <div className="flex items-center gap-2 mb-space-xs">
-            <Link href={`/paiements?mois=${cleMois(moisPrecedent(mois))}`} className="w-9 h-9 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary hover:bg-surface-container">
+            <Link href={`/paiements?mois=${cleMois(moisPrecedent(mois))}`} aria-label="Mois précédent" className="w-9 h-9 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary hover:bg-surface-container">
               <span className="material-symbols-outlined text-[20px]">chevron_left</span>
             </Link>
             <span className="font-label-lg text-label-lg text-on-surface font-semibold">{libelleMois(mois)}</span>
             {!courant && suivant <= debutMois(now) && (
-              <Link href={`/paiements?mois=${cleMois(suivant)}`} className="w-9 h-9 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary hover:bg-surface-container">
+              <Link href={`/paiements?mois=${cleMois(suivant)}`} aria-label="Mois suivant" className="w-9 h-9 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary hover:bg-surface-container">
                 <span className="material-symbols-outlined text-[20px]">chevron_right</span>
               </Link>
             )}
@@ -91,7 +95,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
           <p className="font-body-md text-body-md text-on-surface-variant">Aucune échéance pour ce mois. Ajoutez un bien et son locataire pour commencer.</p>
         ) : (
           <div className="flex flex-col divide-y divide-surface-container">
-            {m.lignes.map((l) => {
+            {decouper(m.lignes, page).map((l) => {
               const e = ETAT[l.etat];
               const loc = l.bail.locataire;
               return (
@@ -145,6 +149,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
           </div>
         )}
       </section>
+      <Pagination page={page} total={m.lignes.length} chemin="/paiements" params={{ mois: cleMois(mois) }} />
     </div>
   );
 }

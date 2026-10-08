@@ -3,6 +3,8 @@ import ReinitMotDePasse from "@/components/ReinitMotDePasse";
 import { getDevOtp, lireJeton } from "@/lib/session";
 import { telAffiche } from "@/lib/immo";
 
+export const metadata = { title: "Mot de passe oublié" };
+
 const fond = "bg-surface font-body-md text-body-md text-on-surface min-h-screen flex flex-col justify-between selection:bg-primary selection:text-on-primary";
 
 async function Contenu({ searchParams }: { searchParams: Promise<{ etape?: string; erreur?: string }> }) {

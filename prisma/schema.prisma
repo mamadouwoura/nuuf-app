@@ -117,6 +117,8 @@ model Membre {
   utilisateur  Utilisateur  @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
 
   @@unique([organisationId, utilisateurId])
+
+  @@index([utilisateurId])
 }
 
 model CodeOtp {
@@ -162,6 +164,8 @@ model FactureAbonnement {
   creeLe             DateTime  @default(now())
 
   abonnement Abonnement @relation(fields: [abonnementId], references: [id], onDelete: Cascade)
+
+  @@index([abonnementId])
 }
 
 // Compte Wave / Orange Money où le bailleur reçoit ses loyers.
@@ -174,6 +178,8 @@ model CompteEncaissement {
   actif          Boolean       @default(true)
 
   organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@index([organisationId])
 }
 
 model Bien {
@@ -263,6 +269,8 @@ model Echeance {
   relances  Relance[]
 
   @@unique([bailId, mois])
+
+  @@index([dateLimite, statut])
 }
 
 model Paiement {
@@ -277,6 +285,9 @@ model Paiement {
 
   echeance  Echeance   @relation(fields: [echeanceId], references: [id], onDelete: Cascade)
   quittance Quittance?
+
+  @@index([echeanceId])
+  @@index([statut, creeLe])
 }
 
 model Quittance {
@@ -290,6 +301,8 @@ model Quittance {
   paiement Paiement @relation(fields: [paiementId], references: [id], onDelete: Cascade)
 
   @@unique([organisationId, numero])
+
+  @@index([organisationId, emiseLe])
 }
 
 model Relance {
@@ -299,6 +312,8 @@ model Relance {
   envoyeeLe   DateTime @default(now())
 
   echeance Echeance @relation(fields: [echeanceId], references: [id], onDelete: Cascade)
+
+  @@index([echeanceId])
 }
 
 // Tout message sortant WhatsApp / SMS.
@@ -312,6 +327,8 @@ model Message {
   creeLe         DateTime     @default(now())
 
   organisation Organisation? @relation(fields: [organisationId], references: [id], onDelete: SetNull)
+
+  @@index([type, creeLe])
 }
 
 // Qui a fait quoi (comptes équipe du forfait Pro).

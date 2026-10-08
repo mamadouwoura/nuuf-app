@@ -14,7 +14,7 @@ export const viewport: Viewport = { themeColor: "#1b6f5a" };
 export const metadata: Metadata = {
   applicationName: "Nuuf",
   appleWebApp: { capable: true, title: "Nuuf", statusBarStyle: "default" },
-  title: "Nuuf — Gestion locative au Sénégal",
+  title: { default: "Nuuf — Gestion locative au Sénégal", template: "%s — Nuuf" },
   description: "Encaissez vos loyers par Wave et Orange Money, quittances et relances automatiques.",
 };
 

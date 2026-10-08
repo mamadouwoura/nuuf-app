@@ -8,6 +8,8 @@ import { db } from "@/lib/db";
 import { TYPE_LIBELLE } from "@/lib/immo";
 import { getUser } from "@/lib/session";
 
+export const metadata = { title: "Modifier le bien" };
+
 const CHAMP =
   "w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container outline-none transition-all";
 
