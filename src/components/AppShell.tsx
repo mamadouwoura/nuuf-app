@@ -43,6 +43,7 @@ export default function AppShell({
   bandeau,
   moisLabel,
   simulation,
+  admin = false,
 }: {
   children: React.ReactNode;
   nom: string;
@@ -52,8 +53,12 @@ export default function AppShell({
   bandeau: { ton: "info" | "alerte"; texte: string } | null;
   moisLabel: string;
   simulation: boolean;
+  admin?: boolean;
 }) {
   const pathname = usePathname();
+  const ADMIN: { href: string; icon: string; label: string; badge?: string; alert?: boolean } = { href: "/admin", icon: "admin_panel_settings", label: "Console admin" };
+  const navigation: (typeof NAV[number] | typeof ADMIN)[] = admin ? [...NAV, ADMIN] : NAV;
+  const plusLiens = admin ? [...PLUS, ADMIN] : PLUS;
   const [plus, setPlus] = useState(false);
   const [confirmer, setConfirmer] = useState(false);
   return (
@@ -67,7 +72,7 @@ export default function AppShell({
             <p className="mt-space-xs font-body-sm text-body-sm text-on-surface-variant">Gestion locative &amp; Loyers</p>
           </div>
           <nav className="flex flex-col gap-1 px-space-md mt-space-sm">
-            {NAV.map((n) => {
+            {navigation.map((n) => {
               const valeur = n.badge === "biens" ? nbBiens : n.badge === "retards" ? nbRetards : 0;
               const actif = pathname === n.href || pathname.startsWith(n.href + "/");
               return (
@@ -198,7 +203,7 @@ export default function AppShell({
         </ul>
         {plus && (
           <div className="absolute bottom-full inset-x-0 bg-surface-container-lowest border-t border-outline-variant/40 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] p-space-md flex flex-col gap-1">
-            {PLUS.map((n) => (
+            {plusLiens.map((n) => (
               <Link key={n.href} href={n.href} onClick={() => setPlus(false)} className="flex items-center gap-3 px-space-md py-3 rounded-xl text-on-surface hover:bg-surface-container-low">
                 <span className="material-symbols-outlined text-[22px] text-primary">{n.icon}</span>
                 <span className="font-label-lg text-label-lg">{n.label}</span>

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import { db } from "@/lib/db";
 import { etatAcces } from "@/lib/abonnement";
+import { numerosAdmin } from "@/lib/admin";
 import { libelleMois } from "@/lib/loyers";
 import { modeSimulation } from "@/lib/passerelle";
 import { getUser } from "@/lib/session";
@@ -29,7 +30,7 @@ async function Shell({ children }: { children: React.ReactNode }) {
           ? { ton: "alerte" as const, texte: "Accès en lecture seule : vos données sont conservées. Activez un abonnement pour reprendre l'encaissement." }
           : null;
   return (
-    <AppShell nom={user.nomComplet} libelleCompte={libelle} nbBiens={nbBiens} nbRetards={nbRetards} bandeau={bandeau} moisLabel={libelleMois(new Date())} simulation={modeSimulation()}>
+    <AppShell nom={user.nomComplet} libelleCompte={libelle} nbBiens={nbBiens} nbRetards={nbRetards} bandeau={bandeau} moisLabel={libelleMois(new Date())} simulation={modeSimulation()} admin={numerosAdmin().includes(user.telephone)}>
       {children}
     </AppShell>
   );
