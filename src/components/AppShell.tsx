@@ -55,6 +55,7 @@ export default function AppShell({
 }) {
   const pathname = usePathname();
   const [plus, setPlus] = useState(false);
+  const [confirmer, setConfirmer] = useState(false);
   return (
     <>
       <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-72 bg-surface-container-low shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex-col justify-between overflow-y-auto">
@@ -151,7 +152,7 @@ export default function AppShell({
                 <span className="font-label-md text-label-md text-on-surface font-semibold leading-tight">{nom}</span>
                 <span className="font-body-sm text-body-sm text-on-surface-variant leading-tight">{libelleCompte}</span>
               </div>
-              <form action={deconnexion}><button aria-label="Se déconnecter" title="Se déconnecter" className="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-error transition-colors"><span className="material-symbols-outlined text-[22px]">logout</span></button></form>
+              <button type="button" onClick={() => setConfirmer(true)} aria-label="Se déconnecter" title="Se déconnecter" className="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-error transition-colors"><span className="material-symbols-outlined text-[22px]">logout</span></button>
             </div>
           </div>
         </header>
@@ -204,16 +205,28 @@ export default function AppShell({
                 {n.href === "/relances" && nbRetards > 0 && <span className="ml-auto px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-md text-label-md font-bold">{nbRetards}</span>}
               </Link>
             ))}
-            <form action={deconnexion}>
-              <button className="w-full flex items-center gap-3 px-space-md py-3 rounded-xl text-error hover:bg-error-container/40">
-                <span className="material-symbols-outlined text-[22px]">logout</span>
-                <span className="font-label-lg text-label-lg">Se déconnecter</span>
-              </button>
-            </form>
+            <button type="button" onClick={() => { setPlus(false); setConfirmer(true); }} className="w-full flex items-center gap-3 px-space-md py-3 rounded-xl text-error hover:bg-error-container/40">
+              <span className="material-symbols-outlined text-[22px]">logout</span>
+              <span className="font-label-lg text-label-lg">Se déconnecter</span>
+            </button>
           </div>
         )}
       </nav>
 
+      {confirmer && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-on-surface/40 p-margin" role="dialog" aria-modal="true" aria-labelledby="titre-deconnexion" onClick={() => setConfirmer(false)} onKeyDown={(e) => e.key === "Escape" && setConfirmer(false)}>
+          <div className="w-full max-w-sm rounded-2xl bg-surface-container-lowest p-space-lg shadow-xl flex flex-col gap-space-md" onClick={(e) => e.stopPropagation()}>
+            <h2 id="titre-deconnexion" className="font-headline-sm text-headline-sm text-on-surface font-bold">Se déconnecter ?</h2>
+            <p className="font-body-md text-body-md text-on-surface-variant">Vous devrez saisir à nouveau votre mot de passe et un code de vérification pour revenir.</p>
+            <div className="flex gap-space-sm justify-end">
+              <button type="button" autoFocus onClick={() => setConfirmer(false)} className="h-11 px-space-md rounded-xl bg-surface-container text-on-surface font-label-lg text-label-lg font-semibold hover:bg-surface-container-high">Rester connecté</button>
+              <form action={deconnexion}>
+                <button className="h-11 px-space-md rounded-xl bg-error text-on-error font-label-lg text-label-lg font-bold hover:opacity-90">Se déconnecter</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
