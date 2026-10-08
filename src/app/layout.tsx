@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -9,7 +9,11 @@ const jakarta = Plus_Jakarta_Sans({
   weight: ["600", "700", "800"],
 });
 
+export const viewport: Viewport = { themeColor: "#1b6f5a" };
+
 export const metadata: Metadata = {
+  applicationName: "Nuuf",
+  appleWebApp: { capable: true, title: "Nuuf", statusBarStyle: "default" },
   title: "Nuuf — Gestion locative au Sénégal",
   description: "Encaissez vos loyers par Wave et Orange Money, quittances et relances automatiques.",
 };
