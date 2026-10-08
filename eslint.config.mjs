@@ -9,6 +9,11 @@ const eslintConfig = defineConfig([
     // Textes français : les apostrophes sont valides en JSX, la règle ne fait que du bruit.
     rules: { "react/no-unescaped-entities": "off" },
   },
+  {
+    // Outils de développement en Node (CommonJS) : require() est normal ici.
+    files: ["scripts/**/*.cjs", "tests/**/*.ts"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
