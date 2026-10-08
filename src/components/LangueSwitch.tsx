@@ -5,12 +5,13 @@ import { useTransition } from "react";
 import { changerLangue } from "@/app/actions/langue";
 import { LOCALES } from "@/lib/i18n/config";
 import { useT } from "@/lib/i18n/client";
+import { N_ } from "@/lib/i18n/translate";
 
-const NOMS: Record<string, string> = { fr: "Français", en: "English" };
+const NOMS: Record<string, string> = { fr: N_("Français"), en: N_("English") };
 
 /** Sélecteur de langue : une pastille par langue, la langue active est mise en évidence. */
 export default function LangueSwitch() {
-  const { locale, t } = useT();
+  const { t, locale } = useT();
   const router = useRouter();
   const [attente, demarrer] = useTransition();
   return (

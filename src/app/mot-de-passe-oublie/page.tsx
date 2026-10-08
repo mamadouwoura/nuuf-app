@@ -2,12 +2,19 @@ import { Suspense } from "react";
 import ReinitMotDePasse from "@/components/ReinitMotDePasse";
 import { getDevOtp, lireJeton } from "@/lib/session";
 import { telAffiche } from "@/lib/immo";
+import { N_ } from "@/lib/i18n/translate";
+import { getT } from "@/lib/i18n/server";
+import Preferences from "@/components/Preferences";
 
-export const metadata = { title: "Mot de passe oublié" };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t(N_("Mot de passe oublié")) };
+}
 
 const fond = "bg-surface font-body-md text-body-md text-on-surface min-h-screen flex flex-col justify-between selection:bg-primary selection:text-on-primary";
 
 async function Contenu({ searchParams }: { searchParams: Promise<{ etape?: string; erreur?: string }> }) {
+  const { t } = await getT();
   const { etape: demande, erreur } = await searchParams;
   // L'étape affichée dépend des jetons posés par les étapes précédentes, pas seulement de l'URL.
   const aEtape2 = Boolean(await lireJeton("nuuf_reinit"));
@@ -18,7 +25,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<{ etape?: strin
     <ReinitMotDePasse
       etape={etape}
       erreur={erreur}
-      telephone={tel ? telAffiche(tel) : "votre numéro"}
+      telephone={tel ? telAffiche(tel) : t("votre numéro")}
       devCode={etape === 2 ? await getDevOtp() : null}
     />
   );
@@ -27,6 +34,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<{ etape?: strin
 export default function Page({ searchParams }: { searchParams: Promise<{ etape?: string; erreur?: string }> }) {
   return (
     <div className={fond}>
+      <Preferences flottant />
       <Suspense fallback={null}>
         <Contenu searchParams={searchParams} />
       </Suspense>

@@ -4,10 +4,15 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import type { TypeBien } from "@prisma/client";
 import { db } from "@/lib/db";
-import { fcfa, initiales, statutLoyer, telMasque, TYPE_LIBELLE } from "@/lib/immo";
+import { fcfa, initiales, statutLoyer, libelleStatut, telMasque, TYPE_LIBELLE } from "@/lib/immo";
 import { getUser } from "@/lib/session";
+import { getT } from "@/lib/i18n/server";
+import { N_ } from "@/lib/i18n/translate";
 
-export const metadata = { title: "Mes biens" };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t(N_("Mes biens")) };
+}
 
 type Params = { q?: string; quartier?: string; type?: string; archive?: string; page?: string };
 
@@ -21,6 +26,7 @@ const BADGE = {
 const ICONE = { PAYE: "check_circle", EN_ATTENTE: "hourglass_top", PARTIEL: "hourglass_top", EN_RETARD: "error", VACANT: "domain_disabled" } as const;
 
 async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
+  const { t, tn } = await getT();
   const { q, quartier, type, archive, page: pageBrut } = await searchParams;
   const page = numeroPage(pageBrut);
   const user = await getUser();
@@ -53,33 +59,33 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
 
   return (
     <div className="flex flex-col w-full">
-      {archive && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 mb-space-md font-body-md text-body-md">Bien archivé. L'historique et les quittances sont conservés.</p>}
+      {archive && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 mb-space-md font-body-md text-body-md">{t("Bien archivé. L'historique et les quittances sont conservés.")}</p>}
       <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-space-lg mb-space-xl">
         <div>
           <div className="flex items-center gap-space-sm mb-space-xs">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container text-primary font-label-md text-label-md">
               <span className="w-2 h-2 rounded-full bg-primary-container"></span>
-              Portefeuille Actif
+              {t("Portefeuille Actif")}
             </span>
           </div>
-          <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">Mes biens</h1>
+          <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">{t("Mes biens")}</h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-            {tous.length} logement{tous.length > 1 ? "s" : ""} répertorié{tous.length > 1 ? "s" : ""} • Suivi des baux et encaissements en temps réel
+            {tn(tous.length, "{n} logement répertorié", "{n} logements répertoriés")} • {t("Suivi des baux et encaissements en temps réel")}
           </p>
           <div className="flex flex-wrap items-center gap-space-md mt-space-md">
             <div className="flex items-center gap-2 px-space-md py-2 rounded-xl bg-surface-container-lowest shadow-sm">
               <span className="material-symbols-outlined text-[18px] text-primary">key</span>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">Occupés :</span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant">{t("Occupés :")}</span>
               <span className="font-label-lg text-label-lg text-primary font-bold">{occupes}</span>
             </div>
             <div className="flex items-center gap-2 px-space-md py-2 rounded-xl bg-surface-container-lowest shadow-sm">
               <span className="material-symbols-outlined text-[18px] text-secondary">domain_disabled</span>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">Vacant :</span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant">{t("Vacant :")}</span>
               <span className="font-label-lg text-label-lg text-secondary font-bold">{tous.length - occupes}</span>
             </div>
             <div className="flex items-center gap-2 px-space-md py-2 rounded-xl bg-surface-container-lowest shadow-sm">
               <span className="material-symbols-outlined text-[18px] text-primary-container">account_balance</span>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">Loyers théoriques :</span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant">{t("Loyers théoriques :")}</span>
               <span className="font-label-lg text-label-lg text-primary font-bold tracking-tight">{fcfa(loyersTheoriques)} FCFA</span>
             </div>
           </div>
@@ -90,7 +96,7 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
             className="flex items-center gap-2 h-12 px-space-lg rounded-xl bg-primary-container text-on-primary hover:bg-primary transition-all shadow-md font-label-lg text-label-lg font-bold"
           >
             <span className="material-symbols-outlined text-[22px]">add_circle</span>
-            <span>Ajouter un bien</span>
+            <span>{t("Ajouter un bien")}</span>
           </Link>
         </div>
       </div>
@@ -102,26 +108,26 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
             name="q"
             defaultValue={q}
             className="w-full h-11 pl-10 pr-4 rounded-xl bg-surface text-on-surface placeholder:text-on-surface-variant font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary-container transition-all"
-            placeholder="Rechercher par adresse, locataire..."
+            placeholder={t("Rechercher par adresse, locataire...")}
             type="text"
           />
         </div>
         <select
-          name="quartier" aria-label="Filtrer par quartier"
+          name="quartier" aria-label={t("Filtrer par quartier")}
           defaultValue={quartier ?? ""}
           className="h-11 pl-3.5 pr-9 rounded-xl bg-surface text-on-surface font-label-md text-label-md font-medium focus:outline-none focus:ring-2 focus:ring-primary-container"
         >
-          <option value="">Tous les quartiers</option>
+          <option value="">{t("Tous les quartiers")}</option>
           {quartiers.map((x) => (
             <option key={x}>{x}</option>
           ))}
         </select>
         <select
-          name="type" aria-label="Filtrer par type de bien"
+          name="type" aria-label={t("Filtrer par type de bien")}
           defaultValue={type ?? ""}
           className="h-11 pl-3.5 pr-9 rounded-xl bg-surface text-on-surface font-label-md text-label-md font-medium focus:outline-none focus:ring-2 focus:ring-primary-container"
         >
-          <option value="">Tous types</option>
+          <option value="">{t("Tous types")}</option>
           {Object.entries(TYPE_LIBELLE).map(([v, l]) => (
             <option key={v} value={v}>
               {l}
@@ -129,7 +135,7 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
           ))}
         </select>
         <button className="h-11 px-space-md rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg font-semibold hover:bg-primary transition-colors">
-          Filtrer
+          {t("Filtrer")}
         </button>
       </form>
 
@@ -137,15 +143,15 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
         <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-xl flex flex-col items-center text-center gap-space-sm">
           <span className="material-symbols-outlined text-[40px] text-primary">apartment</span>
           <h2 className="font-headline-sm text-headline-sm text-on-surface">
-            {tous.length === 0 ? "Aucun bien pour le moment" : "Aucun bien ne correspond à ces filtres"}
+            {tous.length === 0 ? t("Aucun bien pour le moment") : t("Aucun bien ne correspond à ces filtres")}
           </h2>
           <p className="font-body-md text-body-md text-on-surface-variant">
-            {tous.length === 0 ? "Ajoutez votre premier bien et son locataire pour commencer à encaisser." : "Modifiez votre recherche."}
+            {tous.length === 0 ? t("Ajoutez votre premier bien et son locataire pour commencer à encaisser.") : t("Modifiez votre recherche.")}
           </p>
           {tous.length === 0 && (
             <Link href="/biens/nouveau" className="mt-space-sm inline-flex items-center gap-2 h-12 px-space-lg rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg font-bold">
               <span className="material-symbols-outlined text-[22px]">add_circle</span>
-              Ajouter un bien
+              {t("Ajouter un bien")}
             </Link>
           )}
         </div>
@@ -169,12 +175,12 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
                   <div className="absolute top-3 right-3">
                     <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-label-md text-label-md font-bold shadow-sm ${BADGE[st.code]}`}>
                       <span className="material-symbols-outlined text-[15px]">{ICONE[st.code]}</span>
-                      {st.libelle}
+                      {libelleStatut(st, t)}
                     </span>
                   </div>
                   {bail && (
                     <div className="absolute bottom-3 left-3 text-on-primary">
-                      <span className="font-label-md text-label-md opacity-90">Échéance le {String(bail.jourEcheance).padStart(2, "0")} du mois</span>
+                      <span className="font-label-md text-label-md opacity-90">{t("Échéance le {jour} du mois", { jour: String(bail.jourEcheance).padStart(2, "0") })}</span>
                     </div>
                   )}
                 </div>
@@ -186,10 +192,10 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
                       <span>{b.quartier}</span>
                     </div>
                     <div className="mt-space-md pt-space-sm flex items-baseline justify-between bg-surface-container-low p-3 rounded-xl">
-                      <span className="font-body-sm text-body-sm text-on-surface-variant">Loyer mensuel</span>
+                      <span className="font-body-sm text-body-sm text-on-surface-variant">{t("Loyer mensuel")}</span>
                       <div className="text-right">
                         <span className="font-headline-md text-headline-md font-bold text-primary tracking-tight">{bail ? fcfa(bail.loyerMensuel) : "—"}</span>
-                        <span className="font-label-currency-unit text-label-currency-unit text-on-surface-variant ml-1">FCFA/mois</span>
+                        <span className="font-label-currency-unit text-label-currency-unit text-on-surface-variant ml-1">{t("FCFA/mois")}</span>
                       </div>
                     </div>
                   </div>
@@ -207,11 +213,11 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
                     ) : (
                       <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-[20px] text-on-surface-variant">person_off</span>
-                        <span className="font-body-sm text-body-sm text-on-surface-variant italic">Aucun locataire</span>
+                        <span className="font-body-sm text-body-sm text-on-surface-variant italic">{t("Aucun locataire")}</span>
                       </div>
                     )}
                     <Link href={`/biens/${b.id}`} className="px-3 py-1.5 rounded-lg bg-surface hover:bg-surface-container text-primary font-label-md text-label-md font-semibold transition-colors">
-                      Gérer
+                      {t("Gérer")}
                     </Link>
                   </div>
                 </div>
@@ -225,9 +231,10 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
   );
 }
 
-export default function Page({ searchParams }: { searchParams: Promise<Params> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<Params> }) {
+  const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">Chargement…</p>}>
+    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">{t("Chargement…")}</p>}>
       <Liste searchParams={searchParams} />
     </Suspense>
   );

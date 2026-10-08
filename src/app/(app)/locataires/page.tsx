@@ -3,10 +3,15 @@ import Pagination, { decouper, numeroPage } from "@/components/Pagination";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { fcfa, initiales, statutLoyer, telAffiche } from "@/lib/immo";
+import { fcfa, initiales, statutLoyer, libelleStatut, telAffiche } from "@/lib/immo";
 import { getUser } from "@/lib/session";
+import { getT } from "@/lib/i18n/server";
+import { N_ } from "@/lib/i18n/translate";
 
-export const metadata = { title: "Locataires" };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t(N_("Locataires")) };
+}
 
 type Params = { q?: string; page?: string };
 
@@ -19,6 +24,7 @@ const PASTILLE = {
 } as const;
 
 async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
+  const { t, tn } = await getT();
   const { q, page: pageBrut } = await searchParams;
   const page = numeroPage(pageBrut);
   const user = await getUser();
@@ -41,14 +47,14 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
     <div className="flex flex-col w-full gap-space-lg">
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
         <div>
-          <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">Mes locataires</h1>
+          <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">{t("Mes locataires")}</h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-            {tous.length} locataire{tous.length > 1 ? "s" : ""} • Suivi des loyers et des échéances
+            {tn(tous.length, "{n} locataire", "{n} locataires")} • {t("Suivi des loyers et des échéances")}
           </p>
         </div>
         <Link href="/biens/nouveau" className="flex items-center gap-2 h-12 px-space-lg rounded-xl bg-primary-container text-on-primary hover:bg-primary shadow-md font-label-lg text-label-lg font-bold">
           <span className="material-symbols-outlined text-[22px]">person_add</span>
-          <span>Nouveau locataire</span>
+          <span>{t("Nouveau locataire")}</span>
         </Link>
       </div>
 
@@ -58,11 +64,11 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
           <input
             name="q"
             defaultValue={q}
-            placeholder="Rechercher par nom ou téléphone..."
+            placeholder={t("Rechercher par nom ou téléphone...")}
             className="w-full h-11 pl-10 pr-4 rounded-xl bg-surface text-on-surface placeholder:text-on-surface-variant font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary-container"
           />
         </div>
-        <button className="h-11 px-space-md rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg font-semibold hover:bg-primary">Rechercher</button>
+        <button className="h-11 px-space-md rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg font-semibold hover:bg-primary">{t("Rechercher")}</button>
       </form>
 
       <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
@@ -70,7 +76,7 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
           <div className="flex flex-col items-center text-center gap-2 py-space-lg">
             <span className="material-symbols-outlined text-[40px] text-primary">group</span>
             <p className="font-body-md text-body-md text-on-surface-variant">
-              {tous.length === 0 ? "Aucun locataire pour le moment. Ils sont créés avec leur bien." : "Aucun résultat."}
+              {tous.length === 0 ? t("Aucun locataire pour le moment. Ils sont créés avec leur bien.") : t("Aucun résultat.")}
             </p>
           </div>
         ) : (
@@ -85,13 +91,13 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
                     <div className="flex flex-col">
                       <span className="font-label-lg text-label-lg text-on-surface font-semibold">{l.nomComplet}</span>
                       <span className="font-body-sm text-body-sm text-on-surface-variant">
-                        {bail ? bail.bien.designation : "Sans bail actif"} • {telAffiche(l.telephone)}
+                        {bail ? bail.bien.designation : t("Sans bail actif")} • {telAffiche(l.telephone)}
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-space-md">
                     {bail && <span className="font-label-lg text-label-lg text-on-surface font-bold">{fcfa(bail.loyerMensuel)} FCFA</span>}
-                    <span className={`px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${PASTILLE[st.code]}`}>{st.libelle}</span>
+                    <span className={`px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${PASTILLE[st.code]}`}>{libelleStatut(st, t)}</span>
                   </div>
                 </Link>
               );
@@ -104,9 +110,10 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
   );
 }
 
-export default function Page({ searchParams }: { searchParams: Promise<Params> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<Params> }) {
+  const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">Chargement…</p>}>
+    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">{t("Chargement…")}</p>}>
       <Liste searchParams={searchParams} />
     </Suspense>
   );

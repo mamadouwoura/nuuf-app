@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "i18n:verifier": "node scripts/i18n-extraire.cjs --verifier",
+    "i18n:cles": "node scripts/i18n-extraire.cjs --client"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",

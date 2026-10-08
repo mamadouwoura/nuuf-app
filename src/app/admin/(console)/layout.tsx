@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import AdminShell from "@/components/AdminShell";
 import { exigerAdmin } from "@/lib/admin";
 import { modeSimulation } from "@/lib/passerelle";
+import { getT } from "@/lib/i18n/server";
 
 async function Shell({ children }: { children: React.ReactNode }) {
   const user = await exigerAdmin();
@@ -12,9 +13,10 @@ async function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-6 text-body-md">Chargement…</p>}>
+    <Suspense fallback={<p className="p-6 text-body-md">{t("Chargement…")}</p>}>
       <Shell>{children}</Shell>
     </Suspense>
   );

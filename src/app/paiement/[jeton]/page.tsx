@@ -4,13 +4,16 @@ import EcranEchec from "@/components/EcranEchec";
 import PaiementLocataire from "@/components/PaiementLocataire";
 import { telAffiche } from "@/lib/immo";
 import { chargerParJeton, dateLongFr } from "@/lib/public-paiement";
+import { getT } from "@/lib/i18n/server";
+import Preferences from "@/components/Preferences";
 
 const fond = "bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen pt-safe pb-safe";
 
 async function Contenu({ params, searchParams }: { params: Promise<{ jeton: string }>; searchParams: Promise<{ erreur?: string }> }) {
   const { jeton } = await params;
   const { erreur } = await searchParams;
-  const c = await chargerParJeton(jeton);
+  const { locale } = await getT();
+  const c = await chargerParJeton(jeton, locale);
   if (!c) return <EcranEchec variante="invalide" />;
   if (c.reste === 0) {
     const p = c.e.paiements[0];
@@ -31,7 +34,7 @@ async function Contenu({ params, searchParams }: { params: Promise<{ jeton: stri
         bailleurTelBrut: c.bailleurTelBrut,
         locNom: c.locataire.nomComplet,
         locTel: telAffiche(c.locataire.telephone),
-        echeance: dateLongFr(c.e.dateLimite),
+        echeance: dateLongFr(c.e.dateLimite, locale),
         erreur,
       }}
     />
@@ -41,6 +44,7 @@ async function Contenu({ params, searchParams }: { params: Promise<{ jeton: stri
 export default function Page(props: { params: Promise<{ jeton: string }>; searchParams: Promise<{ erreur?: string }> }) {
   return (
     <div className={fond}>
+      <Preferences flottant />
       <Suspense fallback={null}>
         <Contenu {...props} />
       </Suspense>

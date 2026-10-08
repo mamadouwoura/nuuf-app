@@ -1,10 +1,11 @@
 import type { StatutEcheance, TypeBien } from "@prisma/client";
+import { N_ } from "@/lib/i18n/translate";
 
 export const TYPE_LIBELLE: Record<TypeBien, string> = {
-  APPARTEMENT: "Appartement",
-  VILLA: "Villa",
-  STUDIO: "Studio",
-  COMMERCIAL: "Commercial",
+  APPARTEMENT: N_("Appartement"),
+  VILLA: N_("Villa"),
+  STUDIO: N_("Studio"),
+  COMMERCIAL: N_("Commercial"),
 };
 
 export type StatutLoyer =
@@ -21,12 +22,12 @@ export function statutLoyer(
   echeance: { statut: StatutEcheance; dateLimite: Date } | undefined | null,
   now: Date,
 ): StatutLoyer {
-  if (!echeance) return { code: "VACANT", libelle: "Vacant" };
-  if (echeance.statut === "PAYEE") return { code: "PAYE", libelle: "Payé" };
-  if (echeance.statut === "PARTIELLE") return { code: "PARTIEL", libelle: "Partiel" };
+  if (!echeance) return { code: "VACANT", libelle: N_("Vacant") };
+  if (echeance.statut === "PAYEE") return { code: "PAYE", libelle: N_("Payé") };
+  if (echeance.statut === "PARTIELLE") return { code: "PARTIEL", libelle: N_("Partiel") };
   const jours = Math.floor((now.getTime() - echeance.dateLimite.getTime()) / JOUR);
-  if (jours > 0) return { code: "EN_RETARD", libelle: `En retard (+${jours}j)`, jours };
-  return { code: "EN_ATTENTE", libelle: "En attente" };
+  if (jours > 0) return { code: "EN_RETARD", libelle: N_("En retard (+{n}j)"), jours };
+  return { code: "EN_ATTENTE", libelle: N_("En attente") };
 }
 
 export const fcfa = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
@@ -43,3 +44,7 @@ export function telMasque(tel: string) {
 export function telAffiche(tel: string) {
   return tel.replace(/^\+221(\d{2})(\d{3})(\d{2})(\d{2})$/, "+221 $1 $2 $3 $4");
 }
+
+/** Texte affiché d'un statut de loyer, dans la langue de l'utilisateur. */
+export const libelleStatut = (st: StatutLoyer, t: (texte: string, vars?: Record<string, string | number>) => string) =>
+  t(st.libelle, { n: st.code === "EN_RETARD" ? st.jours : 0 });

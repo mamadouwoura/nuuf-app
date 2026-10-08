@@ -1,11 +1,12 @@
 import type { Forfait } from "@prisma/client";
+import { N_ } from "@/lib/i18n/translate";
 
 /** Grille validée : prix en FCFA/mois, quotas de logements et d'accès. */
 export const FORFAITS: Record<Forfait, { nom: string; prix: number; logements: number; acces: number }> = {
-  DECOUVERTE: { nom: "Découverte", prix: 0, logements: 15, acces: 1 },
-  BAILLEUR: { nom: "Bailleur", prix: 10_000, logements: 15, acces: 1 },
+  DECOUVERTE: { nom: N_("Découverte"), prix: 0, logements: 15, acces: 1 },
+  BAILLEUR: { nom: N_("Bailleur"), prix: 10_000, logements: 15, acces: 1 },
   PRO: { nom: "Pro", prix: 25_000, logements: 50, acces: 5 },
-  AGENCE: { nom: "Agence", prix: 25_000, logements: Infinity, acces: 15 },
+  AGENCE: { nom: N_("Agence"), prix: 25_000, logements: Infinity, acces: 15 },
 };
 
 const AGENCE_INCLUS = 50;

@@ -3,8 +3,14 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getDevOtp, getPendingUid } from "@/lib/session";
 import Screen, { bodyClass } from "@/ports/VerificationNumero";
+import { N_ } from "@/lib/i18n/translate";
+import { getT } from "@/lib/i18n/server";
+import Preferences from "@/components/Preferences";
 
-export const metadata = { title: "Vérification du numéro" };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t(N_("Vérification du numéro")) };
+}
 
 async function Contenu({ searchParams }: { searchParams: Promise<{ erreur?: string }> }) {
   const { erreur } = await searchParams;
@@ -20,6 +26,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<{ erreur?: stri
 export default function Page({ searchParams }: { searchParams: Promise<{ erreur?: string }> }) {
   return (
     <div className={bodyClass}>
+      <Preferences flottant />
       <Suspense fallback={null}>
         <Contenu searchParams={searchParams} />
       </Suspense>

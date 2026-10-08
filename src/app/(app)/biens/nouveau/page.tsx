@@ -1,7 +1,12 @@
 import { Suspense } from "react";
 import AjouterBienForm from "@/components/AjouterBienForm";
+import { N_ } from "@/lib/i18n/translate";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata = { title: "Ajouter un bien" };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t(N_("Ajouter un bien")) };
+}
 
 async function Contenu({ searchParams }: { searchParams: Promise<{ erreur?: string }> }) {
   const { erreur } = await searchParams;

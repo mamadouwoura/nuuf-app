@@ -1,8 +1,10 @@
 import { FORFAITS } from "@/lib/forfaits";
 import { fcfa, initiales, telAffiche } from "@/lib/immo";
 import type { LigneBailleur } from "@/lib/admin";
+import { getT } from "@/lib/i18n/server";
+import { N_ } from "@/lib/i18n/translate";
+import { formaterDate } from "@/lib/i18n/format";
 
-const dateFr = (d: Date) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
 const FORFAIT_CLASSE = {
   DECOUVERTE: "bg-surface-container-high text-on-surface-variant",
   BAILLEUR: "bg-surface-container-high text-primary",
@@ -11,24 +13,26 @@ const FORFAIT_CLASSE = {
 } as const;
 
 function statut(l: LigneBailleur) {
-  if (l.categorie === "payant") return { t: "Payant", c: "bg-success-container text-on-success-container", i: "check_circle" };
-  if (l.categorie === "essai") return { t: `Essai (${l.acces.joursRestants} j restants)`, c: "bg-secondary-fixed text-on-secondary-fixed", i: "hourglass_top" };
-  return { t: l.acces.etat === "GRACE" ? "Paiement en retard" : "Expiré", c: "bg-error-container text-on-error-container", i: "error" };
+  if (l.categorie === "payant") return { t: N_("Payant"), c: "bg-success-container text-on-success-container", i: "check_circle" };
+  if (l.categorie === "essai") return { t: N_("Essai ({n} j restants)"), n: l.acces.joursRestants, c: "bg-secondary-fixed text-on-secondary-fixed", i: "hourglass_top" };
+  return { t: l.acces.etat === "GRACE" ? N_("Paiement en retard") : N_("Expiré"), c: "bg-error-container text-on-error-container", i: "error" };
 }
 
-export default function TableBailleurs({ lignes }: { lignes: LigneBailleur[] }) {
-  if (lignes.length === 0) return <p className="font-body-md text-body-md text-on-surface-variant p-space-lg">Aucun bailleur ne correspond.</p>;
+export default async function TableBailleurs({ lignes }: { lignes: LigneBailleur[] }) {
+  const { t, locale } = await getT();
+  const dateFr = (d: Date) => formaterDate(d, locale, { day: "2-digit", month: "short", year: "numeric" });
+  if (lignes.length === 0) return <p className="font-body-md text-body-md text-on-surface-variant p-space-lg">{t("Aucun bailleur ne correspond.")}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left">
         <thead>
           <tr className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">
-            <th className="py-3 px-space-md">Bailleur / contact</th>
-            <th className="py-3 px-space-md">Forfait</th>
-            <th className="py-3 px-space-md">Logements</th>
-            <th className="py-3 px-space-md">Inscription</th>
-            <th className="py-3 px-space-md">Statut</th>
-            <th className="py-3 px-space-md text-right">MRR</th>
+            <th className="py-3 px-space-md">{t("Bailleur / contact")}</th>
+            <th className="py-3 px-space-md">{t("Forfait")}</th>
+            <th className="py-3 px-space-md">{t("Logements")}</th>
+            <th className="py-3 px-space-md">{t("Inscription")}</th>
+            <th className="py-3 px-space-md">{t("Statut")}</th>
+            <th className="py-3 px-space-md text-right">{t("MRR")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-surface-container">
@@ -46,14 +50,14 @@ export default function TableBailleurs({ lignes }: { lignes: LigneBailleur[] }) 
                   </div>
                 </td>
                 <td className="py-3 px-space-md">
-                  <span className={`px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${FORFAIT_CLASSE[l.forfait]}`}>{FORFAITS[l.forfait].nom}</span>
+                  <span className={`px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${FORFAIT_CLASSE[l.forfait]}`}>{t(FORFAITS[l.forfait].nom)}</span>
                 </td>
                 <td className="py-3 px-space-md">{l.logements}</td>
                 <td className="py-3 px-space-md text-on-surface-variant">{dateFr(l.creeLe)}</td>
                 <td className="py-3 px-space-md">
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${s.c}`}>
                     <span className="material-symbols-outlined text-[15px]">{s.i}</span>
-                    {s.t}
+                    {t(s.t, { n: "n" in s ? (s.n ?? 0) : 0 })}
                   </span>
                 </td>
                 <td className="py-3 px-space-md text-right font-label-lg text-label-lg font-bold text-primary">{l.mrr ? `${fcfa(l.mrr)} FCFA` : "—"}</td>

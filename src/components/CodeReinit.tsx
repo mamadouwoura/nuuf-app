@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useState } from "react";
 import { verifierCodeReinit } from "@/app/actions/reinit";
+import { useT } from "@/lib/i18n/client";
 
 const CHAMP =
   "w-10 sm:w-12 h-12 sm:h-14 text-center font-display-currency text-[22px] font-bold rounded-lg bg-surface-container text-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none transition-all shadow-inner";
 
 /** Six cases à un chiffre ; le code complet est envoyé dans le champ caché « code ». */
 export default function CodeReinit() {
+  const { t } = useT();
   const [code, setCode] = useState("");
   const champs = (el: HTMLElement) => Array.from(el.closest("form")!.querySelectorAll<HTMLInputElement>("input[data-case]"));
 
@@ -27,7 +29,7 @@ export default function CodeReinit() {
       toutes[Math.max(toutes.indexOf(t) - 1, 0)].focus();
     }
   }
-  const c = (i: number) => <input key={i} data-case="" inputMode="numeric" maxLength={1} type="text" className={CHAMP} aria-label={`Chiffre ${i + 1}`} />;
+  const c = (i: number) => <input key={i} data-case="" inputMode="numeric" maxLength={1} type="text" className={CHAMP} aria-label={t("Chiffre {n}", { n: i + 1 })} />;
 
   return (
     <form action={verifierCodeReinit} onInput={surSaisie} onKeyDown={surTouche}>
@@ -41,11 +43,11 @@ export default function CodeReinit() {
         <div className="flex items-center justify-between mt-3 text-on-surface-variant font-body-sm text-body-sm">
           <Link href="/mot-de-passe-oublie" className="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1">
             <span className="material-symbols-outlined text-[16px]">edit</span>
-            <span>Modifier le numéro</span>
+            <span>{t("Modifier le numéro")}</span>
           </Link>
           <div className="flex items-center gap-1 text-secondary font-label-md text-label-md">
             <span className="material-symbols-outlined text-[16px]">timer</span>
-            <span>Valable 10 min</span>
+            <span>{t("Valable 10 min")}</span>
           </div>
         </div>
       </div>
@@ -55,7 +57,7 @@ export default function CodeReinit() {
         type="submit"
       >
         <span className="material-symbols-outlined text-[18px]">verified</span>
-        <span>Valider le code</span>
+        <span>{t("Valider le code")}</span>
       </button>
     </form>
   );

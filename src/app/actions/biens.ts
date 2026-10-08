@@ -8,6 +8,7 @@ import { etatAcces } from "@/lib/abonnement";
 import { FORFAITS } from "@/lib/forfaits";
 import { normalizePhone } from "@/lib/security";
 import { getUser } from "@/lib/session";
+import { getT } from "@/lib/i18n/server";
 
 const TYPES: TypeBien[] = ["APPARTEMENT", "VILLA", "STUDIO", "COMMERCIAL"];
 const chiffres = (v: FormDataEntryValue | null) => Number(String(v ?? "").replace(/\D/g, "")) || 0;
@@ -17,13 +18,14 @@ function echec(msg: string): never {
 }
 
 export async function creerBienEtLocataire(form: FormData) {
+  const { t } = await getT();
   const user = await getUser();
   if (!user) redirect("/connexion");
   const membre = user.membres[0];
-  if (!membre || membre.role === "LECTURE_SEULE") echec("Votre rôle ne permet pas d'ajouter un bien.");
+  if (!membre || membre.role === "LECTURE_SEULE") echec(t("Votre rôle ne permet pas d'ajouter un bien."));
   const orgId = membre.organisationId;
   if (!etatAcces(membre.organisation.abonnement).ecriture) {
-    redirect(`/abonnement/forfait?erreur=${encodeURIComponent("Votre accès est en lecture seule. Activez un abonnement pour ajouter des biens.")}`);
+    redirect(`/abonnement/forfait?erreur=${encodeURIComponent(t("Votre accès est en lecture seule. Activez un abonnement pour ajouter des biens."))}`);
   }
 
   // Quota du forfait
@@ -41,12 +43,12 @@ export async function creerBienEtLocataire(form: FormData) {
   const debut = new Date(texte(form.get("debut")));
   const jour = chiffres(form.get("jour")) || 5;
 
-  if (designation.length < 3) echec("Indiquez la désignation du bien.");
-  if (!TYPES.includes(type)) echec("Choisissez un type de bien.");
-  if (locNom.length < 3) echec("Indiquez le nom du locataire.");
-  if (!telephone) echec("Numéro du locataire invalide. Exemple : 77 123 45 67");
-  if (loyer <= 0) echec("Indiquez le loyer mensuel.");
-  if (Number.isNaN(debut.getTime())) echec("Indiquez la date de prise d'effet.");
+  if (designation.length < 3) echec(t("Indiquez la désignation du bien."));
+  if (!TYPES.includes(type)) echec(t("Choisissez un type de bien."));
+  if (locNom.length < 3) echec(t("Indiquez le nom du locataire."));
+  if (!telephone) echec(t("Numéro du locataire invalide. Exemple : 77 123 45 67"));
+  if (loyer <= 0) echec(t("Indiquez le loyer mensuel."));
+  if (Number.isNaN(debut.getTime())) echec(t("Indiquez la date de prise d'effet."));
 
   const surface = chiffres(form.get("surfaceM2"));
   const bien = await db.$transaction(async (tx) => {
@@ -105,12 +107,13 @@ export async function creerBienEtLocataire(form: FormData) {
 }
 
 async function bienAutorise(id: string) {
+  const { t } = await getT();
   const user = await getUser();
   if (!user) redirect("/connexion");
   const membre = user.membres[0];
   if (membre.role === "LECTURE_SEULE") redirect(`/biens/${id}`);
   if (!etatAcces(membre.organisation.abonnement).ecriture) {
-    redirect(`/abonnement/forfait?erreur=${encodeURIComponent("Votre accès est en lecture seule. Activez un abonnement pour modifier vos biens.")}`);
+    redirect(`/abonnement/forfait?erreur=${encodeURIComponent(t("Votre accès est en lecture seule. Activez un abonnement pour modifier vos biens."))}`);
   }
   const bien = await db.bien.findFirst({
     where: { id, organisationId: membre.organisationId, archiveLe: null },
@@ -126,6 +129,7 @@ const debutDuMois = () => {
 };
 
 export async function modifierBien(form: FormData) {
+  const { t } = await getT();
   const id = texte(form.get("id"));
   const { user, bien, orgId } = await bienAutorise(id);
   const retour = (msg: string): never => redirect(`/biens/${id}/modifier?erreur=${encodeURIComponent(msg)}`);
@@ -134,9 +138,9 @@ export async function modifierBien(form: FormData) {
   const type = texte(form.get("type")) as TypeBien;
   const quartier = texte(form.get("quartier"));
   const ville = texte(form.get("ville")) || "Dakar";
-  if (designation.length < 3) retour("Indiquez la désignation du bien.");
-  if (!TYPES.includes(type)) retour("Choisissez un type de bien.");
-  if (quartier.length < 2) retour("Indiquez le quartier.");
+  if (designation.length < 3) retour(t("Indiquez la désignation du bien."));
+  if (!TYPES.includes(type)) retour(t("Choisissez un type de bien."));
+  if (quartier.length < 2) retour(t("Indiquez le quartier."));
 
   const bail = bien.baux[0];
   const loyer = chiffres(form.get("loyer"));
@@ -144,9 +148,9 @@ export async function modifierBien(form: FormData) {
   const locNom = texte(form.get("locNom"));
   const locTel = normalizePhone(texte(form.get("locTel")));
   if (bail) {
-    if (loyer <= 0) retour("Indiquez le loyer mensuel.");
-    if (locNom.length < 3) retour("Indiquez le nom du locataire.");
-    if (!locTel) retour("Numéro du locataire invalide. Exemple : 77 123 45 67");
+    if (loyer <= 0) retour(t("Indiquez le loyer mensuel."));
+    if (locNom.length < 3) retour(t("Indiquez le nom du locataire."));
+    if (!locTel) retour(t("Numéro du locataire invalide. Exemple : 77 123 45 67"));
   }
 
   await db.$transaction(async (tx) => {

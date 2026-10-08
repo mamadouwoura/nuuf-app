@@ -2,14 +2,17 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { fcfa, initiales, statutLoyer, telAffiche, TYPE_LIBELLE } from "@/lib/immo";
+import { fcfa, initiales, statutLoyer, libelleStatut, telAffiche, TYPE_LIBELLE } from "@/lib/immo";
 import { getUser } from "@/lib/session";
+import { getT } from "@/lib/i18n/server";
+import { formaterDate, nomMois } from "@/lib/i18n/format";
+import { N_ } from "@/lib/i18n/translate";
 
-export const metadata = { title: "Fiche du bien" };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t(N_("Fiche du bien")) };
+}
 
-const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
-const moisFr = (d: Date) => `${MOIS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-const dateFr = (d: Date) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
 
 const PASTILLE = {
   PAYE: "bg-success-container text-on-success-container",
@@ -20,6 +23,9 @@ const PASTILLE = {
 } as const;
 
 async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ ok?: string }> }) {
+  const { t, locale } = await getT();
+  const moisFr = (d: Date) => `${nomMois(d, locale)} ${d.getUTCFullYear()}`;
+  const dateFr = (d: Date) => formaterDate(d, locale);
   const [{ id }, { ok }] = await Promise.all([params, searchParams]);
   const user = await getUser();
   if (!user) redirect("/connexion");
@@ -47,13 +53,13 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
           <div className="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant mb-space-xs">
             <Link href="/biens" className="flex items-center gap-1 hover:text-primary transition-colors">
               <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-              <span>Retour à Mes biens</span>
+              <span>{t("Retour à Mes biens")}</span>
             </Link>
           </div>
           <div className="flex flex-wrap items-center gap-space-sm">
             <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">{bien.designation}</h1>
             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-label-md text-label-md font-bold ${PASTILLE[st.code]}`}>
-              {st.code === "VACANT" ? "Vacant" : `Occupé • ${st.libelle}`}
+              {st.code === "VACANT" ? t("Vacant") : `${t("Occupé")} • ${libelleStatut(st, t)}`}
             </span>
           </div>
         </div>
@@ -61,13 +67,13 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
         {user.membres[0].role !== "LECTURE_SEULE" && (
           <Link href={`/biens/${id}/modifier`} className="flex items-center gap-2 h-12 px-space-md rounded-xl bg-surface-container-lowest text-primary hover:bg-surface-container transition-all shadow-sm font-label-lg text-label-lg font-bold">
             <span className="material-symbols-outlined text-[20px]">edit</span>
-            <span>Modifier</span>
+            <span>{t("Modifier")}</span>
           </Link>
         )}
         {bail && (
           <a href={`/biens/${id}/contrat`} target="_blank" className="flex items-center gap-2 h-12 px-space-md rounded-xl bg-surface-container-lowest text-primary hover:bg-surface-container transition-all shadow-sm font-label-lg text-label-lg font-bold">
             <span className="material-symbols-outlined text-[20px]">description</span>
-            <span>Contrat PDF</span>
+            <span>{t("Contrat PDF")}</span>
           </a>
         )}
         {bail && (
@@ -77,19 +83,19 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
             className="flex items-center gap-2 h-12 px-space-md rounded-xl bg-primary-container text-on-primary hover:bg-primary transition-all shadow-sm font-label-lg text-label-lg font-bold"
           >
             <span className="material-symbols-outlined text-[20px]">chat</span>
-            <span>WhatsApp Locataire</span>
+            <span>{t("WhatsApp Locataire")}</span>
           </a>
         )}
         </div>
       </div>
 
-      {ok && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">Modifications enregistrées.</p>}
+      {ok && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">{t("Modifications enregistrées.")}</p>}
 
       {bien.photos.length > 0 && (
         <section className="grid grid-cols-2 md:grid-cols-4 gap-space-sm">
           {bien.photos.map((p, i) => (
             // eslint-disable-next-line @next/next/no-img-element
-            <img key={p.id} src={`/biens/${id}/photos/${p.id}`} alt={`${bien.designation} - photo ${i + 1}`} loading={i < 2 ? "eager" : "lazy"} className={`w-full object-cover rounded-xl bg-surface-container ${i === 0 ? "col-span-2 row-span-2 aspect-[4/3]" : "aspect-square"}`} />
+            <img key={p.id} src={`/biens/${id}/photos/${p.id}`} alt={t("{nom} - photo {n}", { nom: bien.designation, n: i + 1 })} loading={i < 2 ? "eager" : "lazy"} className={`w-full object-cover rounded-xl bg-surface-container ${i === 0 ? "col-span-2 row-span-2 aspect-[4/3]" : "aspect-square"}`} />
           ))}
         </section>
       )}
@@ -115,32 +121,32 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
         <>
           <section className="grid grid-cols-2 xl:grid-cols-4 gap-space-md">
             <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-md flex flex-col gap-1">
-              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Loyer mensuel</span>
+              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">{t("Loyer mensuel")}</span>
               <div className="flex items-baseline gap-1">
                 <span className="font-headline-md text-headline-md font-bold text-primary">{fcfa(bail.loyerMensuel)}</span>
-                <span className="font-label-currency-unit text-label-currency-unit text-on-surface-variant">FCFA / mois</span>
+                <span className="font-label-currency-unit text-label-currency-unit text-on-surface-variant">{t("FCFA / mois")}</span>
               </div>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">{bail.chargesIncluses ? "Charges comprises" : "Hors charges"}</span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant">{bail.chargesIncluses ? t("Charges comprises") : t("Hors charges")}</span>
             </div>
             <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-md flex flex-col gap-1">
-              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Dépôt de garantie</span>
+              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">{t("Dépôt de garantie")}</span>
               <div className="flex items-baseline gap-1">
                 <span className="font-headline-md text-headline-md font-bold text-on-surface">{fcfa(bail.loyerMensuel * bail.cautionMois)}</span>
                 <span className="font-label-currency-unit text-label-currency-unit text-on-surface-variant">FCFA</span>
               </div>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">{bail.cautionMois} mois de caution</span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant">{t("{n} mois de caution", { n: bail.cautionMois })}</span>
             </div>
             <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-md flex flex-col gap-1">
-              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Prochaine échéance</span>
+              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">{t("Prochaine échéance")}</span>
               <span className="font-headline-md text-headline-md font-bold text-on-surface">
                 {prochaine ? dateFr(prochaine.dateLimite) : "—"}
               </span>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">Le {String(bail.jourEcheance).padStart(2, "0")} de chaque mois</span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant">{t("Le {jour} de chaque mois", { jour: String(bail.jourEcheance).padStart(2, "0") })}</span>
             </div>
             <div className="bg-surface-container-lowest rounded-xl shadow-sm p-space-md flex flex-col gap-1">
-              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Prise d&apos;effet</span>
+              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">{t("Prise d'effet")}</span>
               <span className="font-headline-md text-headline-md font-bold text-on-surface">{dateFr(bail.debutLe)}</span>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">Bail actif</span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant">{t("Bail actif")}</span>
             </div>
           </section>
 
@@ -148,9 +154,9 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">person</span>
-                <h2 className="font-headline-sm text-headline-sm text-on-surface">Locataire en place</h2>
+                <h2 className="font-headline-sm text-headline-sm text-on-surface">{t("Locataire en place")}</h2>
               </div>
-              <span className="px-3 py-1 rounded-full bg-surface-container-high text-primary font-label-md text-label-md font-bold">Bail actif</span>
+              <span className="px-3 py-1 rounded-full bg-surface-container-high text-primary font-label-md text-label-md font-bold">{t("Bail actif")}</span>
             </div>
             <div className="flex items-center gap-space-md">
               <div className="w-14 h-14 rounded-full bg-primary-container text-on-primary font-headline-sm text-headline-sm flex items-center justify-center font-bold">
@@ -169,7 +175,7 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
           <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-primary">receipt_long</span>
-              <h2 className="font-headline-sm text-headline-sm text-on-surface">Historique des loyers</h2>
+              <h2 className="font-headline-sm text-headline-sm text-on-surface">{t("Historique des loyers")}</h2>
             </div>
             <div className="flex flex-col divide-y divide-surface-container">
               {bail.echeances.map((e) => {
@@ -178,11 +184,11 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
                   <div key={e.id} className="flex items-center justify-between py-3">
                     <div className="flex flex-col">
                       <span className="font-label-lg text-label-lg text-on-surface font-semibold capitalize">{moisFr(e.mois)}</span>
-                      <span className="font-body-sm text-body-sm text-on-surface-variant">Échéance le {dateFr(e.dateLimite)}</span>
+                      <span className="font-body-sm text-body-sm text-on-surface-variant">{t("Échéance le {date}", { date: dateFr(e.dateLimite) })}</span>
                     </div>
                     <div className="flex items-center gap-space-md">
                       <span className="font-label-lg text-label-lg text-on-surface font-bold">{fcfa(e.montantDu)} FCFA</span>
-                      <span className={`px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${PASTILLE[s.code]}`}>{s.libelle}</span>
+                      <span className={`px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${PASTILLE[s.code]}`}>{libelleStatut(s, t)}</span>
                     </div>
                   </div>
                 );
@@ -193,16 +199,17 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
       ) : (
         <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-xl flex flex-col items-center text-center gap-2">
           <span className="material-symbols-outlined text-[40px] text-on-surface-variant">person_off</span>
-          <p className="font-body-md text-body-md text-on-surface-variant">Aucun locataire en place sur ce bien.</p>
+          <p className="font-body-md text-body-md text-on-surface-variant">{t("Aucun locataire en place sur ce bien.")}</p>
         </section>
       )}
     </div>
   );
 }
 
-export default function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ ok?: string }> }) {
+export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ ok?: string }> }) {
+  const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">Chargement…</p>}>
+    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">{t("Chargement…")}</p>}>
       <Fiche params={params} searchParams={searchParams} />
     </Suspense>
   );

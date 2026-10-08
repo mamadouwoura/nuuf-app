@@ -5,12 +5,18 @@ import { db } from "@/lib/db";
 import { fcfa, initiales, telAffiche } from "@/lib/immo";
 import { assurerEcheances, courtMois, debutMois, encaissementsParMois, libelleMois, loyersDuMois } from "@/lib/loyers";
 import { getUser } from "@/lib/session";
+import { getT } from "@/lib/i18n/server";
+import { N_ } from "@/lib/i18n/translate";
 
-export const metadata = { title: "Tableau de bord" };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t(N_("Tableau de bord")) };
+}
 
-const CANAL = { WAVE: "Wave", ORANGE_MONEY: "Orange Money", ESPECES: "Espèces", VIREMENT: "Virement" } as const;
+const CANAL = { WAVE: "Wave", ORANGE_MONEY: "Orange Money", ESPECES: N_("Espèces"), VIREMENT: N_("Virement") } as const;
 
 async function Contenu() {
+  const { t, tn, locale } = await getT();
   const user = await getUser();
   if (!user) redirect("/connexion");
   const orgId = user.membres[0].organisationId;
@@ -46,25 +52,25 @@ async function Contenu() {
       <section className="flex flex-col xl:flex-row xl:items-center justify-between gap-space-md mb-space-xl">
         <div>
           <div className="flex items-center gap-space-xs">
-            <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">Bonjour {prenom} 👋</h1>
+            <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">{t("Bonjour {prenom}", { prenom })} 👋</h1>
             {forfait && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-container-high text-primary">
-                {forfait === "PRO" ? "Bailleur Pro" : forfait === "AGENCE" ? "Agence" : forfait === "DECOUVERTE" ? "Essai" : "Bailleur"}
+                {forfait === "PRO" ? t("Bailleur Pro") : forfait === "AGENCE" ? t("Agence") : forfait === "DECOUVERTE" ? t("Essai") : t("Bailleur")}
               </span>
             )}
           </div>
           <p className="font-body-lg text-body-lg text-on-surface-variant mt-1">
-            Voici la situation consolidée de vos loyers pour <span className="font-semibold text-on-surface">{libelleMois(mois)}</span>.
+            {t("Voici la situation consolidée de vos loyers pour")} <span className="font-semibold text-on-surface">{libelleMois(mois, locale)}</span>.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-space-sm">
           <Link href="/paiements" className="flex items-center gap-2 px-space-md h-11 rounded-xl bg-surface-container-lowest text-primary hover:bg-surface-container transition-all shadow-sm font-label-lg text-label-lg">
             <span className="material-symbols-outlined text-[20px]">payments</span>
-            <span>Saisir espèces</span>
+            <span>{t("Saisir espèces")}</span>
           </Link>
           <Link href="/biens/nouveau" className="flex items-center gap-2 px-space-md h-11 rounded-xl bg-primary text-on-primary hover:bg-primary-container transition-all shadow-md font-label-lg text-label-lg">
             <span className="material-symbols-outlined text-[20px]">add_circle</span>
-            <span>Ajouter un bien</span>
+            <span>{t("Ajouter un bien")}</span>
           </Link>
         </div>
       </section>
@@ -72,12 +78,12 @@ async function Contenu() {
       {sansBien && (
         <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg mb-space-xl flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
           <div>
-            <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">Démarrage rapide</h2>
-            <p className="font-body-md text-body-md text-on-surface-variant">Ajoutez votre premier bien et son locataire pour commencer à suivre vos loyers.</p>
+            <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Démarrage rapide")}</h2>
+            <p className="font-body-md text-body-md text-on-surface-variant">{t("Ajoutez votre premier bien et son locataire pour commencer à suivre vos loyers.")}</p>
           </div>
           <Link href="/bienvenue" className="inline-flex items-center justify-center gap-2 h-12 px-space-lg rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg font-bold">
             <span className="material-symbols-outlined text-[22px]">rocket_launch</span>
-            Démarrer la configuration
+            {t("Démarrer la configuration")}
           </Link>
         </section>
       )}
@@ -86,7 +92,7 @@ async function Contenu() {
         <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Loyers encaissés</span>
+              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">{t("Loyers encaissés")}</span>
               <div className="mt-2 flex flex-wrap items-baseline gap-x-1">
                 <span className="font-display-currency-mobile text-display-currency-mobile text-primary">{fcfa(m.encaisse)}</span>
                 <span className="font-label-currency-unit text-label-currency-unit text-on-surface-variant">FCFA</span>
@@ -98,9 +104,9 @@ async function Contenu() {
           </div>
           <div className="mt-4 pt-3 flex items-center justify-between">
             <span className="font-body-sm text-body-sm text-on-surface-variant">
-              <span className="text-primary font-bold">{m.nbRecus}</span>/{m.lignes.length} loyers reçus
+              <span className="text-primary font-bold">{m.nbRecus}</span>/{m.lignes.length} {t("loyers reçus")}
             </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold bg-surface-container-high text-primary">{taux}% collecté</span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold bg-surface-container-high text-primary">{t("{taux} % collecté", { taux })}</span>
           </div>
         </div>
 
@@ -108,7 +114,7 @@ async function Contenu() {
           <div className="absolute top-0 left-0 right-0 h-1 bg-error"></div>
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Loyers en retard</span>
+              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">{t("Loyers en retard")}</span>
               <div className="mt-2 flex flex-wrap items-baseline gap-x-1">
                 <span className="font-display-currency-mobile text-display-currency-mobile text-error">{fcfa(m.montantRetard)}</span>
                 <span className="font-label-currency-unit text-label-currency-unit text-on-surface-variant">FCFA</span>
@@ -119,9 +125,9 @@ async function Contenu() {
             </div>
           </div>
           <div className="mt-4 pt-3 flex items-center justify-between">
-            <span className="font-body-sm text-body-sm text-on-surface-variant">{m.nbRetards} locataire{m.nbRetards > 1 ? "s" : ""} en souffrance</span>
+            <span className="font-body-sm text-body-sm text-on-surface-variant">{tn(m.nbRetards, "{n} locataire en souffrance", "{n} locataires en souffrance")}</span>
             {m.nbRetards > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold bg-error-container text-on-error-container">Action requise</span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold bg-error-container text-on-error-container">{t("Action requise")}</span>
             )}
           </div>
         </div>
@@ -129,7 +135,7 @@ async function Contenu() {
         <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Reste à percevoir</span>
+              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">{t("Reste à percevoir")}</span>
               <div className="mt-2 flex flex-wrap items-baseline gap-x-1">
                 <span className="font-display-currency-mobile text-display-currency-mobile text-secondary">{fcfa(m.montantAttente)}</span>
                 <span className="font-label-currency-unit text-label-currency-unit text-on-surface-variant">FCFA</span>
@@ -140,15 +146,15 @@ async function Contenu() {
             </div>
           </div>
           <div className="mt-4 pt-3 flex items-center justify-between">
-            <span className="font-body-sm text-body-sm text-on-surface-variant">Échéances à venir</span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold bg-secondary-fixed text-on-secondary-fixed">{m.nbAttente} en attente</span>
+            <span className="font-body-sm text-body-sm text-on-surface-variant">{t("Échéances à venir")}</span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold bg-secondary-fixed text-on-secondary-fixed">{t("{n} en attente", { n: m.nbAttente })}</span>
           </div>
         </div>
 
         <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Taux d&apos;occupation</span>
+              <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">{t("Taux d'occupation")}</span>
               <div className="mt-2 flex flex-wrap items-baseline gap-x-1">
                 <span className="font-display-currency-mobile text-display-currency-mobile text-primary">{occupation}</span>
                 <span className="font-headline-md text-headline-md font-bold text-primary">%</span>
@@ -159,9 +165,9 @@ async function Contenu() {
             </div>
           </div>
           <div className="mt-4 pt-3 flex items-center justify-between">
-            <span className="font-body-sm text-body-sm text-on-surface-variant">{nbBaux} {nbBaux > 1 ? "loués" : "loué"} sur {nbBiens} bien{nbBiens > 1 ? "s" : ""}</span>
+            <span className="font-body-sm text-body-sm text-on-surface-variant">{t("{a} loués sur {b}", { a: nbBaux, b: nbBiens })}</span>
             {nbBiens - nbBaux > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold bg-surface-container-high text-on-surface-variant">{nbBiens - nbBaux} vacance{nbBiens - nbBaux > 1 ? "s" : ""}</span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold bg-surface-container-high text-on-surface-variant">{tn(nbBiens - nbBaux, "{n} vacance", "{n} vacances")}</span>
             )}
           </div>
         </div>
@@ -172,15 +178,15 @@ async function Contenu() {
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-space-md gap-2">
               <div>
-                <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">Encaissements des 6 derniers mois</h2>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Cumul {fcfa(cumul)} FCFA</p>
+                <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Encaissements des 6 derniers mois")}</h2>
+                <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">{t("Cumul {montant} FCFA", { montant: fcfa(cumul) })}</p>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5 font-label-md text-label-md text-on-surface-variant">
-                  <span className="w-2.5 h-2.5 rounded-full bg-primary"></span> Wave / OM
+                  <span className="w-2.5 h-2.5 rounded-full bg-primary"></span> {t("Wave / OM")}
                 </div>
                 <div className="flex items-center gap-1.5 font-label-md text-label-md text-on-surface-variant">
-                  <span className="w-2.5 h-2.5 rounded-full bg-secondary-container"></span> Espèces
+                  <span className="w-2.5 h-2.5 rounded-full bg-secondary-container"></span> {t("Espèces")}
                 </div>
               </div>
             </div>
@@ -197,7 +203,7 @@ async function Contenu() {
                       <div className="w-full bg-secondary-container" style={{ height: hauteur(s.especes) }}></div>
                       <div className="w-full bg-primary" style={{ height: hauteur(s.numerique) }}></div>
                     </div>
-                    <span className={`font-label-md text-label-md ${courant ? "text-primary font-extrabold" : "text-on-surface-variant"}`}>{courtMois(s.mois)}</span>
+                    <span className={`font-label-md text-label-md ${courant ? "text-primary font-extrabold" : "text-on-surface-variant"}`}>{courtMois(s.mois, locale)}</span>
                   </div>
                 );
               })}
@@ -205,8 +211,8 @@ async function Contenu() {
           </div>
           <div className="mt-6 pt-4 bg-surface-container-low p-space-md rounded-xl">
             <div className="flex items-center justify-between mb-2">
-              <span className="font-label-md text-label-md font-bold text-on-surface">Canaux d&apos;encaissement de {libelleMois(mois).split(" ")[0]}</span>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">{totalCanaux ? "Tout est tracé" : "Aucun encaissement ce mois"}</span>
+              <span className="font-label-md text-label-md font-bold text-on-surface">{t("Canaux d'encaissement de {mois}", { mois: libelleMois(mois, locale).split(" ")[0] })}</span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant">{totalCanaux ? t("Tout est tracé") : t("Aucun encaissement ce mois")}</span>
             </div>
             <div className="w-full h-2.5 rounded-full bg-surface-container flex overflow-hidden mb-3">
               {totalCanaux > 0 && (
@@ -221,7 +227,7 @@ async function Contenu() {
               {[
                 ["Wave", "#1EA5FC", m.canaux.WAVE],
                 ["Orange Money", "#FF7900", m.canaux.ORANGE_MONEY],
-                ["Espèces", "var(--color-primary-container)", m.canaux.ESPECES + m.canaux.VIREMENT],
+                [t("Espèces"), "var(--color-primary-container)", m.canaux.ESPECES + m.canaux.VIREMENT],
               ].map(([nom, couleur, v]) => (
                 <div key={String(nom)} className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full" style={{ background: String(couleur) }}></span>
@@ -242,13 +248,13 @@ async function Contenu() {
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-error to-secondary-container"></div>
           <div className="flex items-center justify-between pb-space-sm mb-space-sm">
             <div className="flex items-center gap-2">
-              <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">Retards de loyer</h2>
+              <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Retards de loyer")}</h2>
               <span className="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-md text-label-md font-bold">{retards.length}</span>
             </div>
-            <Link className="font-label-md text-label-md text-primary font-semibold hover:underline" href="/paiements">Voir tout</Link>
+            <Link className="font-label-md text-label-md text-primary font-semibold hover:underline" href="/paiements">{t("Voir tout")}</Link>
           </div>
           {retards.length === 0 ? (
-            <p className="font-body-md text-body-md text-on-surface-variant">Aucun retard ce mois. 🎉</p>
+            <p className="font-body-md text-body-md text-on-surface-variant">{t("Aucun retard ce mois. 🎉")}</p>
           ) : (
             <div className="flex flex-col gap-3">
               {retards.slice(0, 4).map((l) => (
@@ -262,7 +268,7 @@ async function Contenu() {
                   </div>
                   <div className="mt-2.5 flex items-center justify-between">
                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-error-container text-on-error-container">
-                      {l.jours} jour{l.jours > 1 ? "s" : ""} de retard
+                      {tn(l.jours, "{n} jour de retard", "{n} jours de retard")}
                     </span>
                     <a
                       href={`https://wa.me/${l.bail.locataire.telephone.replace(/\D/g, "")}`}
@@ -270,7 +276,7 @@ async function Contenu() {
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-action-soft text-on-action-soft hover:bg-action-soft-hover transition-colors font-label-md text-label-md font-semibold shadow-sm"
                     >
                       <span className="material-symbols-outlined text-[16px]">chat</span>
-                      <span>Relancer</span>
+                      <span>{t("Relancer")}</span>
                     </a>
                   </div>
                 </div>
@@ -282,11 +288,11 @@ async function Contenu() {
 
       <section className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm mb-space-xl">
         <div className="flex items-center justify-between pb-space-md">
-          <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">Derniers encaissements</h2>
-          <Link className="font-label-md text-label-md text-primary font-semibold hover:underline" href="/quittances">Voir les quittances</Link>
+          <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Derniers encaissements")}</h2>
+          <Link className="font-label-md text-label-md text-primary font-semibold hover:underline" href="/quittances">{t("Voir les quittances")}</Link>
         </div>
         {derniers.length === 0 ? (
-          <p className="font-body-md text-body-md text-on-surface-variant">Aucun encaissement pour le moment.</p>
+          <p className="font-body-md text-body-md text-on-surface-variant">{t("Aucun encaissement pour le moment.")}</p>
         ) : (
           <div className="flex flex-col divide-y divide-surface-container">
             {derniers.map((p) => {
@@ -298,7 +304,7 @@ async function Contenu() {
                     <div className="flex flex-col">
                       <span className="font-label-lg text-label-lg text-on-surface font-semibold">{loc.nomComplet}</span>
                       <span className="font-body-sm text-body-sm text-on-surface-variant">
-                        {p.echeance.bail.bien.designation} • {CANAL[p.canal]} • {telAffiche(loc.telephone)}
+                        {p.echeance.bail.bien.designation} • {t(CANAL[p.canal])} • {telAffiche(loc.telephone)}
                       </span>
                     </div>
                   </div>
@@ -316,9 +322,10 @@ async function Contenu() {
   );
 }
 
-export default function Page() {
+export default async function Page() {
+  const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">Chargement…</p>}>
+    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">{t("Chargement…")}</p>}>
       <Contenu />
     </Suspense>
   );

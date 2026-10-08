@@ -7,6 +7,7 @@ import { plafondCodesAtteint, plafondInscriptionsAtteint, tropDEchecsCode } from
 import { erreurMotDePasse } from "@/lib/mot-de-passe";
 import { generateOtp, hashOtp, hashPassword, normalizePhone, verifyPassword } from "@/lib/security";
 import { endSession, getPendingUid, setDevOtp, setPending, startSession } from "@/lib/session";
+import { getT } from "@/lib/i18n/server";
 
 export type FormState = { error?: string } | undefined;
 
@@ -16,6 +17,7 @@ const FENETRE = 15 * 60_000;
 const FAUX_HASH = hashPassword("mot-de-passe-factice");
 
 async function issueOtp(uid: string, telephone: string) {
+  const { t } = await getT();
   // Au plus 5 codes par 10 minutes et par compte (coût d'envoi, harcèlement).
   const recents = await db.codeOtp.count({ where: { utilisateurId: uid, creeLe: { gte: new Date(Date.now() - 10 * 60_000) } } });
   if (recents >= 5 || (await plafondCodesAtteint())) {
@@ -26,25 +28,26 @@ async function issueOtp(uid: string, telephone: string) {
   await db.codeOtp.create({
     data: { utilisateurId: uid, codeHash: hashOtp(code), expireLe: new Date(Date.now() + 10 * 60_000) },
   });
-  await envoyerMessage({ type: "OTP", destinataire: telephone, texte: `Nuuf : votre code de vérification est ${code}. Il expire dans 10 minutes. Ne le partagez avec personne.` });
+  await envoyerMessage({ type: "OTP", destinataire: telephone, texte: t("Nuuf : votre code de vérification est {code}. Il expire dans 10 minutes. Ne le partagez avec personne.", { code }) });
   if (process.env.NODE_ENV !== "production") console.log(`[OTP dev] ${telephone} -> ${code}`);
   await setDevOtp(code);
   await setPending(uid);
 }
 
 export async function connexion(_: FormState, form: FormData): Promise<FormState> {
+  const { t } = await getT();
   const telephone = normalizePhone(String(form.get("telephone") ?? ""));
   const motDePasse = String(form.get("motDePasse") ?? "");
-  if (!telephone) return { error: "Numéro invalide. Exemple : 77 123 45 67" };
+  if (!telephone) return { error: t("Numéro invalide. Exemple : 77 123 45 67") };
   const depuis = new Date(Date.now() - FENETRE);
   const echecs = await db.tentativeConnexion.count({ where: { cle: telephone, creeLe: { gte: depuis } } });
-  if (echecs >= MAX_ECHECS) return { error: "Trop de tentatives. Réessayez dans 15 minutes ou réinitialisez votre mot de passe." };
+  if (echecs >= MAX_ECHECS) return { error: t("Trop de tentatives. Réessayez dans 15 minutes ou réinitialisez votre mot de passe.") };
 
   const user = await db.utilisateur.findUnique({ where: { telephone } });
   const valide = user ? verifyPassword(motDePasse, user.motDePasse) : (verifyPassword(motDePasse, FAUX_HASH), false);
   if (!user || !valide) {
     await db.tentativeConnexion.create({ data: { cle: telephone } });
-    return { error: "Numéro ou mot de passe incorrect." };
+    return { error: t("Numéro ou mot de passe incorrect.") };
   }
   await db.tentativeConnexion.deleteMany({ where: { cle: telephone } });
   await issueOtp(user.id, telephone);
@@ -52,19 +55,20 @@ export async function connexion(_: FormState, form: FormData): Promise<FormState
 }
 
 export async function inscription(_: FormState, form: FormData): Promise<FormState> {
+  const { t } = await getT();
   const nomComplet = String(form.get("nomComplet") ?? "").trim();
   const telephone = normalizePhone(String(form.get("telephone") ?? ""));
   const motDePasse = String(form.get("motDePasse") ?? "");
   const ville = ["Dakar", "Thiès", "Mbour", "Autre"].find((v) => v === form.get("ville")) ?? null;
   const tailleParc = ["1-5", "6-20", "21-50", "50+"].find((v) => v === form.get("tailleParc")) ?? null;
-  if (nomComplet.length < 3) return { error: "Indiquez votre prénom et nom." };
-  if (!telephone) return { error: "Numéro invalide. Exemple : 77 123 45 67" };
+  if (nomComplet.length < 3) return { error: t("Indiquez votre prénom et nom.") };
+  if (!telephone) return { error: t("Numéro invalide. Exemple : 77 123 45 67") };
   const faible = erreurMotDePasse(motDePasse, telephone);
-  if (faible) return { error: faible };
+  if (faible) return { error: t(faible) };
   if (await db.utilisateur.findUnique({ where: { telephone } })) {
-    return { error: "Un compte existe déjà avec ce numéro." };
+    return { error: t("Un compte existe déjà avec ce numéro.") };
   }
-  if (await plafondInscriptionsAtteint()) return { error: "Le service est très sollicité en ce moment. Réessayez dans quelques minutes." };
+  if (await plafondInscriptionsAtteint()) return { error: t("Le service est très sollicité en ce moment. Réessayez dans quelques minutes.") };
   const user = await db.utilisateur.create({
     data: {
       telephone,
@@ -96,6 +100,7 @@ export async function inscription(_: FormState, form: FormData): Promise<FormSta
 }
 
 export async function verifierCode(_: FormState, form: FormData): Promise<FormState> {
+  const { t } = await getT();
   const uid = await getPendingUid();
   if (!uid) redirect("/connexion");
   const code = String(form.get("code") ?? "").replace(/\D/g, "");
@@ -103,11 +108,11 @@ export async function verifierCode(_: FormState, form: FormData): Promise<FormSt
     where: { utilisateurId: uid, utiliseLe: null, expireLe: { gt: new Date() } },
     orderBy: { creeLe: "desc" },
   });
-  if (await tropDEchecsCode(uid)) return { error: "Trop d'essais. Réessayez dans une heure." };
-  if (!otp || otp.tentatives >= 5) return { error: "Code expiré. Reconnectez-vous pour en recevoir un nouveau." };
+  if (await tropDEchecsCode(uid)) return { error: t("Trop d'essais. Réessayez dans une heure.") };
+  if (!otp || otp.tentatives >= 5) return { error: t("Code expiré. Reconnectez-vous pour en recevoir un nouveau.") };
   if (otp.codeHash !== hashOtp(code)) {
     await db.codeOtp.update({ where: { id: otp.id }, data: { tentatives: { increment: 1 } } });
-    return { error: "Code incorrect." };
+    return { error: t("Code incorrect.") };
   }
   await db.codeOtp.update({ where: { id: otp.id }, data: { utiliseLe: new Date() } });
   await db.utilisateur.update({ where: { id: uid }, data: { telVerifieLe: new Date() } });

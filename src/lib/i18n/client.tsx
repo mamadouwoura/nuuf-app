@@ -15,6 +15,6 @@ export function I18nProvider({ locale, dict, children }: { locale: Locale; dict:
   return <Contexte.Provider value={valeur}>{children}</Contexte.Provider>;
 }
 
-/** Traducteur d'un composant client : `const { t, tn } = useT();` */
+/** Traducteur d'un composant client : `const { t, tn, locale } = useT();` */
 export const useT = () => useContext(Contexte);
 export const useLocale = (): Locale => useContext(Contexte).locale;

@@ -7,13 +7,19 @@ import { db } from "@/lib/db";
 import { fcfa, initiales } from "@/lib/immo";
 import { cleMois, debutMois, depuisCle, libelleMois, moisPrecedent } from "@/lib/loyers";
 import { getUser } from "@/lib/session";
+import { getT } from "@/lib/i18n/server";
+import { N_ } from "@/lib/i18n/translate";
 
-export const metadata = { title: "Quittances" };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t(N_("Quittances")) };
+}
 
 type Params = { mois?: string; page?: string };
-const CANAL = { WAVE: "Wave", ORANGE_MONEY: "Orange Money", ESPECES: "Espèces", VIREMENT: "Virement" } as const;
+const CANAL = { WAVE: "Wave", ORANGE_MONEY: "Orange Money", ESPECES: N_("Espèces"), VIREMENT: N_("Virement") } as const;
 
 async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
+  const { t, tn, locale } = await getT();
   const { mois: cle, page: pageBrut } = await searchParams;
   const page = numeroPage(pageBrut);
   const user = await getUser();
@@ -48,48 +54,48 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
         <div>
           <div className="flex items-center gap-2 mb-space-xs">
-            <Link href={`/quittances?mois=${cleMois(moisPrecedent(mois))}`} aria-label="Mois précédent" className="w-9 h-9 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary hover:bg-surface-container">
+            <Link href={`/quittances?mois=${cleMois(moisPrecedent(mois))}`} aria-label={t("Mois précédent")} className="w-9 h-9 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary hover:bg-surface-container">
               <span className="material-symbols-outlined text-[20px]">chevron_left</span>
             </Link>
-            <span className="font-label-lg text-label-lg text-on-surface font-semibold">{libelleMois(mois)}</span>
+            <span className="font-label-lg text-label-lg text-on-surface font-semibold">{libelleMois(mois, locale)}</span>
             {suivant <= debutMois(now) && (
-              <Link href={`/quittances?mois=${cleMois(suivant)}`} aria-label="Mois suivant" className="w-9 h-9 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary hover:bg-surface-container">
+              <Link href={`/quittances?mois=${cleMois(suivant)}`} aria-label={t("Mois suivant")} className="w-9 h-9 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary hover:bg-surface-container">
                 <span className="material-symbols-outlined text-[20px]">chevron_right</span>
               </Link>
             )}
           </div>
-          <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">Quittances</h1>
+          <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">{t("Quittances")}</h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-            {total} quittance{total > 1 ? "s" : ""} émise{total > 1 ? "s" : ""} • {libelleMois(mois)}
+            {tn(total, "{n} quittance émise", "{n} quittances émises")} • {libelleMois(mois, locale)}
           </p>
         </div>
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container text-primary font-label-md text-label-md font-semibold self-start">
-          <span className="material-symbols-outlined text-[16px]">verified</span> Vérifiables par QR code
+          <span className="material-symbols-outlined text-[16px]">verified</span> {t("Vérifiables par QR code")}
         </span>
       </div>
 
       <section className="grid grid-cols-3 gap-space-md">
         <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
-          <span className="font-label-md text-label-md text-on-surface-variant">Toutes</span>
+          <span className="font-label-md text-label-md text-on-surface-variant">{t("Toutes")}</span>
           <div className="font-headline-md text-headline-md text-primary font-bold">{total}</div>
         </div>
         <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
-          <span className="font-label-md text-label-md text-on-surface-variant">Envoyées WhatsApp</span>
+          <span className="font-label-md text-label-md text-on-surface-variant">{t("Envoyées WhatsApp")}</span>
           <div className="font-headline-md text-headline-md text-primary font-bold">{nbTransmises}</div>
         </div>
         <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
-          <span className="font-label-md text-label-md text-on-surface-variant">Non transmises</span>
+          <span className="font-label-md text-label-md text-on-surface-variant">{t("Non transmises")}</span>
           <div className="font-headline-md text-headline-md text-secondary font-bold">{total - nbTransmises}</div>
         </div>
       </section>
 
       <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
         <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold mb-space-md flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary">receipt_long</span> Registre des quittances
+          <span className="material-symbols-outlined text-primary">receipt_long</span> {t("Registre des quittances")}
         </h2>
         {total === 0 ? (
           <p className="font-body-md text-body-md text-on-surface-variant">
-            Aucune quittance ce mois. Elles sont émises automatiquement à chaque loyer encaissé.
+            {t("Aucune quittance ce mois. Elles sont émises automatiquement à chaque loyer encaissé.")}
           </p>
         ) : (
           <div className="flex flex-col divide-y divide-surface-container">
@@ -107,11 +113,11 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
                   </div>
                   <div className="flex items-center gap-space-md lg:w-1/4">
                     <span className="font-label-lg text-label-lg text-on-surface font-bold">{fcfa(q.paiement.montant)} FCFA</span>
-                    <span className="font-body-sm text-body-sm text-on-surface-variant">{CANAL[q.paiement.canal]}</span>
+                    <span className="font-body-sm text-body-sm text-on-surface-variant">{t(CANAL[q.paiement.canal])}</span>
                   </div>
                   <div className="flex items-center gap-2 lg:w-1/3 lg:justify-end">
                     <span className={`px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${envoyee ? "bg-success-container text-on-success-container" : "bg-secondary-fixed text-on-secondary-fixed-variant"}`}>
-                      {envoyee ? "Envoyée" : "Non transmise"}
+                      {envoyee ? t("Envoyée") : t("Non transmise")}
                     </span>
                     <a href={`/quittances/${q.id}/pdf`} target="_blank" className="inline-flex items-center gap-1 h-10 px-3 rounded-xl bg-surface hover:bg-surface-container text-primary font-label-md text-label-md font-semibold">
                       <span className="material-symbols-outlined text-[18px]">download</span> PDF
@@ -134,9 +140,10 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
   );
 }
 
-export default function Page({ searchParams }: { searchParams: Promise<Params> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<Params> }) {
+  const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">Chargement…</p>}>
+    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">{t("Chargement…")}</p>}>
       <Contenu searchParams={searchParams} />
     </Suspense>
   );

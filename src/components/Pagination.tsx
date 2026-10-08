@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getT } from "@/lib/i18n/server";
 
 export const TAILLE_PAGE = 24;
 
@@ -9,7 +10,7 @@ export const numeroPage = (v: string | undefined) => Math.min(10_000, Math.max(1
 export const decouper = <T,>(liste: T[], page: number, taille = TAILLE_PAGE) => liste.slice((page - 1) * taille, page * taille);
 
 /** Navigation « Précédent / Suivant » qui conserve les autres paramètres de l'adresse (filtres, mois). */
-export default function Pagination({
+export default async function Pagination({
   page,
   total,
   chemin,
@@ -22,6 +23,7 @@ export default function Pagination({
   params?: Record<string, string | undefined>;
   taille?: number;
 }) {
+  const { t } = await getT();
   const pages = Math.max(1, Math.ceil(total / taille));
   if (pages <= 1) return null;
   const lien = (p: number) => {
@@ -35,21 +37,21 @@ export default function Pagination({
   const inactif = "inline-flex items-center gap-1 h-11 px-space-md rounded-xl bg-surface-container text-on-surface-variant font-label-lg text-label-lg opacity-60";
   const courante = Math.min(page, pages);
   return (
-    <nav aria-label="Pagination" className="flex items-center justify-between gap-space-sm py-space-md">
+    <nav aria-label={t("Pagination")} className="flex items-center justify-between gap-space-sm py-space-md">
       {courante > 1 ? (
         <Link href={lien(courante - 1)} className={style}>
-          <span className="material-symbols-outlined text-[20px]">chevron_left</span> Précédent
+          <span className="material-symbols-outlined text-[20px]">chevron_left</span> {t("Précédent")}
         </Link>
       ) : (
-        <span className={inactif}><span className="material-symbols-outlined text-[20px]">chevron_left</span> Précédent</span>
+        <span className={inactif}><span className="material-symbols-outlined text-[20px]">chevron_left</span> {t("Précédent")}</span>
       )}
-      <span className="font-body-md text-body-md text-on-surface-variant">Page {courante} sur {pages}</span>
+      <span className="font-body-md text-body-md text-on-surface-variant">{t("Page {a} sur {b}", { a: courante, b: pages })}</span>
       {courante < pages ? (
         <Link href={lien(courante + 1)} className={style}>
-          Suivant <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+          {t("Suivant")} <span className="material-symbols-outlined text-[20px]">chevron_right</span>
         </Link>
       ) : (
-        <span className={inactif}>Suivant <span className="material-symbols-outlined text-[20px]">chevron_right</span></span>
+        <span className={inactif}>{t("Suivant")} <span className="material-symbols-outlined text-[20px]">chevron_right</span></span>
       )}
     </nav>
   );

@@ -42,3 +42,5 @@ next-env.d.ts
 
 # fichiers envoyés par les utilisateurs
 /data/
+.i18n-tmp/
+public/_contraste.js

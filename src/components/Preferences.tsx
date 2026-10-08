@@ -11,7 +11,7 @@ export default function Preferences({ flottant = false }: { flottant?: boolean }
   );
   if (!flottant) return <div className="flex items-center gap-1">{contenu}</div>;
   return (
-    <div className="fixed top-3 right-3 z-[60] flex items-center gap-1 rounded-2xl bg-surface-container-lowest/90 backdrop-blur px-1.5 py-1 shadow-md">
+    <div className="fixed bottom-3 right-3 z-[60] flex items-center gap-1 rounded-2xl bg-surface-container-lowest/90 backdrop-blur px-1.5 py-1 shadow-md">
       {contenu}
     </div>
   );

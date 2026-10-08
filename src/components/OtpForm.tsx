@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { renvoyerCode, verifierCodeForm } from "@/app/actions/auth";
+import { useT } from "@/lib/i18n/client";
 
 export default function OtpForm({ erreur, devCode }: { erreur?: string; devCode?: string | null }) {
+  const { t } = useT();
   const [code, setCode] = useState("");
   const [reste, setReste] = useState(60);
   useEffect(() => {
@@ -45,7 +47,7 @@ export default function OtpForm({ erreur, devCode }: { erreur?: string; devCode?
     <>
       {devCode && (
         <p className="mb-4 rounded-xl bg-secondary-fixed text-on-secondary-fixed px-3 py-2 font-body-md text-body-md">
-          Mode développement : votre code est <strong>{devCode}</strong>
+          {t("Mode développement : votre code est")} <strong>{devCode}</strong>
         </p>
       )}
       {erreur && (
@@ -71,12 +73,12 @@ export default function OtpForm({ erreur, devCode }: { erreur?: string; devCode?
       <div className="flex items-center justify-between w-full max-w-xs mb-8 text-on-surface-variant font-label-md text-label-md">
       <span className="inline-flex items-center gap-1 text-primary">
       <span className="material-symbols-outlined text-sm">content_paste</span>
-      <span>Collez le code reçu</span>
+      <span>{t("Collez le code reçu")}</span>
       </span>
-      <button className="font-semibold text-primary hover:underline" id="paste-btn" type="button" onClick={coller}>Coller</button>
+      <button className="font-semibold text-primary hover:underline" id="paste-btn" type="button" onClick={coller}>{t("Coller")}</button>
       </div>
       <button className="w-full h-13 py-3.5 px-6 rounded-xl bg-primary text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-95 active:scale-[0.99] transition-all" type="submit">
-      <span>Valider le numéro et continuer</span>
+      <span>{t("Valider le numéro et continuer")}</span>
       <span className="material-symbols-outlined text-lg">arrow_forward</span>
       </button>
       <div className="flex items-center justify-between w-full mt-6 pt-6 border-t-0 bg-surface-container-low/40 rounded-2xl p-4">
@@ -89,11 +91,11 @@ export default function OtpForm({ erreur, devCode }: { erreur?: string; devCode?
       <path className="stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" id="timer-progress" strokeDasharray={`${Math.round((reste / 60) * 100)}, 100`} strokeLinecap="round" strokeWidth="3"></path>
       </svg>
       </div>
-      <span className="font-body-sm text-body-sm text-on-surface-variant">Code non reçu ?</span>
+      <span className="font-body-sm text-body-sm text-on-surface-variant">{t("Code non reçu ?")}</span>
       </div>
       <div className="flex items-center gap-3">
       <span className="font-label-md text-label-md font-bold text-on-surface" id="timer-text">{mm}:{ss}</span>
-      <button className={`font-label-md text-label-md font-semibold ${reste > 0 ? "text-outline cursor-not-allowed" : "text-primary hover:underline"}`} disabled={reste > 0} formAction={renvoyerCode} formNoValidate id="resend-btn" type="submit" onClick={() => setTimeout(() => setReste(60), 0)}>Renvoyer</button>
+      <button className={`font-label-md text-label-md font-semibold ${reste > 0 ? "text-outline cursor-not-allowed" : "text-primary hover:underline"}`} disabled={reste > 0} formAction={renvoyerCode} formNoValidate id="resend-btn" type="submit" onClick={() => setTimeout(() => setReste(60), 0)}>{t("Renvoyer")}</button>
       </div>
       </div>
       </form>

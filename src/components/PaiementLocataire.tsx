@@ -1,4 +1,5 @@
 import { initierPaiement } from "@/app/actions/paiement-locataire";
+import { getT } from "@/lib/i18n/server";
 
 
 export type DonneesPaiement = {
@@ -7,7 +8,8 @@ export type DonneesPaiement = {
   locNom: string; locTel: string; echeance: string; erreur?: string;
 };
 
-export default function PaiementLocataire({ d }: { d: DonneesPaiement }) {
+export default async function PaiementLocataire({ d }: { d: DonneesPaiement }) {
+  const { t } = await getT();
   return (
     <>
       <main className="flex-1 flex flex-col relative w-full bg-surface"><div className="flex flex-col w-full px-margin pb-12 pt-2">
@@ -15,7 +17,7 @@ export default function PaiementLocataire({ d }: { d: DonneesPaiement }) {
       
       <div className="flex items-center justify-center gap-1.5 py-1 px-3 self-center rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md shadow-sm">
       <span className="material-symbols-outlined text-[15px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>verified_user</span>
-      <span>Lien sécurisé • Connexion chiffrée (HTTPS)</span>
+      <span>{t("Lien sécurisé • Connexion chiffrée (HTTPS)")}</span>
       </div>
       
       <div className="flex flex-col items-center justify-center mt-3 mb-4">
@@ -25,10 +27,10 @@ export default function PaiementLocataire({ d }: { d: DonneesPaiement }) {
       </div>
       <span className="font-headline-md text-headline-md tracking-tight text-primary font-bold">nuuf</span>
       <span className="text-outline-variant font-headline-sm">•</span>
-      <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Paiement sécurisé</span>
+      <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">{t("Paiement sécurisé")}</span>
       </div>
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 text-center">
-            Paiement sécurisé • Sans création de compte
+            {t("Paiement sécurisé • Sans création de compte")}
           </p>
       </div>
       
@@ -53,7 +55,7 @@ export default function PaiementLocataire({ d }: { d: DonneesPaiement }) {
       <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-primary-fixed/20 pointer-events-none"></div>
       <div className="flex items-center gap-1.5 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
       <span className="material-symbols-outlined text-[16px] text-primary">request_quote</span>
-      <span>Montant net du loyer</span>
+      <span>{t("Montant net du loyer")}</span>
       </div>
       
       <div className="flex items-baseline justify-center gap-1.5 my-2">
@@ -63,7 +65,7 @@ export default function PaiementLocataire({ d }: { d: DonneesPaiement }) {
       
       <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-low text-primary font-label-md text-label-md shadow-sm">
       <span className="material-symbols-outlined text-[15px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-      <span>Zéro frais locataire (0 FCFA de frais de transaction)</span>
+      <span>{t("Zéro frais locataire (0 FCFA de frais de transaction)")}</span>
       </div>
       
       <div className="w-full h-px bg-surface-variant my-4"></div>
@@ -72,7 +74,7 @@ export default function PaiementLocataire({ d }: { d: DonneesPaiement }) {
       <div className="flex items-center justify-between">
       <span className="text-on-surface-variant flex items-center gap-1.5">
       <span className="material-symbols-outlined text-[16px] text-outline">person_pin</span>
-                Bailleur bénéficiaire
+                {t("Bailleur bénéficiaire")}
               </span>
       <div className="flex items-center gap-1 font-label-md text-label-md text-on-surface">
       <span>{d.bailleur}</span>
@@ -82,14 +84,14 @@ export default function PaiementLocataire({ d }: { d: DonneesPaiement }) {
       <div className="flex items-center justify-between">
       <span className="text-on-surface-variant flex items-center gap-1.5">
       <span className="material-symbols-outlined text-[16px] text-outline">badge</span>
-                Locataire destinataire
+                {t("Locataire destinataire")}
               </span>
       <span className="font-label-md text-label-md text-on-surface">{d.locNom} ({d.locTel})</span>
       </div>
       <div className="flex items-center justify-between">
       <span className="text-on-surface-variant flex items-center gap-1.5">
       <span className="material-symbols-outlined text-[16px] text-outline">event_upcoming</span>
-                Échéance de paiement
+                {t("Échéance de paiement")}
               </span>
       <span className="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-md text-label-md">
                 {d.echeance}
@@ -99,10 +101,10 @@ export default function PaiementLocataire({ d }: { d: DonneesPaiement }) {
       </div>
       
       <div className="flex items-center justify-between mb-2.5 px-1">
-      <span className="font-label-lg text-label-lg text-on-surface">Sélectionnez votre moyen de paiement</span>
+      <span className="font-label-lg text-label-lg text-on-surface">{t("Sélectionnez votre moyen de paiement")}</span>
       <span className="font-label-md text-label-md text-primary flex items-center gap-0.5">
       <span className="material-symbols-outlined text-[14px]">bolt</span>
-            Instantané
+            {t("Instantané")}
           </span>
       </div>
       
@@ -120,10 +122,10 @@ export default function PaiementLocataire({ d }: { d: DonneesPaiement }) {
       </div>
       <div className="min-w-0">
       <div className="flex items-center gap-1.5">
-      <span className="font-headline-sm text-headline-sm font-bold text-white tracking-tight">Payer avec Wave</span>
+      <span className="font-headline-sm text-headline-sm font-bold text-white tracking-tight">{t("Payer avec Wave")}</span>
       <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-white text-[#0c7ab0] uppercase">1-Clic</span>
       </div>
-      <p className="text-xs text-white">Ouverture directe de l'application Wave</p>
+      <p className="text-xs text-white">{t("Ouverture directe de l'application Wave")}</p>
       </div>
       </div>
       <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
@@ -139,10 +141,10 @@ export default function PaiementLocataire({ d }: { d: DonneesPaiement }) {
       </div>
       <div className="min-w-0">
       <div className="flex items-center gap-1.5">
-      <span className="font-headline-sm text-headline-sm font-bold text-white tracking-tight">Payer Orange Money</span>
+      <span className="font-headline-sm text-headline-sm font-bold text-white tracking-tight">{t("Payer Orange Money")}</span>
       <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-black text-[#FF7900] uppercase">Push USSD</span>
       </div>
-      <p className="text-xs text-white">Validation par prompt USSD ou code secret</p>
+      <p className="text-xs text-white">{t("Validation par prompt USSD ou code secret")}</p>
       </div>
       </div>
       <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
@@ -154,8 +156,8 @@ export default function PaiementLocataire({ d }: { d: DonneesPaiement }) {
       <div className="flex items-center gap-3">
       <span className="material-symbols-outlined text-secondary-fixed text-[26px]">autorenew</span>
       <div className="min-w-0">
-      <p className="font-headline-sm text-headline-sm text-on-primary font-bold">Connexion sécurisée en cours...</p>
-      <p className="font-body-sm text-body-sm text-on-primary-container">Transmission du montant exact de {d.montant} FCFA à votre compte.</p>
+      <p className="font-headline-sm text-headline-sm text-on-primary font-bold">{t("Connexion sécurisée en cours...")}</p>
+      <p className="font-body-sm text-body-sm text-on-primary-container">{t("Transmission du montant exact de {montant} FCFA à votre compte.", { montant: d.montant })}</p>
       </div>
       </div>
       </div>
@@ -166,9 +168,9 @@ export default function PaiementLocataire({ d }: { d: DonneesPaiement }) {
       <span className="material-symbols-outlined text-[18px]">mark_chat_read</span>
       </div>
       <div>
-      <p className="font-label-lg text-label-lg text-on-surface">Quittance instantanée sur WhatsApp</p>
+      <p className="font-label-lg text-label-lg text-on-surface">{t("Quittance instantanée sur WhatsApp")}</p>
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
-                Paiement sécurisé – votre quittance officielle numérotée vous sera envoyée automatiquement sur votre WhatsApp dès validation.
+                {t("Paiement sécurisé – votre quittance officielle numérotée vous sera envoyée automatiquement sur votre WhatsApp dès validation.")}
               </p>
       </div>
       </div>
@@ -178,9 +180,9 @@ export default function PaiementLocataire({ d }: { d: DonneesPaiement }) {
       <span className="material-symbols-outlined text-[18px]">receipt_long</span>
       </div>
       <div>
-      <p className="font-label-lg text-label-lg text-on-surface">Rapprochement bancaire immédiat</p>
+      <p className="font-label-lg text-label-lg text-on-surface">{t("Rapprochement bancaire immédiat")}</p>
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
-                Le paiement est enregistré dès sa validation par l'opérateur. Le téléchargement PDF de la quittance est disponible immédiatement après.
+                {t("Le paiement est enregistré dès sa validation par l'opérateur. Le téléchargement PDF de la quittance est disponible immédiatement après.")}
               </p>
       </div>
       </div>
@@ -192,13 +194,13 @@ export default function PaiementLocataire({ d }: { d: DonneesPaiement }) {
               {d.bailleurInit}
             </div>
       <div className="min-w-0">
-      <p className="font-label-md text-label-md text-on-surface">Une question sur ce loyer ?</p>
-      <p className="font-body-sm text-body-sm text-on-surface-variant truncate">Bailleur {d.bailleur} ({d.bailleurTel})</p>
+      <p className="font-label-md text-label-md text-on-surface">{t("Une question sur ce loyer ?")}</p>
+      <p className="font-body-sm text-body-sm text-on-surface-variant truncate">{t("Bailleur {nom}", { nom: d.bailleur })} ({d.bailleurTel})</p>
       </div>
       </div>
       <a className="px-3 py-1.5 rounded-lg bg-surface-container-lowest text-primary font-label-md text-label-md flex items-center gap-1 shadow-sm shrink-0 active:bg-surface-variant transition-colors" href={`https://wa.me/${d.bailleurTelBrut}`} rel="noopener noreferrer" target="_blank">
       <span className="material-symbols-outlined text-[16px] text-[#178a48]">chat</span>
-      <span>Écrire</span>
+      <span>{t("Écrire")}</span>
       </a>
       </div>
       

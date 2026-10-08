@@ -1,12 +1,13 @@
 import { db } from "./db";
 import { fcfa, initiales, telAffiche } from "./immo";
+import type { Locale } from "@/lib/i18n/config";
+import { formaterDate, moisAnnee } from "@/lib/i18n/format";
 
-const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
-export const moisLongFr = (d: Date) => `${MOIS[d.getUTCMonth()].replace(/^./, (c) => c.toUpperCase())} ${d.getUTCFullYear()}`;
-export const dateLongFr = (d: Date) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+export const moisLongFr = (d: Date, locale: Locale = "fr") => moisAnnee(d, locale);
+export const dateLongFr = (d: Date, locale: Locale = "fr") => formaterDate(d, locale);
 
 /** Échéance retrouvée par son lien secret, avec tout le contexte d'affichage côté locataire. */
-export async function chargerParJeton(jeton: string) {
+export async function chargerParJeton(jeton: string, locale: Locale = "fr") {
   const e = await db.echeance.findUnique({
     where: { jetonPaiement: jeton },
     include: {
@@ -32,7 +33,7 @@ export async function chargerParJeton(jeton: string) {
     infos: {
       bien: bien.designation,
       lieu: `${bien.quartier}, ${bien.ville}`,
-      mois: moisLongFr(e.mois),
+      mois: moisLongFr(e.mois, locale),
       montant: fcfa(reste || e.montantDu),
       bailleur: bien.organisation.nom,
       bailleurInit: initiales(bien.organisation.nom),

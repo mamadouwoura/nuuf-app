@@ -1,4 +1,6 @@
 import { db } from "./db";
+import type { Locale } from "./i18n/config";
+import { moisAnnee, moisCourt } from "./i18n/format";
 
 /** Premier jour du mois (UTC) contenant `d`. */
 export const debutMois = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
@@ -9,10 +11,8 @@ export const depuisCle = (cle: string | undefined, defaut: Date) => {
   return m ? new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, 1)) : debutMois(defaut);
 };
 
-const MOIS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-export const libelleMois = (d: Date) => `${MOIS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-const COURTS = ["Janv", "Févr", "Mars", "Avr", "Mai", "Juin", "Juil", "Août", "Sept", "Oct", "Nov", "Déc"];
-export const courtMois = (d: Date) => COURTS[d.getUTCMonth()];
+export const libelleMois = (d: Date, locale: Locale = "fr") => moisAnnee(d, locale);
+export const courtMois = (d: Date, locale: Locale = "fr") => moisCourt(d, locale);
 
 /** Crée les échéances manquantes du mois pour les baux actifs (idempotent). */
 export async function assurerEcheances(organisationId: string, mois: Date) {

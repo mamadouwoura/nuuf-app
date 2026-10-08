@@ -6,19 +6,25 @@ import { encaisserEspeces } from "@/app/actions/paiements";
 import { fcfa, initiales, telAffiche } from "@/lib/immo";
 import { assurerEcheances, cleMois, debutMois, depuisCle, libelleMois, loyersDuMois, moisPrecedent } from "@/lib/loyers";
 import { getUser } from "@/lib/session";
+import { getT } from "@/lib/i18n/server";
+import { N_ } from "@/lib/i18n/translate";
 
-export const metadata = { title: "Paiements" };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t(N_("Paiements")) };
+}
 
 type Params = { mois?: string; erreur?: string; ok?: string; page?: string };
 
 const ETAT = {
-  PAYE: { classe: "bg-success-container text-on-success-container", libelle: "Payé", icone: "check_circle" },
-  EN_ATTENTE: { classe: "bg-secondary-fixed text-on-secondary-fixed-variant", libelle: "En attente", icone: "hourglass_top" },
-  EN_RETARD: { classe: "bg-error-container text-on-error-container", libelle: "En retard", icone: "error" },
+  PAYE: { classe: "bg-success-container text-on-success-container", libelle: N_("Payé"), icone: "check_circle" },
+  EN_ATTENTE: { classe: "bg-secondary-fixed text-on-secondary-fixed-variant", libelle: N_("En attente"), icone: "hourglass_top" },
+  EN_RETARD: { classe: "bg-error-container text-on-error-container", libelle: N_("En retard"), icone: "error" },
 } as const;
-const CANAL = { WAVE: "Wave", ORANGE_MONEY: "Orange Money", ESPECES: "Espèces", VIREMENT: "Virement" } as const;
+const CANAL = { WAVE: "Wave", ORANGE_MONEY: "Orange Money", ESPECES: N_("Espèces"), VIREMENT: N_("Virement") } as const;
 
 async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
+  const { t, tn, locale } = await getT();
   const { mois: cle, erreur, ok, page: pageBrut } = await searchParams;
   const page = numeroPage(pageBrut);
   const user = await getUser();
@@ -39,60 +45,60 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
         <div>
           <div className="flex items-center gap-2 mb-space-xs">
-            <Link href={`/paiements?mois=${cleMois(moisPrecedent(mois))}`} aria-label="Mois précédent" className="w-9 h-9 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary hover:bg-surface-container">
+            <Link href={`/paiements?mois=${cleMois(moisPrecedent(mois))}`} aria-label={t("Mois précédent")} className="w-9 h-9 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary hover:bg-surface-container">
               <span className="material-symbols-outlined text-[20px]">chevron_left</span>
             </Link>
-            <span className="font-label-lg text-label-lg text-on-surface font-semibold">{libelleMois(mois)}</span>
+            <span className="font-label-lg text-label-lg text-on-surface font-semibold">{libelleMois(mois, locale)}</span>
             {!courant && suivant <= debutMois(now) && (
-              <Link href={`/paiements?mois=${cleMois(suivant)}`} aria-label="Mois suivant" className="w-9 h-9 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary hover:bg-surface-container">
+              <Link href={`/paiements?mois=${cleMois(suivant)}`} aria-label={t("Mois suivant")} className="w-9 h-9 rounded-xl bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary hover:bg-surface-container">
                 <span className="material-symbols-outlined text-[20px]">chevron_right</span>
               </Link>
             )}
           </div>
-          <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">Paiements – {libelleMois(mois)}</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1">Suivi des encaissements et quittances.</p>
+          <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">{t("Paiements")} – {libelleMois(mois, locale)}</h1>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-1">{t("Suivi des encaissements et quittances.")}</p>
         </div>
         <a href={`/paiements/export?mois=${cleMois(mois)}`} className="inline-flex items-center gap-2 h-11 px-space-md rounded-xl bg-surface-container-lowest text-primary shadow-sm hover:bg-surface-container font-label-lg text-label-lg font-bold self-start lg:self-auto">
           <span className="material-symbols-outlined text-[20px]">download</span>
-          Exporter (Excel)
+          {t("Exporter (Excel)")}
         </a>
       </div>
 
       {erreur && <p role="alert" className="rounded-xl bg-error-container text-on-error-container px-space-md py-2 font-body-md text-body-md">{erreur}</p>}
-      {ok && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">Paiement enregistré. La quittance a été générée.</p>}
+      {ok && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">{t("Paiement enregistré. La quittance a été générée.")}</p>}
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
         <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm">
-          <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Total encaissé</span>
+          <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">{t("Total encaissé")}</span>
           <div className="mt-2 flex flex-wrap items-baseline gap-x-1">
             <span className="font-display-currency-mobile text-display-currency-mobile text-primary">{fcfa(m.encaisse)}</span>
             <span className="font-label-currency-unit text-label-currency-unit text-on-surface-variant">FCFA</span>
           </div>
-          <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">{taux}% collecté • {m.nbRecus} loyer{m.nbRecus > 1 ? "s" : ""} reçu{m.nbRecus > 1 ? "s" : ""} sur {m.lignes.length}</p>
+          <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">{t("{taux} % collecté", { taux })} • {tn(m.nbRecus, "{n} loyer reçu sur {total}", "{n} loyers reçus sur {total}", { total: m.lignes.length })}</p>
         </div>
         <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm">
-          <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Attendu théorique</span>
+          <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">{t("Attendu théorique")}</span>
           <div className="mt-2 flex flex-wrap items-baseline gap-x-1">
             <span className="font-display-currency-mobile text-display-currency-mobile text-on-surface">{fcfa(m.attendu)}</span>
             <span className="font-label-currency-unit text-label-currency-unit text-on-surface-variant">FCFA</span>
           </div>
-          <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">{m.lignes.length} bail{m.lignes.length > 1 ? "s" : ""}</p>
+          <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">{tn(m.lignes.length, "{n} bail", "{n} baux")}</p>
         </div>
         <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-error"></div>
-          <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">En retard / en attente</span>
+          <span className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">{t("En retard / en attente")}</span>
           <div className="mt-2 flex flex-wrap items-baseline gap-x-1">
             <span className="font-display-currency-mobile text-display-currency-mobile text-error">{fcfa(m.montantRetard)}</span>
             <span className="font-label-currency-unit text-label-currency-unit text-on-surface-variant">FCFA</span>
           </div>
-          <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">{m.nbRetards} en retard • {m.nbAttente} en attente ({fcfa(m.montantAttente)} FCFA)</p>
+          <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">{t("{n} en retard", { n: m.nbRetards })} • {t("{n} en attente ({montant} FCFA)", { n: m.nbAttente, montant: fcfa(m.montantAttente) })}</p>
         </div>
       </section>
 
       <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
-        <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold mb-space-md">Loyers du mois</h2>
+        <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold mb-space-md">{t("Loyers du mois")}</h2>
         {m.lignes.length === 0 ? (
-          <p className="font-body-md text-body-md text-on-surface-variant">Aucune échéance pour ce mois. Ajoutez un bien et son locataire pour commencer.</p>
+          <p className="font-body-md text-body-md text-on-surface-variant">{t("Aucune échéance pour ce mois. Ajoutez un bien et son locataire pour commencer.")}</p>
         ) : (
           <div className="flex flex-col divide-y divide-surface-container">
             {decouper(m.lignes, page).map((l) => {
@@ -111,11 +117,11 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
                     <span className="font-label-lg text-label-lg text-on-surface font-bold">{fcfa(l.montantDu)} FCFA</span>
                     <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${e.classe}`}>
                       <span className="material-symbols-outlined text-[15px]">{e.icone}</span>
-                      {e.libelle}
+                      {t(e.libelle)}
                       {l.etat === "EN_RETARD" && ` (+${l.jours}j)`}
                     </span>
                     {l.paye > 0 && l.reste > 0 && (
-                      <span className="font-body-sm text-body-sm text-on-surface-variant">{fcfa(l.paye)} reçus, reste {fcfa(l.reste)}</span>
+                      <span className="font-body-sm text-body-sm text-on-surface-variant">{t("{recu} reçus, reste {reste}", { recu: fcfa(l.paye), reste: fcfa(l.reste) })}</span>
                     )}
                   </div>
                   <div className="lg:w-1/3 flex lg:justify-end">
@@ -127,18 +133,18 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
                           name="montant"
                           defaultValue={l.reste}
                           inputMode="numeric"
-                          aria-label="Montant en espèces"
+                          aria-label={t("Montant en espèces")}
                           className="h-10 w-28 px-3 rounded-xl bg-surface text-on-surface font-label-lg text-label-lg focus:outline-none focus:ring-2 focus:ring-primary-container"
                         />
                         <button className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-xl bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md font-bold">
                           <span className="material-symbols-outlined text-[18px]">payments</span>
-                          Encaisser en espèces
+                          {t("Encaisser en espèces")}
                         </button>
                       </form>
                     ) : (
                       l.paiements[0] && (
                         <span className="font-body-sm text-body-sm text-on-surface-variant">
-                          {CANAL[l.paiements[0].canal]} • {l.paiements[0].quittance?.numero}
+                          {t(CANAL[l.paiements[0].canal])} • {l.paiements[0].quittance?.numero}
                         </span>
                       )
                     )}
@@ -154,9 +160,10 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
   );
 }
 
-export default function Page({ searchParams }: { searchParams: Promise<Params> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<Params> }) {
+  const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">Chargement…</p>}>
+    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">{t("Chargement…")}</p>}>
       <Contenu searchParams={searchParams} />
     </Suspense>
   );
