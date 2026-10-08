@@ -1,0 +1,65 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { db } from "@/lib/db";
+import { envoyerMessage } from "@/lib/messagerie";
+import { generateOtp, hashOtp, hashPassword, normalizePhone } from "@/lib/security";
+import { lireJeton, poserJeton, retirerJeton, setDevOtp } from "@/lib/session";
+
+const PAGE = "/mot-de-passe-oublie";
+const vers = (etape: number, erreur?: string): never =>
+  redirect(`${PAGE}?etape=${etape}${erreur ? `&erreur=${encodeURIComponent(erreur)}` : ""}`);
+
+/** Étape 1 : envoie un code. La réponse est identique que le numéro existe ou non. */
+export async function demanderReinitialisation(form: FormData) {
+  const tel = normalizePhone(String(form.get("telephone") ?? ""));
+  if (!tel) vers(1, "Numéro invalide. Exemple : 77 123 45 67");
+  const user = await db.utilisateur.findUnique({ where: { telephone: tel! } });
+  if (user) {
+    const recents = await db.codeOtp.count({ where: { utilisateurId: user.id, creeLe: { gte: new Date(Date.now() - 10 * 60_000) } } });
+    if (recents < 3) {
+      const code = generateOtp();
+      await db.codeOtp.create({ data: { utilisateurId: user.id, codeHash: hashOtp(code), expireLe: new Date(Date.now() + 10 * 60_000) } });
+      await envoyerMessage({ type: "OTP", destinataire: tel!, texte: `Nuuf : votre code pour réinitialiser le mot de passe est ${code}. Il expire dans 10 minutes. Ne le partagez avec personne.` });
+      if (process.env.NODE_ENV !== "production") console.log(`[OTP dev] réinitialisation ${tel} -> ${code}`);
+      await setDevOtp(code);
+    }
+  }
+  await poserJeton("nuuf_reinit", user?.id ?? "inconnu");
+  await poserJeton("nuuf_reinit_tel", tel!);
+  vers(2);
+}
+
+/** Étape 2 : vérifie le code reçu. */
+export async function verifierCodeReinit(form: FormData) {
+  const uid = await lireJeton("nuuf_reinit");
+  if (!uid) vers(1, "Session expirée. Recommencez.");
+  const code = String(form.get("code") ?? "").replace(/\D/g, "");
+  const otp = uid === "inconnu" ? null : await db.codeOtp.findFirst({
+    where: { utilisateurId: uid!, utiliseLe: null, expireLe: { gt: new Date() } },
+    orderBy: { creeLe: "desc" },
+  });
+  if (!otp || otp.tentatives >= 5) vers(2, "Code incorrect ou expiré.");
+  if (otp!.codeHash !== hashOtp(code)) {
+    await db.codeOtp.update({ where: { id: otp!.id }, data: { tentatives: { increment: 1 } } });
+    vers(2, "Code incorrect.");
+  }
+  await db.codeOtp.update({ where: { id: otp!.id }, data: { utiliseLe: new Date() } });
+  await retirerJeton("nuuf_reinit");
+  await poserJeton("nuuf_reinit_ok", uid!);
+  vers(3);
+}
+
+/** Étape 3 : enregistre le nouveau mot de passe. */
+export async function nouveauMotDePasse(form: FormData) {
+  const uid = await lireJeton("nuuf_reinit_ok");
+  if (!uid) vers(1, "Session expirée. Recommencez.");
+  const a = String(form.get("motDePasse") ?? "");
+  const b = String(form.get("confirmation") ?? "");
+  if (a.length < 8) vers(3, "Le mot de passe doit contenir au moins 8 caractères.");
+  if (a !== b) vers(3, "Les deux mots de passe ne correspondent pas.");
+  await db.utilisateur.update({ where: { id: uid! }, data: { motDePasse: hashPassword(a) } });
+  await retirerJeton("nuuf_reinit_ok");
+  await retirerJeton("nuuf_reinit_tel");
+  redirect("/connexion?info=" + encodeURIComponent("Mot de passe modifié. Vous pouvez vous connecter."));
+}

@@ -1,0 +1,330 @@
+// Schéma Nuuf — multi-tenant : chaque donnée métier porte organisationId.
+// Montants en FCFA (entiers, pas de décimales).
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  PROPRIETAIRE
+  GESTIONNAIRE
+  LECTURE_SEULE
+}
+
+enum Forfait {
+  DECOUVERTE
+  BAILLEUR
+  PRO
+  AGENCE
+}
+
+enum StatutAbonnement {
+  ESSAI
+  ACTIF
+  GRACE
+  LECTURE_SEULE
+  RESILIE
+}
+
+enum TypeBien {
+  APPARTEMENT
+  VILLA
+  STUDIO
+  COMMERCIAL
+}
+
+enum StatutEcheance {
+  EN_ATTENTE
+  PAYEE
+  PARTIELLE
+  EN_RETARD
+}
+
+enum CanalPaiement {
+  WAVE
+  ORANGE_MONEY
+  ESPECES
+  VIREMENT
+}
+
+enum StatutPaiement {
+  INITIE
+  CONFIRME
+  ECHEC
+  EXPIRE
+}
+
+enum CanalMessage {
+  WHATSAPP
+  SMS
+}
+
+enum TypeMessage {
+  OTP
+  LIEN_PAIEMENT
+  QUITTANCE
+  RELANCE
+  RENOUVELLEMENT
+}
+
+// Un compte client Nuuf (bailleur particulier ou cabinet). Porte l'abonnement.
+model Organisation {
+  id     String   @id @default(cuid())
+  nom    String
+  ninea  String?
+  ville      String? // Dakar, Thiès, Mbour, Autre (déclaré à l'inscription)
+  tailleParc String? // 1-5, 6-20, 21-50, 50+
+  creeLe DateTime @default(now())
+
+  membres             Membre[]
+  biens               Bien[]
+  locataires          Locataire[]
+  abonnement          Abonnement?
+  comptesEncaissement CompteEncaissement[]
+  messages            Message[]
+  journal             JournalAction[]
+}
+
+// Une personne qui se connecte (téléphone + mot de passe + OTP).
+model Utilisateur {
+  id           String    @id @default(cuid())
+  telephone    String    @unique // format +221XXXXXXXXX
+  nomComplet   String
+  motDePasse   String // hash
+  telVerifieLe DateTime?
+  creeLe       DateTime  @default(now())
+
+  membres  Membre[]
+  codesOtp CodeOtp[]
+  journal  JournalAction[]
+}
+
+// Appartenance d'un utilisateur à une organisation, avec son rôle.
+model Membre {
+  id             String   @id @default(cuid())
+  organisationId String
+  utilisateurId  String
+  role           Role
+  creeLe         DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  utilisateur  Utilisateur  @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, utilisateurId])
+}
+
+model CodeOtp {
+  id            String    @id @default(cuid())
+  utilisateurId String
+  codeHash      String
+  expireLe      DateTime
+  utiliseLe     DateTime?
+  tentatives    Int       @default(0)
+  creeLe        DateTime  @default(now())
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  @@index([utilisateurId, expireLe])
+}
+
+model Abonnement {
+  id             String           @id @default(cuid())
+  organisationId String           @unique
+  forfait        Forfait
+  statut         StatutAbonnement
+  annuel         Boolean          @default(false)
+  essaiFinLe     DateTime?
+  periodeFinLe   DateTime?
+  graceFinLe     DateTime?
+  creeLe         DateTime         @default(now())
+
+  organisation Organisation        @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  factures     FactureAbonnement[]
+}
+
+model FactureAbonnement {
+  id                 String    @id @default(cuid())
+  abonnementId       String
+  forfait            Forfait
+  annuel             Boolean   @default(false)
+  montant            Int
+  nbLogements        Int
+  periodeDebut       DateTime
+  periodeFin         DateTime
+  payeeLe            DateTime?
+  referenceOperateur String?   @unique
+  creeLe             DateTime  @default(now())
+
+  abonnement Abonnement @relation(fields: [abonnementId], references: [id], onDelete: Cascade)
+}
+
+// Compte Wave / Orange Money où le bailleur reçoit ses loyers.
+model CompteEncaissement {
+  id             String        @id @default(cuid())
+  organisationId String
+  canal          CanalPaiement
+  telephone      String
+  libelle        String?
+  actif          Boolean       @default(true)
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+}
+
+model Bien {
+  id             String    @id @default(cuid())
+  organisationId String
+  designation    String
+  type           TypeBien
+  quartier       String
+  ville          String
+  adresse        String?
+  surfaceM2      Int?
+  description    String?
+  creeLe         DateTime  @default(now())
+  archiveLe      DateTime?
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  baux         Bail[]
+
+  @@index([organisationId])
+}
+
+model Locataire {
+  id             String   @id @default(cuid())
+  organisationId String
+  nomComplet     String
+  telephone      String
+  cni            String?
+  profession     String?
+  creeLe         DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  baux         Bail[]
+
+  @@index([organisationId])
+}
+
+// Un bail relie un bien et un locataire pour une période.
+model Bail {
+  id              String    @id @default(cuid())
+  bienId          String
+  locataireId     String
+  loyerMensuel    Int
+  chargesIncluses Boolean   @default(true)
+  cautionMois     Int       @default(2)
+  jourEcheance    Int       @default(5)
+  debutLe         DateTime
+  finLe           DateTime?
+  actif           Boolean   @default(true)
+
+  bien      Bien       @relation(fields: [bienId], references: [id], onDelete: Cascade)
+  locataire Locataire  @relation(fields: [locataireId], references: [id], onDelete: Restrict)
+  echeances Echeance[]
+
+  @@index([bienId])
+  @@index([locataireId])
+}
+
+// Un loyer attendu pour un mois donné.
+model Echeance {
+  id            String         @id @default(cuid())
+  bailId        String
+  mois          DateTime // 1er jour du mois concerné
+  montantDu     Int
+  dateLimite    DateTime
+  statut        StatutEcheance @default(EN_ATTENTE)
+  jetonPaiement String?        @unique // lien de paiement locataire
+  jetonExpireLe DateTime? // 72 h
+
+  bail      Bail       @relation(fields: [bailId], references: [id], onDelete: Cascade)
+  paiements Paiement[]
+  relances  Relance[]
+
+  @@unique([bailId, mois])
+}
+
+model Paiement {
+  id                 String         @id @default(cuid())
+  echeanceId         String
+  montant            Int
+  canal              CanalPaiement
+  statut             StatutPaiement
+  referenceOperateur String?        @unique
+  recuLe             DateTime?
+  creeLe             DateTime       @default(now())
+
+  echeance  Echeance   @relation(fields: [echeanceId], references: [id], onDelete: Cascade)
+  quittance Quittance?
+}
+
+model Quittance {
+  id             String   @id @default(cuid())
+  organisationId String
+  paiementId     String   @unique
+  numero         String // Q-2026-10-001, séquentiel par organisation et par mois
+  jetonQr        String   @unique
+  emiseLe        DateTime @default(now())
+
+  paiement Paiement @relation(fields: [paiementId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, numero])
+}
+
+model Relance {
+  id          String   @id @default(cuid())
+  echeanceId  String
+  declencheur String // J-2, J+3, manuelle...
+  envoyeeLe   DateTime @default(now())
+
+  echeance Echeance @relation(fields: [echeanceId], references: [id], onDelete: Cascade)
+}
+
+// Tout message sortant WhatsApp / SMS.
+model Message {
+  id             String       @id @default(cuid())
+  organisationId String?
+  canal          CanalMessage
+  type           TypeMessage
+  destinataire   String
+  statut         String       @default("ENVOYE")
+  creeLe         DateTime     @default(now())
+
+  organisation Organisation? @relation(fields: [organisationId], references: [id], onDelete: SetNull)
+}
+
+// Qui a fait quoi (comptes équipe du forfait Pro).
+model JournalAction {
+  id             String   @id @default(cuid())
+  organisationId String
+  utilisateurId  String?
+  action         String
+  cible          String?
+  creeLe         DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  utilisateur  Utilisateur? @relation(fields: [utilisateurId], references: [id], onDelete: SetNull)
+
+  @@index([organisationId, creeLe])
+}
+
+// Réglages des relances automatiques (envoi réel branché en phase 2 via WhatsApp Cloud API).
+model ParametresRelance {
+  organisationId String  @id
+  avantEcheance  Boolean @default(true) // J-3
+  apresJ1        Boolean @default(true)
+  apresJ5        Boolean @default(true)
+  canal          CanalMessage @default(WHATSAPP)
+}
+
+// Échecs de connexion récents (limitation des essais de mot de passe par numéro).
+model TentativeConnexion {
+  id     String   @id @default(cuid())
+  cle    String
+  creeLe DateTime @default(now())
+
+  @@index([cle, creeLe])
+}

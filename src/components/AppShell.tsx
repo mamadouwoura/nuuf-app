@@ -1,0 +1,219 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { deconnexion } from "@/app/actions/auth";
+
+const NAV = [
+  { href: "/tableau-de-bord", icon: "grid_view", label: "Tableau de bord" },
+  { href: "/biens", icon: "apartment", label: "Biens", badge: "biens" },
+  { href: "/locataires", icon: "group", label: "Locataires" },
+  { href: "/paiements", icon: "account_balance_wallet", label: "Paiements" },
+  { href: "/relances", icon: "schedule", label: "Relances", badge: "retards", alert: true },
+  { href: "/quittances", icon: "receipt_long", label: "Quittances" },
+  { href: "/parametres", icon: "tune", label: "Paramètres" },
+];
+
+const CONTACT_WA = process.env.NEXT_PUBLIC_CONTACT_WHATSAPP;
+
+const BARRE = [
+  { href: "/tableau-de-bord", icon: "grid_view", label: "Accueil" },
+  { href: "/biens", icon: "apartment", label: "Biens" },
+  { href: "/paiements", icon: "account_balance_wallet", label: "Paiements" },
+  { href: "/quittances", icon: "receipt_long", label: "Quittances" },
+];
+const PLUS = [
+  { href: "/locataires", icon: "group", label: "Locataires" },
+  { href: "/relances", icon: "schedule", label: "Relances" },
+  { href: "/parametres", icon: "tune", label: "Paramètres" },
+  { href: "/parametres/abonnement", icon: "workspace_premium", label: "Abonnement" },
+];
+
+const ACTIVE = "bg-primary-container text-on-primary font-bold shadow-sm rounded-xl";
+const IDLE =
+  "rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface";
+
+export default function AppShell({
+  children,
+  nom,
+  libelleCompte,
+  nbBiens,
+  nbRetards,
+  bandeau,
+  moisLabel,
+  simulation,
+}: {
+  children: React.ReactNode;
+  nom: string;
+  libelleCompte: string;
+  nbBiens: number;
+  nbRetards: number;
+  bandeau: { ton: "info" | "alerte"; texte: string } | null;
+  moisLabel: string;
+  simulation: boolean;
+}) {
+  const pathname = usePathname();
+  const [plus, setPlus] = useState(false);
+  return (
+    <>
+      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-72 bg-surface-container-low shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex-col justify-between overflow-y-auto">
+        <div className="flex flex-col">
+          <div className="px-space-lg pt-space-lg pb-space-md">
+            <div className="flex items-center gap-space-sm">
+              <span className="font-headline-md text-headline-md tracking-tight font-extrabold text-primary">nuuf</span>
+            </div>
+            <p className="mt-space-xs font-body-sm text-body-sm text-on-surface-variant">Gestion locative &amp; Loyers</p>
+          </div>
+          <nav className="flex flex-col gap-1 px-space-md mt-space-sm">
+            {NAV.map((n) => {
+              const valeur = n.badge === "biens" ? nbBiens : n.badge === "retards" ? nbRetards : 0;
+              const actif = pathname === n.href || pathname.startsWith(n.href + "/");
+              return (
+                <Link
+                  key={n.href}
+                  href={n.href}
+                  aria-current={actif ? "page" : undefined}
+                  className={`flex items-center justify-between px-space-md py-space-sm transition-all group ${actif ? ACTIVE : IDLE}`}
+                >
+                  <div className="flex items-center gap-space-sm">
+                    <span className="material-symbols-outlined text-[20px]">{n.icon}</span>
+                    <span className="font-label-lg text-label-lg">{n.label}</span>
+                  </div>
+                  {actif && !(n.badge && valeur > 0) && <span className="w-1.5 h-1.5 rounded-full bg-secondary-container"></span>}
+                  {n.badge && valeur > 0 && (
+                    <span
+                      className={`px-2 py-0.5 rounded-full font-label-md text-label-md ${
+                        n.alert
+                          ? "bg-error-container text-on-error-container font-bold"
+                          : actif
+                            ? "bg-primary text-on-primary"
+                            : "bg-surface-container-highest text-on-surface-variant"
+                      }`}
+                    >
+                      {valeur}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+        <div className="p-space-md m-space-md rounded-xl bg-surface-container flex flex-col gap-space-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-space-xs">
+              <span className={`w-2 h-2 rounded-full ${simulation ? "bg-secondary-container" : "bg-primary-container"}`}></span>
+              <span className="font-label-md text-label-md text-on-surface font-semibold">Wave &amp; Orange Money</span>
+            </div>
+            
+          </div>
+          <p className="font-body-sm text-body-sm text-on-surface-variant">{simulation ? "Mode simulation • aucun débit réel" : "Paiements actifs"}</p>
+          <div className="pt-space-xs mt-space-xs flex items-center justify-between">
+            {CONTACT_WA ? (
+              <a className="flex items-center gap-1.5 font-label-md text-label-md text-primary font-semibold hover:text-primary-container transition-colors" href={`https://wa.me/${CONTACT_WA.replace(/D/g, "")}`} target="_blank">
+                <span className="material-symbols-outlined text-[16px]">chat</span>Support WhatsApp
+              </a>
+            ) : (
+              <span className="font-body-sm text-body-sm text-on-surface-variant">Support : écrivez-nous depuis le site</span>
+            )}
+          </div>
+        </div>
+      </aside>
+      <div className="lg:pl-72 flex flex-col min-h-screen">
+        <header className="fixed top-0 left-0 lg:left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-gutter lg:px-gutter-desktop">
+          <span className="lg:hidden font-headline-md text-headline-md tracking-tight font-extrabold text-primary">nuuf</span>
+          <form action="/biens" method="get" role="search" className="hidden lg:flex items-center gap-space-md flex-1 max-w-lg">
+            <div className="relative w-full">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+              <input
+                name="q"
+                aria-label="Rechercher un bien ou un locataire"
+                className="w-full h-10 pl-10 pr-4 rounded-xl bg-surface-container-low text-on-surface placeholder:text-on-surface-variant font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary-container transition-all"
+                placeholder="Rechercher un bien ou un locataire..."
+                type="search"
+              />
+            </div>
+            <Link href="/paiements" className="flex items-center gap-space-xs px-space-md h-10 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface transition-colors whitespace-nowrap">
+              <span className="material-symbols-outlined text-[18px] text-on-surface-variant">calendar_today</span>
+              <span className="font-label-md text-label-md font-semibold">{moisLabel}</span>
+            </Link>
+          </form>
+          <div className="flex items-center gap-space-md">
+            <Link href="/relances" aria-label={nbRetards > 0 ? `${nbRetards} loyer(s) en retard` : "Aucune alerte"} className="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors">
+              <span className="material-symbols-outlined text-[22px]">notifications</span>
+              {nbRetards > 0 && <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-error ring-2 ring-surface"></span>}
+            </Link>
+            <div className="flex items-center gap-space-sm pl-space-sm">
+              <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-md text-label-md">
+                {nom.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()}
+              </div>
+              <div className="hidden sm:flex flex-col text-left">
+                <span className="font-label-md text-label-md text-on-surface font-semibold leading-tight">{nom}</span>
+                <span className="font-body-sm text-body-sm text-on-surface-variant leading-tight">{libelleCompte}</span>
+              </div>
+              <form action={deconnexion}><button aria-label="Se déconnecter" title="Se déconnecter" className="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-error transition-colors"><span className="material-symbols-outlined text-[22px]">logout</span></button></form>
+            </div>
+          </div>
+        </header>
+        <main className="w-full pt-16 bg-surface px-gutter lg:px-gutter-desktop pb-28 lg:pb-space-xl flex-1">
+          {bandeau && (
+            <div
+              className={`mb-space-md rounded-xl px-space-md py-3 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 font-body-md text-body-md ${
+                bandeau.ton === "info" ? "bg-secondary-fixed text-on-secondary-fixed" : "bg-error-container text-on-error-container"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[20px]">{bandeau.ton === "info" ? "hourglass_top" : "warning"}</span>
+                {bandeau.texte}
+              </span>
+              <Link href="/abonnement/forfait" className="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-bold hover:bg-primary-container">
+                Choisir un forfait
+              </Link>
+            </div>
+          )}
+          <div className="flex flex-col w-full">{children}</div>
+        </main>
+      </div>
+      <nav aria-label="Navigation principale" className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-surface-container-low border-t border-outline-variant/40 pb-safe">
+        <ul className="flex items-stretch justify-around">
+          {BARRE.map((n) => {
+            const actif = pathname === n.href || pathname.startsWith(n.href + "/");
+            return (
+              <li key={n.href} className="flex-1">
+                <Link href={n.href} className={`relative flex flex-col items-center gap-0.5 py-2 font-label-md text-[11px] ${actif ? "text-primary font-bold" : "text-on-surface-variant"}`}>
+                  <span className={`material-symbols-outlined text-[24px] ${actif ? "" : "opacity-80"}`} style={actif ? { fontVariationSettings: "'FILL' 1" } : undefined}>{n.icon}</span>
+                  {n.label}
+                  </Link>
+              </li>
+            );
+          })}
+          <li className="flex-1">
+            <button type="button" onClick={() => setPlus((v) => !v)} aria-expanded={plus} className={`relative w-full flex flex-col items-center gap-0.5 py-2 font-label-md text-[11px] ${plus ? "text-primary font-bold" : "text-on-surface-variant"}`}>
+              <span className="material-symbols-outlined text-[24px]">menu</span>
+              Plus
+              {nbRetards > 0 && <span className="absolute top-1 right-[28%] min-w-4 h-4 px-1 rounded-full bg-error text-on-error text-[10px] leading-4 text-center">{nbRetards}</span>}
+            </button>
+          </li>
+        </ul>
+        {plus && (
+          <div className="absolute bottom-full inset-x-0 bg-surface-container-lowest border-t border-outline-variant/40 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] p-space-md flex flex-col gap-1">
+            {PLUS.map((n) => (
+              <Link key={n.href} href={n.href} onClick={() => setPlus(false)} className="flex items-center gap-3 px-space-md py-3 rounded-xl text-on-surface hover:bg-surface-container-low">
+                <span className="material-symbols-outlined text-[22px] text-primary">{n.icon}</span>
+                <span className="font-label-lg text-label-lg">{n.label}</span>
+                {n.href === "/relances" && nbRetards > 0 && <span className="ml-auto px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-md text-label-md font-bold">{nbRetards}</span>}
+              </Link>
+            ))}
+            <form action={deconnexion}>
+              <button className="w-full flex items-center gap-3 px-space-md py-3 rounded-xl text-error hover:bg-error-container/40">
+                <span className="material-symbols-outlined text-[22px]">logout</span>
+                <span className="font-label-lg text-label-lg">Se déconnecter</span>
+              </button>
+            </form>
+          </div>
+        )}
+      </nav>
+
+    </>
+  );
+}
