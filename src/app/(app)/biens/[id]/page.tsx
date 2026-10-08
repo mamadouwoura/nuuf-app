@@ -62,6 +62,12 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
           </Link>
         )}
         {bail && (
+          <a href={`/biens/${id}/contrat`} target="_blank" className="flex items-center gap-2 h-12 px-space-md rounded-xl bg-surface-container-lowest text-primary hover:bg-surface-container transition-all shadow-sm font-label-lg text-label-lg font-bold">
+            <span className="material-symbols-outlined text-[20px]">description</span>
+            <span>Contrat PDF</span>
+          </a>
+        )}
+        {bail && (
           <a
             href={`https://wa.me/${bail.locataire.telephone.replace(/\D/g, "")}`}
             target="_blank"

@@ -6,7 +6,7 @@ import type { CanalPaiement, Role } from "@prisma/client";
 import { db } from "@/lib/db";
 import { FORFAITS } from "@/lib/forfaits";
 import { hashPassword, normalizePhone, verifyPassword } from "@/lib/security";
-import { getUser } from "@/lib/session";
+import { getUser, startSession } from "@/lib/session";
 
 const texte = (v: FormDataEntryValue | null) => String(v ?? "").trim();
 const retour = (m: string, cle: "ok" | "erreur" = "erreur"): never => redirect(`/parametres?${cle}=${encodeURIComponent(m)}`);
@@ -111,6 +111,8 @@ export async function changerMotDePasse(form: FormData) {
   const nouveau = String(form.get("nouveau") ?? "");
   if (!verifyPassword(ancien, user.motDePasse)) retour("Mot de passe actuel incorrect.");
   if (nouveau.length < 8) retour("Le nouveau mot de passe doit contenir au moins 8 caractères.");
-  await db.utilisateur.update({ where: { id: user.id }, data: { motDePasse: hashPassword(nouveau) } });
+  await db.utilisateur.update({ where: { id: user.id }, data: { motDePasse: hashPassword(nouveau), sessionVersion: { increment: 1 } } });
+  // La session en cours reste ouverte ; toutes les autres (autres appareils) sont coupées.
+  await startSession(user.id);
   retour("Mot de passe modifié.", "ok");
 }

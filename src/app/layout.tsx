@@ -17,9 +17,6 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className={`${inter.variable} ${jakarta.variable} antialiased`}>
-      <head>
-        <link rel="preload" href="/fonts/material-symbols.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-      </head>
       <body className="bg-surface font-body-md text-body-md text-on-surface">{children}</body>
     </html>
   );

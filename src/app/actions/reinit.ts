@@ -58,7 +58,7 @@ export async function nouveauMotDePasse(form: FormData) {
   const b = String(form.get("confirmation") ?? "");
   if (a.length < 8) vers(3, "Le mot de passe doit contenir au moins 8 caractères.");
   if (a !== b) vers(3, "Les deux mots de passe ne correspondent pas.");
-  await db.utilisateur.update({ where: { id: uid! }, data: { motDePasse: hashPassword(a) } });
+  await db.utilisateur.update({ where: { id: uid! }, data: { motDePasse: hashPassword(a), sessionVersion: { increment: 1 } } });
   await retirerJeton("nuuf_reinit_ok");
   await retirerJeton("nuuf_reinit_tel");
   redirect("/connexion?info=" + encodeURIComponent("Mot de passe modifié. Vous pouvez vous connecter."));

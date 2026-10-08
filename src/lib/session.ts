@@ -8,7 +8,7 @@ const PENDING = "nuuf_pending";
 const DEV_OTP = "nuuf_dev_otp";
 const secure = process.env.NODE_ENV === "production";
 
-type Token = { uid: string; exp: number };
+type Token = { uid: string; exp: number; v?: number };
 
 export async function setPending(uid: string) {
   (await cookies()).set(PENDING, sign({ uid, exp: Date.now() + 10 * 60_000 }), {
@@ -20,10 +20,11 @@ export async function getPendingUid() {
   return verify<Token>((await cookies()).get(PENDING)?.value)?.uid ?? null;
 }
 export async function startSession(uid: string) {
+  const u = await db.utilisateur.findUnique({ where: { id: uid }, select: { sessionVersion: true } });
   const jar = await cookies();
   jar.delete(PENDING);
   jar.delete(DEV_OTP);
-  jar.set(SESSION, sign({ uid, exp: Date.now() + 30 * 86_400_000 }), {
+  jar.set(SESSION, sign({ uid, v: u?.sessionVersion ?? 0, exp: Date.now() + 30 * 86_400_000 }), {
     httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: 30 * 86400,
   });
 }
@@ -32,12 +33,15 @@ export async function endSession() {
 }
 export async function getUser() {
   await connection();
-  const uid = verify<Token>((await cookies()).get(SESSION)?.value)?.uid;
-  if (!uid) return null;
-  return db.utilisateur.findUnique({
-    where: { id: uid },
+  const jeton = verify<Token>((await cookies()).get(SESSION)?.value);
+  if (!jeton) return null;
+  const user = await db.utilisateur.findUnique({
+    where: { id: jeton.uid },
     include: { membres: { include: { organisation: { include: { abonnement: true } } } } },
   });
+  // Mot de passe changé depuis l'ouverture de cette session : elle n'est plus valable.
+  if (!user || user.sessionVersion !== (jeton.v ?? 0)) return null;
+  return user;
 }
 /** Dev uniquement : le code s'affiche à l'écran au lieu d'être envoyé par WhatsApp. */
 export async function setDevOtp(code: string) {

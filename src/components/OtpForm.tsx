@@ -93,7 +93,7 @@ export default function OtpForm({ erreur, devCode }: { erreur?: string; devCode?
       </div>
       <div className="flex items-center gap-3">
       <span className="font-label-md text-label-md font-bold text-on-surface" id="timer-text">{mm}:{ss}</span>
-      <button className={`font-label-md text-label-md font-semibold ${reste > 0 ? "text-outline cursor-not-allowed" : "text-primary hover:underline"}`} disabled={reste > 0} formAction={renvoyerCode} formNoValidate id="resend-btn" type="submit" onClick={() => setReste(60)}>Renvoyer</button>
+      <button className={`font-label-md text-label-md font-semibold ${reste > 0 ? "text-outline cursor-not-allowed" : "text-primary hover:underline"}`} disabled={reste > 0} formAction={renvoyerCode} formNoValidate id="resend-btn" type="submit" onClick={() => setTimeout(() => setReste(60), 0)}>Renvoyer</button>
       </div>
       </div>
       </form>

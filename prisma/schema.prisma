@@ -97,6 +97,8 @@ model Utilisateur {
   motDePasse   String // hash
   telVerifieLe DateTime?
   creeLe       DateTime  @default(now())
+  // Incrémenté à chaque changement de mot de passe : coupe toutes les sessions ouvertes.
+  sessionVersion Int      @default(0)
 
   membres  Membre[]
   codesOtp CodeOtp[]
