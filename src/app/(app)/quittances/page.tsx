@@ -110,7 +110,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
                     <span className="font-body-sm text-body-sm text-on-surface-variant">{CANAL[q.paiement.canal]}</span>
                   </div>
                   <div className="flex items-center gap-2 lg:w-1/3 lg:justify-end">
-                    <span className={`px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${envoyee ? "bg-emerald-50 text-emerald-800" : "bg-secondary-fixed text-on-secondary-fixed-variant"}`}>
+                    <span className={`px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${envoyee ? "bg-success-container text-on-success-container" : "bg-secondary-fixed text-on-secondary-fixed-variant"}`}>
                       {envoyee ? "Envoyée" : "Non transmise"}
                     </span>
                     <a href={`/quittances/${q.id}/pdf`} target="_blank" className="inline-flex items-center gap-1 h-10 px-3 rounded-xl bg-surface hover:bg-surface-container text-primary font-label-md text-label-md font-semibold">
@@ -118,7 +118,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
                     </a>
                     <form action={partagerQuittance}>
                       <input type="hidden" name="id" value={q.id} />
-                      <button className="inline-flex items-center gap-1 h-10 px-3 rounded-xl bg-[#d3f3e2] hover:bg-[#bfe9d3] text-[#0b3d2e] font-label-md text-label-md font-semibold">
+                      <button className="inline-flex items-center gap-1 h-10 px-3 rounded-xl bg-action-soft hover:bg-action-soft-hover text-on-action-soft font-label-md text-label-md font-semibold">
                         <span className="material-symbols-outlined text-[18px]">chat</span> WhatsApp
                       </button>
                     </form>

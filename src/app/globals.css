@@ -3,6 +3,13 @@
 /* Design system « Nuuf Teranga Ledger » — repris à l'identique des maquettes Stitch
    (tailwind.config des code.html) pour pouvoir porter les écrans tels quels. */
 @theme {
+  --color-success-container: #ecfdf5;
+  --color-on-success-container: #065f46;
+  --color-success: #059669;
+  --color-action-soft: #d3f3e2;
+  --color-action-soft-hover: #bfe9d3;
+  --color-on-action-soft: #0b3d2e;
+  --color-info-text: #0c7ab0;
   --color-on-tertiary-fixed: #002113;
   --color-surface-variant: #d9e6dc;
   --color-inverse-surface: #28332d;
@@ -169,4 +176,100 @@ body {
 }
 .pt-safe {
   padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* ---- Mode sombre ----
+   Choix de l'utilisateur (data-theme="dark" | "light", posé par le script du <head>) ; à défaut, réglage du système. */
+:root { color-scheme: light; }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-surface: #0f1713;
+  --color-background: #0f1713;
+  --color-surface-bright: #2a352f;
+  --color-surface-dim: #0c120f;
+  --color-surface-container-lowest: #0a110d;
+  --color-surface-container-low: #141e19;
+  --color-surface-container: #1a2620;
+  --color-surface-container-high: #222f28;
+  --color-surface-container-highest: #2b3932;
+  --color-surface-variant: #2b3932;
+  --color-on-surface: #e0ebe4;
+  --color-on-background: #e0ebe4;
+  --color-on-surface-variant: #b4c3ba;
+  --color-outline: #8b9b92;
+  --color-outline-variant: #3b4841;
+  --color-primary: #8fdcc1;
+  --color-on-primary: #00251b;
+  --color-primary-container: #58bd9c;
+  --color-on-primary-container: #00251b;
+  --color-surface-tint: #8fdcc1;
+  --color-tertiary: #7ad9b8;
+  --color-on-tertiary: #00251b;
+  --color-tertiary-container: #00513a;
+  --color-on-tertiary-container: #6ffbbe;
+  --color-secondary: #ffb95c;
+  --color-on-secondary: #442b00;
+  --color-secondary-container: #7a5200;
+  --color-on-secondary-container: #ffe3b3;
+  --color-error: #ffb4a8;
+  --color-on-error: #5a0d06;
+  --color-error-container: #5c1a14;
+  --color-on-error-container: #ffdad4;
+  --color-inverse-surface: #e0ebe4;
+  --color-inverse-on-surface: #22312a;
+  --color-inverse-primary: #1b6f5a;
+  --color-success-container: #123d2c;
+  --color-on-success-container: #8de3bf;
+  --color-success: #4ade9d;
+  --color-action-soft: #1d3a2e;
+  --color-action-soft-hover: #26493a;
+  --color-on-action-soft: #bff0d6;
+  --color-info-text: #6cc4ef;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-surface: #0f1713;
+    --color-background: #0f1713;
+    --color-surface-bright: #2a352f;
+    --color-surface-dim: #0c120f;
+    --color-surface-container-lowest: #0a110d;
+    --color-surface-container-low: #141e19;
+    --color-surface-container: #1a2620;
+    --color-surface-container-high: #222f28;
+    --color-surface-container-highest: #2b3932;
+    --color-surface-variant: #2b3932;
+    --color-on-surface: #e0ebe4;
+    --color-on-background: #e0ebe4;
+    --color-on-surface-variant: #b4c3ba;
+    --color-outline: #8b9b92;
+    --color-outline-variant: #3b4841;
+    --color-primary: #8fdcc1;
+    --color-on-primary: #00251b;
+    --color-primary-container: #58bd9c;
+    --color-on-primary-container: #00251b;
+    --color-surface-tint: #8fdcc1;
+    --color-tertiary: #7ad9b8;
+    --color-on-tertiary: #00251b;
+    --color-tertiary-container: #00513a;
+    --color-on-tertiary-container: #6ffbbe;
+    --color-secondary: #ffb95c;
+    --color-on-secondary: #442b00;
+    --color-secondary-container: #7a5200;
+    --color-on-secondary-container: #ffe3b3;
+    --color-error: #ffb4a8;
+    --color-on-error: #5a0d06;
+    --color-error-container: #5c1a14;
+    --color-on-error-container: #ffdad4;
+    --color-inverse-surface: #e0ebe4;
+    --color-inverse-on-surface: #22312a;
+    --color-inverse-primary: #1b6f5a;
+    --color-success-container: #123d2c;
+    --color-on-success-container: #8de3bf;
+    --color-success: #4ade9d;
+    --color-action-soft: #1d3a2e;
+    --color-action-soft-hover: #26493a;
+    --color-on-action-soft: #bff0d6;
+    --color-info-text: #6cc4ef;
+  }
 }

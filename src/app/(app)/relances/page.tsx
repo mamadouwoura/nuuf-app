@@ -49,7 +49,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
         <p className="font-body-md text-body-md text-on-surface-variant mt-1">Relancez les loyers en retard et réglez les rappels automatiques.</p>
       </div>
 
-      {ok && <p className="rounded-xl bg-emerald-50 text-emerald-800 px-space-md py-2 font-body-md text-body-md">Paramètres enregistrés.</p>}
+      {ok && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">Paramètres enregistrés.</p>}
 
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
         <div className="lg:col-span-7 bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
@@ -77,7 +77,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
                     </div>
                     <form action={relancer}>
                       <input type="hidden" name="echeanceId" value={l.id} />
-                      <button className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-[#d3f3e2] hover:bg-[#bfe9d3] text-[#0b3d2e] font-label-md text-label-md font-semibold shadow-sm">
+                      <button className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-action-soft hover:bg-action-soft-hover text-on-action-soft font-label-md text-label-md font-semibold shadow-sm">
                         <span className="material-symbols-outlined text-[18px]">chat</span> Relancer
                       </button>
                     </form>

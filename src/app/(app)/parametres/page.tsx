@@ -45,7 +45,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
         <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">Paramètres du compte</h1>
         <p className="font-body-md text-body-md text-on-surface-variant mt-1">Votre profil, vos comptes d&apos;encaissement et votre équipe.</p>
       </div>
-      {ok && <p className="rounded-xl bg-emerald-50 text-emerald-800 px-space-md py-2 font-body-md text-body-md">{ok}</p>}
+      {ok && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">{ok}</p>}
       {erreur && <p role="alert" className="rounded-xl bg-error-container text-on-error-container px-space-md py-2 font-body-md text-body-md">{erreur}</p>}
 
       <section className={carte}>

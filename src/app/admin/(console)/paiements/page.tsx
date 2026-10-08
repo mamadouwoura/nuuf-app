@@ -10,7 +10,7 @@ export const metadata = { title: "Administration - Paiements" };
 type Params = { statut?: string };
 const CANAL = { WAVE: "Wave", ORANGE_MONEY: "Orange Money", ESPECES: "Espèces", VIREMENT: "Virement" } as const;
 const STATUT = {
-  CONFIRME: ["Confirmé", "bg-emerald-50 text-emerald-800"],
+  CONFIRME: ["Confirmé", "bg-success-container text-on-success-container"],
   INITIE: ["En cours", "bg-secondary-fixed text-on-secondary-fixed"],
   ECHEC: ["Échec", "bg-error-container text-on-error-container"],
   EXPIRE: ["Expiré", "bg-surface-container-high text-on-surface-variant"],

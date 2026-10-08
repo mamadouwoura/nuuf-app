@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Suspense } from "react";
+import LocaleBoundary from "@/components/LocaleBoundary";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
@@ -9,7 +11,15 @@ const jakarta = Plus_Jakarta_Sans({
   weight: ["600", "700", "800"],
 });
 
-export const viewport: Viewport = { themeColor: "#1b6f5a" };
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#1b6f5a" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f1713" },
+  ],
+};
+
+// Appliqué avant l'affichage : évite le flash blanc quand l'utilisateur a choisi le mode sombre.
+const SCRIPT_THEME = `try{var t=localStorage.getItem("nuuf_theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}`;
 
 export const metadata: Metadata = {
   applicationName: "Nuuf",
@@ -20,8 +30,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${inter.variable} ${jakarta.variable} antialiased`}>
-      <body className="bg-surface font-body-md text-body-md text-on-surface">{children}</body>
+    <html lang="fr" suppressHydrationWarning className={`${inter.variable} ${jakarta.variable} antialiased`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_THEME }} />
+      </head>
+      <body className="bg-surface font-body-md text-body-md text-on-surface">
+        <Suspense fallback={null}>
+          <LocaleBoundary>{children}</LocaleBoundary>
+        </Suspense>
+      </body>
     </html>
   );
 }

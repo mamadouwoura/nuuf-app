@@ -47,7 +47,7 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
 
       {erreur && <p role="alert" className="rounded-xl bg-error-container text-on-error-container px-space-md py-2 font-body-md text-body-md">{erreur}</p>}
 
-      {ok && <p className="rounded-xl bg-emerald-50 text-emerald-800 px-space-md py-2 font-body-md text-body-md">{ok}</p>}
+      {ok && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">{ok}</p>}
 
       <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md">
         <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">Photos ({bien.photos.length}/{MAX_PHOTOS})</h2>

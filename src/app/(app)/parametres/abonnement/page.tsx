@@ -15,7 +15,7 @@ const dateFr = (d: Date) => d.toLocaleDateString("fr-FR", { day: "2-digit", mont
 
 const ETAT = {
   ESSAI: ["Essai gratuit", "bg-secondary-fixed text-on-secondary-fixed"],
-  ACTIF: ["Actif", "bg-emerald-50 text-emerald-800"],
+  ACTIF: ["Actif", "bg-success-container text-on-success-container"],
   GRACE: ["Paiement en retard", "bg-secondary-fixed text-on-secondary-fixed"],
   ESSAI_TERMINE: ["Essai terminé", "bg-error-container text-on-error-container"],
   LECTURE_SEULE: ["Lecture seule", "bg-error-container text-on-error-container"],
@@ -52,7 +52,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
         </Link>
       </div>
 
-      {ok === "paye" && <p className="rounded-xl bg-emerald-50 text-emerald-800 px-space-md py-2 font-body-md text-body-md">Paiement reçu : votre abonnement est actif.</p>}
+      {ok === "paye" && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">Paiement reçu : votre abonnement est actif.</p>}
       {ok === "resilie" && <p className="rounded-xl bg-secondary-fixed text-on-secondary-fixed px-space-md py-2 font-body-md text-body-md">Abonnement résilié. Vous gardez l&apos;accès jusqu&apos;à la fin de la période payée.</p>}
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-space-md">

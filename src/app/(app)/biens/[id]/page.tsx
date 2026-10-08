@@ -12,7 +12,7 @@ const moisFr = (d: Date) => `${MOIS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 const dateFr = (d: Date) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
 
 const PASTILLE = {
-  PAYE: "bg-emerald-50 text-emerald-800",
+  PAYE: "bg-success-container text-on-success-container",
   EN_ATTENTE: "bg-secondary-fixed text-on-secondary-fixed-variant",
   PARTIEL: "bg-secondary-fixed text-on-secondary-fixed-variant",
   EN_RETARD: "bg-error-container text-on-error-container",
@@ -83,7 +83,7 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
         </div>
       </div>
 
-      {ok && <p className="rounded-xl bg-emerald-50 text-emerald-800 px-space-md py-2 font-body-md text-body-md">Modifications enregistrées.</p>}
+      {ok && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">Modifications enregistrées.</p>}
 
       {bien.photos.length > 0 && (
         <section className="grid grid-cols-2 md:grid-cols-4 gap-space-sm">

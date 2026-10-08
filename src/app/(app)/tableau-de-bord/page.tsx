@@ -267,7 +267,7 @@ async function Contenu() {
                     <a
                       href={`https://wa.me/${l.bail.locataire.telephone.replace(/\D/g, "")}`}
                       target="_blank"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#d3f3e2] text-[#0b3d2e] hover:bg-[#bfe9d3] transition-colors font-label-md text-label-md font-semibold shadow-sm"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-action-soft text-on-action-soft hover:bg-action-soft-hover transition-colors font-label-md text-label-md font-semibold shadow-sm"
                     >
                       <span className="material-symbols-outlined text-[16px]">chat</span>
                       <span>Relancer</span>

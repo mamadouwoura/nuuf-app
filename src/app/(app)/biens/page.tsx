@@ -12,7 +12,7 @@ export const metadata = { title: "Mes biens" };
 type Params = { q?: string; quartier?: string; type?: string; archive?: string; page?: string };
 
 const BADGE = {
-  PAYE: "bg-emerald-50 text-emerald-800",
+  PAYE: "bg-success-container text-on-success-container",
   EN_ATTENTE: "bg-secondary-fixed text-on-secondary-fixed-variant",
   PARTIEL: "bg-secondary-fixed text-on-secondary-fixed-variant",
   EN_RETARD: "bg-error-container text-on-error-container",
@@ -53,7 +53,7 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
 
   return (
     <div className="flex flex-col w-full">
-      {archive && <p className="rounded-xl bg-emerald-50 text-emerald-800 px-space-md py-2 mb-space-md font-body-md text-body-md">Bien archivé. L'historique et les quittances sont conservés.</p>}
+      {archive && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 mb-space-md font-body-md text-body-md">Bien archivé. L'historique et les quittances sont conservés.</p>}
       <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-space-lg mb-space-xl">
         <div>
           <div className="flex items-center gap-space-sm mb-space-xs">

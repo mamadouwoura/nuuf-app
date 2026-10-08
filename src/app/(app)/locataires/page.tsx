@@ -11,7 +11,7 @@ export const metadata = { title: "Locataires" };
 type Params = { q?: string; page?: string };
 
 const PASTILLE = {
-  PAYE: "bg-emerald-50 text-emerald-800",
+  PAYE: "bg-success-container text-on-success-container",
   EN_ATTENTE: "bg-secondary-fixed text-on-secondary-fixed-variant",
   PARTIEL: "bg-secondary-fixed text-on-secondary-fixed-variant",
   EN_RETARD: "bg-error-container text-on-error-container",

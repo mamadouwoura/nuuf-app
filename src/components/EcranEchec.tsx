@@ -57,7 +57,7 @@ export default function EcranEchec({
               <p className="font-body-md text-body-md text-on-surface-variant">
                 La transaction n&apos;a pas pu être validée (solde insuffisant ou opération interrompue depuis l&apos;application).
               </p>
-              <div className="w-full rounded-xl bg-emerald-50 text-emerald-800 px-3 py-2 flex items-center gap-2 text-left">
+              <div className="w-full rounded-xl bg-success-container text-on-success-container px-3 py-2 flex items-center gap-2 text-left">
                 <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified_user</span>
                 <span className="font-label-md text-label-md">Aucun montant n&apos;a été débité de votre compte.</span>
               </div>
@@ -94,7 +94,7 @@ export default function EcranEchec({
               <a
                 href={d.bailleurWa}
                 target="_blank"
-                className="w-full h-12 rounded-xl bg-[#d3f3e2] text-[#0b3d2e] font-label-lg text-label-lg font-bold flex items-center justify-center gap-2 hover:bg-[#bfe9d3]"
+                className="w-full h-12 rounded-xl bg-action-soft text-on-action-soft font-label-lg text-label-lg font-bold flex items-center justify-center gap-2 hover:bg-action-soft-hover"
               >
                 <span className="material-symbols-outlined text-[20px]">chat</span>
                 Contacter le bailleur sur WhatsApp

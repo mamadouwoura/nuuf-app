@@ -11,7 +11,7 @@ const FORFAIT_CLASSE = {
 } as const;
 
 function statut(l: LigneBailleur) {
-  if (l.categorie === "payant") return { t: "Payant", c: "bg-emerald-50 text-emerald-800", i: "check_circle" };
+  if (l.categorie === "payant") return { t: "Payant", c: "bg-success-container text-on-success-container", i: "check_circle" };
   if (l.categorie === "essai") return { t: `Essai (${l.acces.joursRestants} j restants)`, c: "bg-secondary-fixed text-on-secondary-fixed", i: "hourglass_top" };
   return { t: l.acces.etat === "GRACE" ? "Paiement en retard" : "Expiré", c: "bg-error-container text-on-error-container", i: "error" };
 }

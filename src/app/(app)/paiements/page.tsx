@@ -12,7 +12,7 @@ export const metadata = { title: "Paiements" };
 type Params = { mois?: string; erreur?: string; ok?: string; page?: string };
 
 const ETAT = {
-  PAYE: { classe: "bg-emerald-50 text-emerald-800", libelle: "Payé", icone: "check_circle" },
+  PAYE: { classe: "bg-success-container text-on-success-container", libelle: "Payé", icone: "check_circle" },
   EN_ATTENTE: { classe: "bg-secondary-fixed text-on-secondary-fixed-variant", libelle: "En attente", icone: "hourglass_top" },
   EN_RETARD: { classe: "bg-error-container text-on-error-container", libelle: "En retard", icone: "error" },
 } as const;
@@ -59,7 +59,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
       </div>
 
       {erreur && <p role="alert" className="rounded-xl bg-error-container text-on-error-container px-space-md py-2 font-body-md text-body-md">{erreur}</p>}
-      {ok && <p className="rounded-xl bg-emerald-50 text-emerald-800 px-space-md py-2 font-body-md text-body-md">Paiement enregistré. La quittance a été générée.</p>}
+      {ok && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">Paiement enregistré. La quittance a été générée.</p>}
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
         <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm">

@@ -200,7 +200,7 @@ export default function ConfirmationPaiement({ d }: { d: DonneesConfirmation }) 
       
       <a className="w-full h-12 rounded-xl bg-surface-container-lowest text-on-surface font-headline-sm text-[15px] flex items-center justify-between px-space-md shadow-sm active:scale-[0.98]" href={d.lienPartage} target="_blank">
       <div className="flex items-center space-x-2.5">
-      <span className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+      <span className="w-7 h-7 rounded-full bg-success-container flex items-center justify-center text-success">
       <span className="material-symbols-outlined text-[18px]">chat</span>
       </span>
       <span className="font-medium">Recevoir sur WhatsApp</span>

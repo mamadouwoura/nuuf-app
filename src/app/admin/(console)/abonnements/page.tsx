@@ -59,7 +59,7 @@ async function Contenu() {
             <div key={l.id} className="flex items-center justify-between font-body-md text-body-md">
               <span>{l.nom}</span>
               {l.proprio && (
-                <a href={`https://wa.me/${l.proprio.telephone.replace(/\D/g, "")}`} target="_blank" className="px-3 py-1 rounded-lg bg-[#d3f3e2] text-[#0b3d2e] font-label-md text-label-md font-semibold">WhatsApp</a>
+                <a href={`https://wa.me/${l.proprio.telephone.replace(/\D/g, "")}`} target="_blank" className="px-3 py-1 rounded-lg bg-action-soft text-on-action-soft font-label-md text-label-md font-semibold">WhatsApp</a>
               )}
             </div>
           ))}

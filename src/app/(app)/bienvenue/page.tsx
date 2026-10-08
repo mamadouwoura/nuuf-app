@@ -119,7 +119,7 @@ async function Contenu() {
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">{i + 1}. {e.titre}</h3>
                     {active && <span className="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-md text-label-md font-bold">Prioritaire</span>}
-                    {e.fait && <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-label-md text-label-md font-bold">Terminé</span>}
+                    {e.fait && <span className="px-2 py-0.5 rounded-full bg-success-container text-on-success-container font-label-md text-label-md font-bold">Terminé</span>}
                   </div>
                   <p className="font-body-md text-body-md text-on-surface-variant">{e.texte}</p>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 font-body-sm text-body-sm text-on-surface-variant">
