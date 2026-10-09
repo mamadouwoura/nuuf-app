@@ -44,3 +44,6 @@ next-env.d.ts
 /data/
 .i18n-tmp/
 public/_contraste.js
+
+# Local Netlify folder
+.netlify
