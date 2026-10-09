@@ -21,7 +21,8 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   poweredByHeader: false,
   // Image Docker minimale : serveur autonome + fichiers strictement nécessaires.
-  output: "standalone",
+  // Docker : serveur autonome. Netlify construit son propre format.
+  output: process.env.NETLIFY ? undefined : "standalone",
   experimental: {
     serverActions: {
       bodySizeLimit: "6mb",

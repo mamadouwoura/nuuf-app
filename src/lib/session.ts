@@ -8,6 +8,8 @@ const SESSION = "nuuf_session";
 const PENDING = "nuuf_pending";
 const DEV_OTP = "nuuf_dev_otp";
 const secure = process.env.NODE_ENV === "production";
+/** Démonstration : le code de connexion s'affiche à l'écran, même en production (NUUF_DEMO=1). Jamais pour de vrais clients. */
+const afficheCode = !secure || process.env.NUUF_DEMO === "1";
 
 type Token = { uid: string; exp: number; v?: number };
 
@@ -47,11 +49,11 @@ export const getUser = cache(async function getUser() {
 });
 /** Dev uniquement : le code s'affiche à l'écran au lieu d'être envoyé par WhatsApp. */
 export async function setDevOtp(code: string) {
-  if (secure) return;
-  (await cookies()).set(DEV_OTP, code, { httpOnly: true, path: "/", maxAge: 600 });
+  if (!afficheCode) return;
+  (await cookies()).set(DEV_OTP, code, { httpOnly: true, secure, path: "/", maxAge: 600 });
 }
 export async function getDevOtp() {
-  return secure ? null : ((await cookies()).get(DEV_OTP)?.value ?? null);
+  return afficheCode ? ((await cookies()).get(DEV_OTP)?.value ?? null) : null;
 }
 
 /** Petits jetons signés à courte durée de vie (étapes de réinitialisation du mot de passe). */

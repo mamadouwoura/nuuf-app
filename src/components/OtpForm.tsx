@@ -47,7 +47,7 @@ export default function OtpForm({ erreur, devCode }: { erreur?: string; devCode?
     <>
       {devCode && (
         <p className="mb-4 rounded-xl bg-secondary-fixed text-on-secondary-fixed px-3 py-2 font-body-md text-body-md">
-          {t("Mode développement : votre code est")} <strong>{devCode}</strong>
+          {t("Mode démonstration : votre code est")} <strong>{devCode}</strong>
         </p>
       )}
       {erreur && (

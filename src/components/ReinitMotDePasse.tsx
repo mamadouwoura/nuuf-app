@@ -14,7 +14,7 @@ export default async function ReinitMotDePasse({ etape, erreur, telephone, devCo
           {erreur && <p role="alert" className="rounded-xl bg-error-container text-on-error-container px-4 py-2 font-body-md text-body-md shadow-md">{erreur}</p>}
           {etape === 2 && devCode && (
             <p className="rounded-xl bg-secondary-fixed text-on-secondary-fixed px-4 py-2 font-body-md text-body-md shadow-md">
-              {t("Mode développement : votre code est")} <strong>{devCode}</strong>
+              {t("Mode démonstration : votre code est")} <strong>{devCode}</strong>
             </p>
           )}
         </div>

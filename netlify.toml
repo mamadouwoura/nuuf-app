@@ -1,0 +1,7 @@
+# Hébergement de démonstration sur Netlify (offre gratuite). Voir ../HEBERGEMENT-NETLIFY.md
+[build]
+  command = "npx prisma generate && npm run build"
+
+[build.environment]
+  NODE_VERSION = "24"
+  NEXT_TELEMETRY_DISABLED = "1"

@@ -536,7 +536,6 @@
  "Mes locataires": "My tenants",
  "Mes locataires doivent-ils obligatoirement créer un compte Nuuf ?": "Do my tenants have to create a Nuuf account?",
  "Mme Diallo • 04 Mars 09:14": "Mrs Diallo • 04 March 09:14",
- "Mode développement : votre code est": "Development mode: your code is",
  "Mode réel": "Live mode",
  "Mode simulation (aucun débit réel)": "Simulation mode (no real debit)",
  "Mode simulation • aucun débit réel": "Simulation mode • no real debit",
@@ -1004,5 +1003,6 @@
  "21 à 50": "21 to 50",
  "votre numéro": "your number",
  "Acquitté à 100% • Solde : 0 FCFA": "Paid in full • Balance: 0 FCFA",
- "Acompte reçu • Reste dû : {montant} FCFA": "Deposit received • Remaining: {montant} FCFA"
+ "Acompte reçu • Reste dû : {montant} FCFA": "Deposit received • Remaining: {montant} FCFA",
+ "Mode démonstration : votre code est": "Demo mode: your code is"
 }
