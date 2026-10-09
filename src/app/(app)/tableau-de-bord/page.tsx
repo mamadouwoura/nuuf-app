@@ -51,10 +51,10 @@ async function Contenu() {
     <>
       <section className="flex flex-col xl:flex-row xl:items-center justify-between gap-space-md mb-space-xl">
         <div>
-          <div className="flex items-center gap-space-xs">
+          <div className="flex flex-wrap items-center gap-x-space-sm gap-y-1">
             <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">{t("Bonjour {prenom}", { prenom })} 👋</h1>
             {forfait && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-container-high text-primary">
+              <span className="inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-container-high text-primary">
                 {forfait === "PRO" ? t("Bailleur Pro") : forfait === "AGENCE" ? t("Agence") : forfait === "DECOUVERTE" ? t("Essai") : t("Bailleur")}
               </span>
             )}

@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 import { deconnexion } from "@/app/actions/auth";
 import { useT } from "@/lib/i18n/client";
 import { N_ } from "@/lib/i18n/translate";
-import Preferences from "@/components/Preferences";
+import LangueSwitch from "@/components/LangueSwitch";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const NAV = [
   { href: "/tableau-de-bord", icon: "grid_view", label: N_("Tableau de bord") },
@@ -131,7 +132,7 @@ export default function AppShell({
       </aside>
       <div className="lg:pl-72 flex flex-col min-h-screen">
         <header className="fixed top-0 left-0 lg:left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-gutter lg:px-gutter-desktop">
-          <span className="lg:hidden font-headline-md text-headline-md tracking-tight font-extrabold text-primary">nuuf</span>
+          <span className="lg:hidden shrink-0 font-headline-md text-headline-md tracking-tight font-extrabold text-primary">nuuf</span>
           <form action="/biens" method="get" role="search" className="hidden lg:flex items-center gap-space-md flex-1 max-w-lg">
             <div className="relative w-full">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
@@ -148,14 +149,15 @@ export default function AppShell({
               <span className="font-label-md text-label-md font-semibold">{moisLabel}</span>
             </Link>
           </form>
-          <div className="flex items-center gap-space-sm">
-            <Preferences />
+          <div className="flex items-center gap-1 sm:gap-space-sm shrink-0">
+            <div className="hidden sm:block"><LangueSwitch /></div>
+            <ThemeToggle />
             <Link href="/relances" aria-label={nbRetards > 0 ? tn(nbRetards, "{n} loyer en retard", "{n} loyers en retard") : t("Aucune alerte")} className="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors">
               <span className="material-symbols-outlined text-[22px]">notifications</span>
               {nbRetards > 0 && <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-error ring-2 ring-surface"></span>}
             </Link>
             <div className="flex items-center gap-space-sm pl-space-sm">
-              <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-md text-label-md">
+              <div className="w-8 h-8 shrink-0 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-md text-label-md">
                 {nom.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()}
               </div>
               <div className="hidden sm:flex flex-col text-left">
@@ -208,6 +210,10 @@ export default function AppShell({
         </ul>
         {plus && (
           <div className="absolute bottom-full inset-x-0 bg-surface-container-lowest border-t border-outline-variant/40 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] p-space-md flex flex-col gap-1">
+            <div className="sm:hidden flex items-center justify-between px-space-md pb-1">
+              <span className="font-label-md text-label-md text-on-surface-variant">{t("Langue")}</span>
+              <LangueSwitch />
+            </div>
             {plusLiens.map((n) => (
               <Link key={n.href} href={n.href} onClick={() => setPlus(false)} className="flex items-center gap-3 px-space-md py-3 rounded-xl text-on-surface hover:bg-surface-container-low">
                 <span className="material-symbols-outlined text-[22px] text-primary">{n.icon}</span>

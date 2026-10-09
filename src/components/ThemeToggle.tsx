@@ -3,54 +3,54 @@
 import { useSyncExternalStore } from "react";
 import { useT } from "@/lib/i18n/client";
 
-type Choix = "auto" | "light" | "dark";
+type Theme = "light" | "dark";
 const CLE = "nuuf_theme";
-const SUITE: Record<Choix, Choix> = { auto: "light", light: "dark", dark: "auto" };
-const ICONE: Record<Choix, string> = { auto: "contrast", light: "light_mode", dark: "dark_mode" };
 
 const abonnes = new Set<() => void>();
-function lire(): Choix {
+const systemeSombre = () => typeof matchMedia === "function" && matchMedia("(prefers-color-scheme: dark)").matches;
+
+/** Thème réellement affiché : le choix mémorisé, sinon le réglage de l'appareil. */
+function lire(): Theme {
   try {
     const v = localStorage.getItem(CLE);
-    return v === "light" || v === "dark" ? v : "auto";
-  } catch {
-    return "auto";
-  }
+    if (v === "light" || v === "dark") return v;
+  } catch {}
+  return systemeSombre() ? "dark" : "light";
 }
 function sAbonner(rappel: () => void) {
   abonnes.add(rappel);
   window.addEventListener("storage", rappel);
+  const mq = matchMedia("(prefers-color-scheme: dark)");
+  mq.addEventListener("change", rappel);
   return () => {
     abonnes.delete(rappel);
     window.removeEventListener("storage", rappel);
+    mq.removeEventListener("change", rappel);
   };
 }
-function choisir(c: Choix) {
-  const r = document.documentElement;
-  if (c === "auto") r.removeAttribute("data-theme");
-  else r.setAttribute("data-theme", c);
+function choisir(theme: Theme) {
+  document.documentElement.setAttribute("data-theme", theme);
   try {
-    if (c === "auto") localStorage.removeItem(CLE);
-    else localStorage.setItem(CLE, c);
+    localStorage.setItem(CLE, theme);
   } catch {}
   abonnes.forEach((f) => f());
 }
 
-/** Thème : automatique (réglage de l'appareil) → clair → sombre. Le choix est mémorisé sur l'appareil. */
+/** Un seul clic : bascule entre le mode clair et le mode sombre. Le choix est mémorisé sur l'appareil. */
 export default function ThemeToggle() {
   const { t } = useT();
-  const choix = useSyncExternalStore(sAbonner, lire, () => "auto" as Choix);
-  const libelles: Record<Choix, string> = { auto: t("automatique"), light: t("clair"), dark: t("sombre") };
-  const titre = `${t("Thème")} : ${libelles[choix]}`;
+  const theme = useSyncExternalStore(sAbonner, lire, () => "light" as Theme);
+  const suivant: Theme = theme === "dark" ? "light" : "dark";
+  const titre = suivant === "dark" ? t("Passer en mode sombre") : t("Passer en mode clair");
   return (
     <button
       type="button"
-      onClick={() => choisir(SUITE[choix])}
+      onClick={() => choisir(suivant)}
       aria-label={titre}
       title={titre}
-      className="w-10 h-10 rounded-xl flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"
+      className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"
     >
-      <span className="material-symbols-outlined text-[22px]">{ICONE[choix]}</span>
+      <span className="material-symbols-outlined text-[22px]">{suivant === "dark" ? "dark_mode" : "light_mode"}</span>
     </button>
   );
 }

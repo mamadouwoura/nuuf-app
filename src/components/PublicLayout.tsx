@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { getT } from "@/lib/i18n/server";
 import { N_ } from "@/lib/i18n/translate";
-import Preferences from "@/components/Preferences";
+import LangueSwitch from "@/components/LangueSwitch";
+import MenuMobile from "@/components/MenuMobile";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const WA = process.env.NEXT_PUBLIC_CONTACT_WHATSAPP; // ex. 221771234567
 const MAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
@@ -20,17 +22,17 @@ export async function PublicHeader({ actif }: { actif: "accueil" | "tarifs" }) {
   const { t } = await getT();
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
-      <div className="h-20 w-full max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-space-sm group">
+      <div className="relative h-16 md:h-20 w-full max-w-7xl mx-auto px-4 md:px-margin-tablet lg:px-margin-desktop flex items-center justify-between gap-2">
+        <Link href="/" className="flex items-center gap-space-sm group shrink-0">
           <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary-container text-on-primary-container">
             <span className="material-symbols-outlined text-[24px]">apartment</span>
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col max-[380px]:hidden">
             <span className="font-headline-md text-headline-md tracking-tight text-primary leading-none lowercase">nuuf</span>
             <span className="font-label-md text-[10px] text-secondary leading-none uppercase tracking-widest mt-1">Sénégal</span>
           </div>
         </Link>
-        <nav className="hidden md:flex items-center gap-space-md lg:gap-space-lg">
+        <nav className="hidden xl:flex items-center gap-space-lg">
           {NAV.map((n) => {
             const on = (actif === "accueil" && n.href === "/") || (actif === "tarifs" && n.href === "/tarifs");
             return (
@@ -48,14 +50,16 @@ export async function PublicHeader({ actif }: { actif: "accueil" | "tarifs" }) {
             );
           })}
         </nav>
-        <div className="flex items-center gap-space-sm md:gap-space-md">
-          <Preferences />
-          <Link href="/connexion" className="hidden sm:inline-flex items-center justify-center font-label-lg text-label-lg text-primary hover:text-primary-container px-space-md py-space-sm transition-colors">
+        <div className="flex items-center gap-1 sm:gap-space-sm md:gap-space-md min-w-0">
+          <div className="hidden sm:block"><LangueSwitch /></div>
+          <ThemeToggle />
+          <Link href="/connexion" className="hidden xl:inline-flex items-center justify-center font-label-lg text-label-lg text-primary hover:text-primary-container px-space-md py-space-sm transition-colors">
             {t("Se connecter")}
           </Link>
-          <Link href="/inscription" className="inline-flex items-center justify-center h-12 px-space-lg rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg hover:bg-primary transition-colors shadow-sm">
+          <Link href="/inscription" className="inline-flex items-center justify-center h-10 md:h-12 px-3 md:px-space-lg rounded-xl bg-primary-container text-on-primary font-label-md md:font-label-lg text-label-md md:text-label-lg font-semibold whitespace-nowrap hover:bg-primary transition-colors shadow-sm">
             {t("Essai gratuit")}
           </Link>
+          <MenuMobile liens={NAV.map((n) => ({ href: n.href, label: t(n.label) }))} />
         </div>
       </div>
     </header>

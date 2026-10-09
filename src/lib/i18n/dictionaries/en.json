@@ -169,7 +169,6 @@
  "Aucune relance envoyée pour le moment.": "No reminders sent yet.",
  "Aucune transaction.": "No transactions.",
  "Authentifiable": "Verifiable",
- "automatique": "automatic",
  "Automatisation WhatsApp": "WhatsApp automation",
  "Automatisez dès aujourd'hui l'encaissement de vos loyers et vos quittances. Vos 14 premiers jours sont totalement gratuits, sans carte bancaire.": "Automate your rent collection and receipts from today. Your first 14 days are completely free, no credit card required.",
  "Avec qui sont-elles partagées ?": "Who is it shared with?",
@@ -231,7 +230,6 @@
  "Choisissez un rôle.": "Choose a role.",
  "Choisissez un type de bien.": "Choose a property type.",
  "Choisissez Wave ou Orange Money.": "Choose Wave or Orange Money.",
- "clair": "light",
  "CNI / Passeport": "National ID / Passport",
  "COCC": "COCC",
  "Code de sécurité": "Security code",
@@ -790,7 +788,6 @@
  "Simulateur": "Simulator",
  "SN": "SN",
  "soit {montant} FCFA / mois": "i.e. {montant} FCFA / month",
- "sombre": "dark",
  "Sous-compteur SEN'EAU": "SEN'EAU sub-meter",
  "Statut": "Status",
  "Studio": "Studio",
@@ -827,7 +824,6 @@
  "Téléphone mobile & WhatsApp": "Mobile phone & WhatsApp",
  "Temps estimé : moins de 3 minutes": "Estimated time: under 3 minutes",
  "Terminé": "Done",
- "Thème": "Theme",
  "Total encaissé": "Total collected",
  "Total loyers versés": "Total rent paid",
  "Total versé": "Total paid",
@@ -1004,5 +1000,10 @@
  "votre numéro": "your number",
  "Acquitté à 100% • Solde : 0 FCFA": "Paid in full • Balance: 0 FCFA",
  "Acompte reçu • Reste dû : {montant} FCFA": "Deposit received • Remaining: {montant} FCFA",
- "Mode démonstration : votre code est": "Demo mode: your code is"
+ "Mode démonstration : votre code est": "Demo mode: your code is",
+ "Passer en mode sombre": "Switch to dark mode",
+ "Passer en mode clair": "Switch to light mode",
+ "Fermer le menu": "Close menu",
+ "Ouvrir le menu": "Open menu",
+ "Menu": "Menu"
 }
