@@ -1,9 +1,10 @@
+import Chargement from "@/components/Chargement";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import { db } from "@/lib/db";
 import { etatAcces } from "@/lib/abonnement";
-import { numerosAdmin } from "@/lib/admin";
+import { estAdmin } from "@/lib/admin";
 import { libelleMois } from "@/lib/loyers";
 import { modeSimulation } from "@/lib/passerelle";
 import { getUser } from "@/lib/session";
@@ -13,6 +14,7 @@ async function Shell({ children }: { children: React.ReactNode }) {
   const { t, tn, locale } = await getT();
   const user = await getUser();
   if (!user) redirect("/connexion");
+  if (estAdmin(user.telephone)) redirect("/admin"); // l'administrateur n'a pas d'espace bailleur
   const orgId = user.membres[0].organisationId;
   const forfait = user.membres[0].organisation.abonnement?.forfait ?? "DECOUVERTE";
   const libelle = forfait === "PRO" ? t("Bailleur Pro") : forfait === "AGENCE" ? t("Agence") : t("Bailleur particulier");
@@ -32,7 +34,7 @@ async function Shell({ children }: { children: React.ReactNode }) {
           ? { ton: "alerte" as const, texte: t("Accès en lecture seule : vos données sont conservées. Activez un abonnement pour reprendre l'encaissement.") }
           : null;
   return (
-    <AppShell nom={user.nomComplet} libelleCompte={libelle} nbBiens={nbBiens} nbRetards={nbRetards} bandeau={bandeau} moisLabel={libelleMois(new Date(), locale)} simulation={modeSimulation()} admin={numerosAdmin().includes(user.telephone)}>
+    <AppShell nom={user.nomComplet} libelleCompte={libelle} nbBiens={nbBiens} nbRetards={nbRetards} bandeau={bandeau} moisLabel={libelleMois(new Date(), locale)} simulation={modeSimulation()}>
       {children}
     </AppShell>
   );
@@ -41,7 +43,7 @@ async function Shell({ children }: { children: React.ReactNode }) {
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-6 text-body-md">{t("Chargement…")}</p>}>
+    <Suspense fallback={<Chargement />}>
       <Shell>{children}</Shell>
     </Suspense>
   );

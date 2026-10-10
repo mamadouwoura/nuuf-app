@@ -1,3 +1,4 @@
+import Chargement from "@/components/Chargement";
 import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -183,7 +184,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
 export default async function Page({ searchParams }: { searchParams: Promise<Params> }) {
   const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">{t("Chargement…")}</p>}>
+    <Suspense fallback={<Chargement />}>
       <Contenu searchParams={searchParams} />
     </Suspense>
   );

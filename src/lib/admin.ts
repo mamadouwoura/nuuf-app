@@ -8,10 +8,12 @@ import { getUser } from "./session";
 /** Administrateurs Nuuf : numéros listés dans ADMIN_PHONES (séparés par des virgules). */
 export const numerosAdmin = () => (process.env.ADMIN_PHONES ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 
+export const estAdmin = (telephone: string) => numerosAdmin().includes(telephone);
+
 /** Garde du back-office : toute autre personne reçoit un 404 (le back-office n'est pas révélé). */
 export async function exigerAdmin() {
   const user = await getUser();
-  if (!user || !numerosAdmin().includes(user.telephone)) notFound();
+  if (!user || !estAdmin(user.telephone)) notFound();
   return user;
 }
 

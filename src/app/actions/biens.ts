@@ -6,6 +6,8 @@ import type { TypeBien } from "@prisma/client";
 import { db } from "@/lib/db";
 import { etatAcces } from "@/lib/abonnement";
 import { FORFAITS } from "@/lib/forfaits";
+import { normaliserCni } from "@/lib/fiche";
+import { lireAppreciation, motifValide } from "@/lib/motifs";
 import { normalizePhone } from "@/lib/security";
 import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
@@ -72,6 +74,7 @@ export async function creerBienEtLocataire(form: FormData) {
         nomComplet: locNom,
         telephone,
         cni: texte(form.get("locCni")) || null,
+        cniNorm: normaliserCni(texte(form.get("locCni"))),
         profession: texte(form.get("locProfession")) || null,
       },
     });
@@ -186,9 +189,95 @@ export async function archiverBien(form: FormData) {
     await tx.echeance.deleteMany({
       where: { bailId: { in: ids }, mois: { gte: debutDuMois() }, paiements: { none: {} } },
     });
-    await tx.bail.updateMany({ where: { id: { in: ids } }, data: { actif: false, finLe: new Date() } });
+    const motif = texte(form.get("motifFin"));
+    const appr = lireAppreciation((n) => texte(form.get(n)));
+    await tx.bail.updateMany({
+      where: { id: { in: ids } },
+      data: {
+        actif: false,
+        finLe: new Date(),
+        motifFin: motifValide(motif) ? motif : null,
+        apprLogement: appr.logement,
+        apprRegles: appr.regles,
+        apprSortie: appr.sortie,
+        apprRelouer: appr.relouer,
+      },
+    });
     await tx.bien.update({ where: { id }, data: { archiveLe: new Date() } });
     await tx.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "bien.archive", cible: id } });
   });
   redirect("/biens?archive=1");
+}
+
+/** Le locataire quitte : le bail se termine, les loyers à venir non réglés sont retirés, le bien devient vacant. L'historique est conservé. */
+export async function terminerBail(form: FormData) {
+  const { t } = await getT();
+  const id = texte(form.get("id"));
+  const { user, bien, orgId } = await bienAutorise(id);
+  const bail = bien.baux[0];
+  if (!bail) redirect(`/biens/${id}`);
+  const brut = texte(form.get("finLe"));
+  const fin = brut ? new Date(`${brut}T00:00:00.000Z`) : new Date();
+  if (Number.isNaN(fin.getTime())) redirect(`/biens/${id}?erreur=${encodeURIComponent(t("Date de départ invalide."))}`);
+  if (fin.getTime() < bail.debutLe.getTime()) redirect(`/biens/${id}?erreur=${encodeURIComponent(t("La date de départ précède le début du bail."))}`);
+  const motif = texte(form.get("motifFin"));
+  const moisDeFin = new Date(Date.UTC(fin.getUTCFullYear(), fin.getUTCMonth(), 1));
+  await db.$transaction(async (tx) => {
+    // Les loyers des mois suivant le départ, jamais payés, n'ont plus lieu d'être.
+    await tx.echeance.deleteMany({ where: { bailId: bail.id, mois: { gt: moisDeFin }, paiements: { none: {} } } });
+    const appr = lireAppreciation((n) => texte(form.get(n)));
+    await tx.bail.update({
+      where: { id: bail.id },
+      data: {
+        actif: false,
+        finLe: fin,
+        motifFin: motifValide(motif) ? motif : null,
+        apprLogement: appr.logement,
+        apprRegles: appr.regles,
+        apprSortie: appr.sortie,
+        apprRelouer: appr.relouer,
+      },
+    });
+    await tx.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "bail.termine", cible: bail.id } });
+  });
+  redirect(`/biens/${id}?ok=${encodeURIComponent(t("Départ enregistré : le bien est vacant."))}`);
+}
+
+/** Installe un nouveau locataire sur un bien vacant (bail + première échéance). */
+export async function nouveauLocataire(form: FormData) {
+  const { t } = await getT();
+  const id = texte(form.get("id"));
+  const { user, bien, orgId } = await bienAutorise(id);
+  const echec = (m: string): never => redirect(`/biens/${id}?erreur=${encodeURIComponent(m)}`);
+  if (bien.baux.length) echec(t("Ce bien a déjà un locataire en place."));
+  const nom = texte(form.get("locNom"));
+  const telephone = normalizePhone(texte(form.get("locTel")));
+  const loyer = chiffres(form.get("loyer"));
+  const cautionMois = Math.min(chiffres(form.get("cautionMois")), 12);
+  const jour = Math.min(Math.max(chiffres(form.get("jour")) || 5, 1), 28);
+  const debut = new Date(`${texte(form.get("debut"))}T00:00:00.000Z`);
+  if (nom.length < 3) echec(t("Indiquez le nom du locataire."));
+  if (!telephone) return echec(t("Numéro du locataire invalide. Exemple : 77 123 45 67"));
+  if (loyer <= 0) echec(t("Indiquez le loyer mensuel."));
+  if (Number.isNaN(debut.getTime())) echec(t("Indiquez la date de prise d'effet."));
+
+  const locataireId = await db.$transaction(async (tx) => {
+    const loc = await tx.locataire.create({ data: { organisationId: orgId, nomComplet: nom, telephone } });
+    const bail = await tx.bail.create({
+      data: { bienId: bien.id, locataireId: loc.id, loyerMensuel: loyer, cautionMois, jourEcheance: jour, debutLe: debut },
+    });
+    await tx.echeance.create({
+      data: {
+        bailId: bail.id,
+        mois: new Date(Date.UTC(debut.getUTCFullYear(), debut.getUTCMonth(), 1)),
+        montantDu: loyer,
+        dateLimite: new Date(Date.UTC(debut.getUTCFullYear(), debut.getUTCMonth(), jour)),
+        jetonPaiement: randomBytes(16).toString("hex"),
+        jetonExpireLe: new Date(Date.now() + 72 * 3_600_000),
+      },
+    });
+    await tx.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "bail.cree", cible: bail.id } });
+    return loc.id;
+  });
+  redirect(`/locataires/${locataireId}/fiche`);
 }

@@ -20,7 +20,7 @@ export default function AjouterBienForm({ erreur }: { erreur?: string }) {
   const chiffres = (v: string) => Number(v.replace(/\D/g, "")) || 0;
   const fmt = (v: string) => (chiffres(v) ? String(chiffres(v)).replace(/\B(?=(\d{3})+(?!\d))/g, " ") : "—");
   const fait1 = designation.trim().length >= 3;
-  const fait2 = nom.trim().length >= 3 && tel.replace(/D/g, "").length >= 9;
+  const fait2 = nom.trim().length >= 3 && tel.replace(/\D/g, "").length >= 9;
   const fait3 = chiffres(loyer) > 0 && Boolean(debut);
   const etapeActive = !fait1 ? 1 : !fait2 ? 2 : !fait3 ? 3 : 4;
   const initiales = nom.split(" ").filter(Boolean).map((p) => p[0]).slice(0, 2).join("").toUpperCase() || "?";
@@ -179,10 +179,10 @@ export default function AjouterBienForm({ erreur }: { erreur?: string }) {
       <div>
       <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Téléphone mobile & WhatsApp")}</label>
       <div className="flex items-center gap-2">
-      <span className="inline-flex items-center justify-center px-3 h-11 rounded-xl bg-surface-container font-label-md text-label-md text-on-surface font-bold">
+      <span className="shrink-0 inline-flex items-center justify-center px-3 h-11 rounded-xl bg-surface-container font-label-md text-label-md text-on-surface font-bold">
                         🇸🇳 +221
                       </span>
-      <input className="flex-1 h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none font-semibold" type="tel" name="locTel" required value={tel} onChange={(e) => setTel(e.target.value)} placeholder="77 000 00 00" />
+      <input className="flex-1 min-w-0 w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none font-semibold" type="tel" name="locTel" required value={tel} onChange={(e) => setTel(e.target.value)} placeholder="77 000 00 00" />
       </div>
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t("Indispensable pour l'envoi automatique des quittances et des liens Wave / OM.")}</p>
       </div>

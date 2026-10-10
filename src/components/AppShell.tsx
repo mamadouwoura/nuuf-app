@@ -13,6 +13,7 @@ const NAV = [
   { href: "/tableau-de-bord", icon: "grid_view", label: N_("Tableau de bord") },
   { href: "/biens", icon: "apartment", label: N_("Biens"), badge: "biens" },
   { href: "/locataires", icon: "group", label: N_("Locataires") },
+  { href: "/historique", icon: "manage_search", label: N_("Vérifier un candidat") },
   { href: "/paiements", icon: "account_balance_wallet", label: N_("Paiements") },
   { href: "/relances", icon: "schedule", label: N_("Relances"), badge: "retards", alert: true },
   { href: "/quittances", icon: "receipt_long", label: N_("Quittances") },
@@ -29,6 +30,7 @@ const BARRE = [
 ];
 const PLUS = [
   { href: "/locataires", icon: "group", label: N_("Locataires") },
+  { href: "/historique", icon: "manage_search", label: N_("Vérifier un candidat") },
   { href: "/relances", icon: "schedule", label: N_("Relances") },
   { href: "/parametres", icon: "tune", label: N_("Paramètres") },
   { href: "/parametres/abonnement", icon: "workspace_premium", label: N_("Abonnement") },
@@ -47,8 +49,7 @@ export default function AppShell({
   bandeau,
   moisLabel,
   simulation,
-  admin = false,
-}: {
+  }: {
   children: React.ReactNode;
   nom: string;
   libelleCompte: string;
@@ -57,13 +58,11 @@ export default function AppShell({
   bandeau: { ton: "info" | "alerte"; texte: string } | null;
   moisLabel: string;
   simulation: boolean;
-  admin?: boolean;
 }) {
   const { t, tn } = useT();
   const pathname = usePathname();
-  const ADMIN: { href: string; icon: string; label: string; badge?: string; alert?: boolean } = { href: "/admin", icon: "admin_panel_settings", label: t("Console admin") };
-  const navigation: (typeof NAV[number] | typeof ADMIN)[] = admin ? [...NAV, ADMIN] : NAV;
-  const plusLiens = admin ? [...PLUS, ADMIN] : PLUS;
+  const navigation = NAV;
+  const plusLiens = PLUS;
   const [plus, setPlus] = useState(false);
   const [confirmer, setConfirmer] = useState(false);
   return (
@@ -121,7 +120,7 @@ export default function AppShell({
           <p className="font-body-sm text-body-sm text-on-surface-variant">{simulation ? t("Mode simulation • aucun débit réel") : t("Paiements actifs")}</p>
           <div className="pt-space-xs mt-space-xs flex items-center justify-between">
             {CONTACT_WA ? (
-              <a className="flex items-center gap-1.5 font-label-md text-label-md text-primary font-semibold hover:text-primary-container transition-colors" href={`https://wa.me/${CONTACT_WA.replace(/D/g, "")}`} target="_blank">
+              <a className="flex items-center gap-1.5 font-label-md text-label-md text-primary font-semibold hover:text-primary-container transition-colors" href={`https://wa.me/${CONTACT_WA.replace(/\D/g, "")}`} target="_blank">
                 <span className="material-symbols-outlined text-[16px]">chat</span>{t("Support WhatsApp")}
               </a>
             ) : (

@@ -10,7 +10,7 @@ export default async function VerificationNumero({ erreur, devCode, telephone }:
   return (
     <>
       <main className="w-full min-h-screen bg-background"><div className="flex flex-col w-full">
-      <div className="relative w-full min-h-[92vh] flex flex-col justify-between items-center px-4 py-8 sm:px-6 lg:px-8">
+      <div className="relative w-full overflow-x-clip min-h-[92vh] flex flex-col justify-between items-center px-4 py-8 sm:px-6 lg:px-8">
       <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[720px] h-[480px] bg-primary-fixed/20 rounded-full blur-3xl pointer-events-none -z-10"></div>
       <div className="absolute bottom-10 -right-24 w-[420px] h-[360px] bg-secondary-fixed/20 rounded-full blur-3xl pointer-events-none -z-10"></div>
       <header className="w-full max-w-4xl flex items-center justify-between py-4">
@@ -21,7 +21,7 @@ export default async function VerificationNumero({ erreur, devCode, telephone }:
       <span className="font-body-md text-body-md font-medium text-on-surface-variant">{t("Retour")}</span>
       </a>
       <div className="flex items-center gap-2.5">
-      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container text-on-surface-variant">
+      <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container text-on-surface-variant">
       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
       <span className="font-label-md text-label-md font-semibold text-primary">{t("Fintech Immobilière • Sénégal")}</span>
       </div>

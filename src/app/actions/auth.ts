@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { envoyerMessage } from "@/lib/messagerie";
 import { plafondCodesAtteint, plafondInscriptionsAtteint, tropDEchecsCode } from "@/lib/garde";
 import { erreurMotDePasse } from "@/lib/mot-de-passe";
+import { estAdmin } from "@/lib/admin";
 import { generateOtp, hashOtp, hashPassword, normalizePhone, verifyPassword } from "@/lib/security";
 import { endSession, getPendingUid, setDevOtp, setPending, startSession } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
@@ -117,6 +118,8 @@ export async function verifierCode(_: FormState, form: FormData): Promise<FormSt
   await db.codeOtp.update({ where: { id: otp.id }, data: { utiliseLe: new Date() } });
   await db.utilisateur.update({ where: { id: uid }, data: { telVerifieLe: new Date() } });
   await startSession(uid);
+  const connecte = await db.utilisateur.findUnique({ where: { id: uid }, select: { telephone: true } });
+  if (connecte && estAdmin(connecte.telephone)) redirect("/admin");
   const nbBiens = await db.bien.count({ where: { organisation: { membres: { some: { utilisateurId: uid } } }, archiveLe: null } });
   redirect(nbBiens === 0 ? "/bienvenue" : "/tableau-de-bord");
 }

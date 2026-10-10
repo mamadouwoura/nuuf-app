@@ -6,7 +6,7 @@ import { verifierCodeReinit } from "@/app/actions/reinit";
 import { useT } from "@/lib/i18n/client";
 
 const CHAMP =
-  "w-10 sm:w-12 h-12 sm:h-14 text-center font-display-currency text-[22px] font-bold rounded-lg bg-surface-container text-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none transition-all shadow-inner";
+  "min-w-0 flex-1 basis-0 max-w-12 p-0 h-12 sm:h-14 text-center font-display-currency text-[22px] font-bold rounded-lg bg-surface-container text-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none transition-all shadow-inner";
 
 /** Six cases à un chiffre ; le code complet est envoyé dans le champ caché « code ». */
 export default function CodeReinit() {
@@ -36,9 +36,9 @@ export default function CodeReinit() {
       <input type="hidden" name="code" value={code} readOnly />
       <div className="mb-space-lg">
         <div className="flex items-center justify-between gap-1.5 sm:gap-2">
-          <div className="flex items-center gap-1.5 sm:gap-2">{[0, 1, 2].map(c)}</div>
+          <div className="flex flex-1 min-w-0 items-center gap-1.5 sm:gap-2">{[0, 1, 2].map(c)}</div>
           <span className="text-outline-variant font-bold text-lg select-none px-0.5">–</span>
-          <div className="flex items-center gap-1.5 sm:gap-2">{[3, 4, 5].map(c)}</div>
+          <div className="flex flex-1 min-w-0 items-center gap-1.5 sm:gap-2">{[3, 4, 5].map(c)}</div>
         </div>
         <div className="flex items-center justify-between mt-3 text-on-surface-variant font-body-sm text-body-sm">
           <Link href="/mot-de-passe-oublie" className="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1">

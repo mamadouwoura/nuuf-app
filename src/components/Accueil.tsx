@@ -1,3 +1,4 @@
+import DemoMobile from "@/components/DemoMobile";
 import { lienContact } from "@/components/PublicLayout";
 import { getT } from "@/lib/i18n/server";
 
@@ -237,6 +238,8 @@ export default async function Accueil() {
       </div>
       </div>
       </section>
+      
+      <DemoMobile />
       
       <section className="w-full py-20 bg-background" id="fonctionnalites">
       <div className="w-full max-w-7xl mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop">

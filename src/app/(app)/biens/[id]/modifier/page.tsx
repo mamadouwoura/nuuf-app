@@ -1,3 +1,6 @@
+import ChampsAppreciation from "@/components/ChampsAppreciation";
+import { MOTIFS_FIN } from "@/lib/motifs";
+import Chargement from "@/components/Chargement";
 import Link from "next/link";
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
@@ -140,6 +143,13 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
           </summary>
           <form action={archiverBien} className="mt-space-sm flex flex-wrap items-center gap-space-sm">
             <input type="hidden" name="id" value={id} />
+            <label className="w-full font-label-md text-label-md text-on-surface-variant" htmlFor="motifFin">{t("Motif de fin de location")}</label>
+            <select id="motifFin" name="motifFin" defaultValue="FIN_NORMALE" className="h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface">
+              {MOTIFS_FIN.map((m) => (
+                <option key={m.code} value={m.code}>{t(m.libelle)}</option>
+              ))}
+            </select>
+            <ChampsAppreciation t={t} idPrefixe="archive" />
             <span className="font-body-md text-body-md text-on-surface">{t("Confirmer l'archivage de « {nom} » ?", { nom: bien.designation })}</span>
             <button className="h-11 px-space-md rounded-xl bg-error text-on-error font-label-lg text-label-lg font-bold">{t("Oui, archiver")}</button>
           </form>
@@ -152,7 +162,7 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
 export default async function Page(props: { params: Promise<{ id: string }>; searchParams: Promise<{ erreur?: string; ok?: string }> }) {
   const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">{t("Chargement…")}</p>}>
+    <Suspense fallback={<Chargement />}>
       <Contenu {...props} />
     </Suspense>
   );

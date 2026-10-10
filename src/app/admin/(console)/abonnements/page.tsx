@@ -1,3 +1,4 @@
+import Chargement from "@/components/Chargement";
 import { Suspense } from "react";
 import { db } from "@/lib/db";
 import { exigerAdmin, listerBailleurs } from "@/lib/admin";
@@ -100,7 +101,7 @@ async function Contenu() {
 export default async function Page() {
   const { t } = await getT();
   return (
-    <Suspense fallback={<p className="font-body-md text-body-md">{t("Chargement…")}</p>}>
+    <Suspense fallback={<Chargement />}>
       <Contenu />
     </Suspense>
   );

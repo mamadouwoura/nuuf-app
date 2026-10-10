@@ -1,5 +1,6 @@
 import { lienContact } from "@/components/PublicLayout";
 import VoirMotDePasse from "@/components/VoirMotDePasse";
+import BoutonEnvoi from "@/components/BoutonEnvoi";
 // Porté depuis page_d_accueil_connexion_nuuf/code.html (généré par scripts/port.mjs)
 import { connexionForm } from "@/app/actions/auth";
 import { getT } from "@/lib/i18n/server";
@@ -11,9 +12,9 @@ export default async function Connexion({ erreur, info }: { erreur?: string; inf
   return (
     <>
       <main className="w-full min-h-screen bg-background"><div className="flex flex-col w-full">
-      <div className="grid grid-cols-1 lg:grid-cols-12 w-full min-h-[960px] lg:h-screen overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12 w-full lg:min-h-[960px] lg:h-screen lg:overflow-hidden">
       
-      <div className="lg:col-span-7 palette-claire bg-[#175a4a] text-on-primary flex flex-col justify-between p-6 sm:p-10 lg:p-12 relative overflow-y-auto">
+      <div className="lg:col-span-7 palette-claire bg-[#175a4a] text-on-primary hidden lg:flex flex-col justify-between p-6 sm:p-10 lg:p-12 relative overflow-y-auto">
       
       <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-primary-fixed opacity-10 blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-10 right-0 w-80 h-80 rounded-full bg-secondary-container opacity-15 blur-3xl pointer-events-none"></div>
@@ -110,11 +111,12 @@ export default async function Connexion({ erreur, info }: { erreur?: string; inf
       </div>
       </div>
       
-      <div className="lg:col-span-5 bg-surface-container-lowest text-on-surface flex flex-col justify-between p-6 sm:p-10 lg:p-12 overflow-y-auto">
+      <div className="lg:col-span-5 bg-surface-container-lowest text-on-surface flex flex-col justify-between min-h-screen lg:min-h-0 p-6 sm:p-10 lg:p-12 lg:overflow-y-auto">
       
       <div className="flex items-center justify-between w-full">
       <div className="flex items-center gap-2">
       <span className="w-2 h-2 rounded-full bg-tertiary-container"></span>
+      <span className="lg:hidden font-headline-md text-primary font-extrabold lowercase tracking-tight">nuuf</span>
       <span className="font-label-md text-xs text-on-surface-variant">{t("Espace propriétaire")}</span>
       </div>
       <div className="flex items-center gap-3">
@@ -160,7 +162,7 @@ export default async function Connexion({ erreur, info }: { erreur?: string; inf
       <span className="font-semibold text-on-surface">+221</span>
       <span className="material-symbols-outlined text-base text-outline">expand_more</span>
       </div>
-      <input autoComplete="tel" className="w-full py-3.5 px-3 bg-transparent text-on-surface font-headline-sm text-base placeholder:text-outline focus:outline-none" id="phone-input" maxLength={12} name="telephone" placeholder="77 000 00 00" required type="tel" />
+      <input autoComplete="tel" className="w-full py-3.5 px-3 bg-transparent text-on-surface font-headline-sm text-base placeholder:text-outline focus:outline-none" id="phone-input" maxLength={20} name="telephone" placeholder="77 000 00 00" required type="tel" />
       </div>
       <p className="font-body-sm text-[11px] text-on-surface-variant">{t("Compatible Orange Money, Wave et Free Money.")}</p>
       </div>
@@ -176,7 +178,7 @@ export default async function Connexion({ erreur, info }: { erreur?: string; inf
       </div>
       <div className="relative flex items-center rounded-xl bg-surface-container-low focus-within:bg-surface-container-lowest focus-within:shadow-md transition-all">
       <span className="material-symbols-outlined absolute left-3.5 text-outline text-lg pointer-events-none">lock</span>
-      <input className="w-full py-3.5 pl-10 pr-11 bg-transparent text-on-surface font-body-lg text-sm placeholder:text-outline focus:outline-none" id="password-input" name="motDePasse" placeholder="••••••••••••" required type="password" />
+      <input className="w-full py-3.5 pl-10 pr-11 bg-transparent text-on-surface font-body-lg text-base placeholder:text-outline focus:outline-none" id="password-input" name="motDePasse" placeholder="••••••••••••" required type="password" />
       <VoirMotDePasse cible="password-input" className="absolute right-3.5 p-1 text-outline hover:text-on-surface focus:outline-none flex items-center" />
       </div>
       </div>
@@ -188,10 +190,10 @@ export default async function Connexion({ erreur, info }: { erreur?: string; inf
       </label>
       </div>
       
-      <button className="w-full mt-2 py-3.5 px-4 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-headline-sm text-sm font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 active:scale-[0.99]" id="submit-btn" type="submit">
+      <BoutonEnvoi enCours={t("Connexion en cours…")} className="w-full mt-2 py-3.5 px-4 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-headline-sm text-sm font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 active:scale-[0.99]" id="submit-btn">
       <span>{t("Se connecter à mon espace")}</span>
       <span className="material-symbols-outlined text-base">arrow_forward</span>
-      </button>
+      </BoutonEnvoi>
       
       
       </form>

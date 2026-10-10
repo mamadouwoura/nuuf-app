@@ -16,7 +16,11 @@ function extraire(seulementClient = false) {
   const cles = new Map(); // clé -> fichier:ligne
   for (const f of fichiers) {
     const src = fs.readFileSync(f, "utf8");
-    if (seulementClient && !/^\s*["']use client["']/.test(src)) continue;
+    const estClient = /^\s*["']use client["']/.test(src);
+    // Les libellés déclarés par N_() dans src/lib (listes, motifs…) sont affichés par des composants client : on les embarque aussi.
+    const donneesPartagees = /(^|[\\/])src[\\/]lib[\\/]/.test(f);
+    if (seulementClient && !estClient && !donneesPartagees) continue;
+    const seulementN = seulementClient && !estClient;
     const sf = ts.createSourceFile(f, src, ts.ScriptTarget.Latest, true, f.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
     (function visiter(n) {
       if (ts.isCallExpression(n) && ts.isIdentifier(n.expression)) {
@@ -25,8 +29,8 @@ function extraire(seulementClient = false) {
         const ajout = (txt) => {
           if (txt != null && !cles.has(txt)) cles.set(txt, `${f}:${sf.getLineAndCharacterOfPosition(n.getStart()).line + 1}`);
         };
-        if (nom === "t" || nom === "N_") ajout(lit(n.arguments[0]));
-        if (nom === "tn") {
+        if (nom === "N_" || (nom === "t" && !seulementN)) ajout(lit(n.arguments[0]));
+        if (nom === "tn" && !seulementN) {
           ajout(lit(n.arguments[1]));
           ajout(lit(n.arguments[2]));
         }

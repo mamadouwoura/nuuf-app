@@ -19,14 +19,14 @@ export default function OtpForm({ erreur, devCode }: { erreur?: string; devCode?
   function onInput(e: React.FormEvent<HTMLFormElement>) {
     const t = e.target as HTMLInputElement;
     if (!t.classList.contains("otp-field")) return;
-    t.value = t.value.replace(/D/g, "").slice(-1);
+    t.value = t.value.replace(/\D/g, "").slice(-1);
     const all = champs(t);
     setCode(all.map((i) => i.value).join(""));
     if (t.value) all[Math.min(all.indexOf(t) + 1, all.length - 1)].focus();
   }
   async function coller(e: React.MouseEvent<HTMLButtonElement>) {
     try {
-      const texte = (await navigator.clipboard.readText()).replace(/D/g, "").slice(0, 6);
+      const texte = (await navigator.clipboard.readText()).replace(/\D/g, "").slice(0, 6);
       const champs = Array.from(e.currentTarget.closest("form")!.querySelectorAll<HTMLInputElement>(".otp-field"));
       champs.forEach((c, i) => (c.value = texte[i] ?? ""));
       setCode(champs.map((c) => c.value).join(""));
@@ -47,7 +47,7 @@ export default function OtpForm({ erreur, devCode }: { erreur?: string; devCode?
     <>
       {devCode && (
         <p className="mb-4 rounded-xl bg-secondary-fixed text-on-secondary-fixed px-3 py-2 font-body-md text-body-md">
-          {t("Mode démonstration : votre code est")} <strong>{devCode}</strong>
+          {t("Mode démonstration : votre code est")} <strong className="whitespace-nowrap">{devCode}</strong>
         </p>
       )}
       {erreur && (
@@ -57,17 +57,17 @@ export default function OtpForm({ erreur, devCode }: { erreur?: string; devCode?
       )}
       <form action={verifierCodeForm} onInput={onInput} onKeyDown={onKeyDown} className="w-full flex flex-col items-center" id="otp-form">
       <input type="hidden" name="code" value={code} readOnly />
-      <div className="flex items-center justify-center gap-2 sm:gap-3 w-full mb-4">
-      <div className="flex items-center gap-1.5 sm:gap-2">
-      <input autoFocus autoComplete="one-time-code" className="otp-field w-11 h-14 sm:w-14 sm:h-16 rounded-xl bg-surface-container text-center font-display-currency text-display-currency-mobile text-primary font-bold focus:outline-none focus:bg-surface-container-low transition-all" data-index="0" inputMode="numeric" maxLength={1} type="text" />
-      <input className="otp-field w-11 h-14 sm:w-14 sm:h-16 rounded-xl bg-surface-container text-center font-display-currency text-display-currency-mobile text-primary font-bold focus:outline-none focus:bg-surface-container-low transition-all" data-index="1" inputMode="numeric" maxLength={1} type="text" />
-      <input className="otp-field w-11 h-14 sm:w-14 sm:h-16 rounded-xl bg-surface-container text-center font-display-currency text-display-currency-mobile text-primary font-bold focus:outline-none focus:bg-surface-container-low transition-all" data-index="2" inputMode="numeric" maxLength={1} type="text" />
+      <div className="flex items-center justify-center gap-1.5 sm:gap-3 w-full max-w-full mb-4">
+      <div className="flex flex-1 min-w-0 items-center gap-1.5 sm:gap-2">
+      <input autoFocus autoComplete="one-time-code" className="otp-field min-w-0 flex-1 basis-0 max-w-14 h-14 sm:h-16 p-0 rounded-xl bg-surface-container text-center font-display-currency text-display-currency-mobile text-primary font-bold focus:outline-none focus:bg-surface-container-low transition-all" data-index="0" inputMode="numeric" maxLength={1} type="text" />
+      <input className="otp-field min-w-0 flex-1 basis-0 max-w-14 h-14 sm:h-16 p-0 rounded-xl bg-surface-container text-center font-display-currency text-display-currency-mobile text-primary font-bold focus:outline-none focus:bg-surface-container-low transition-all" data-index="1" inputMode="numeric" maxLength={1} type="text" />
+      <input className="otp-field min-w-0 flex-1 basis-0 max-w-14 h-14 sm:h-16 p-0 rounded-xl bg-surface-container text-center font-display-currency text-display-currency-mobile text-primary font-bold focus:outline-none focus:bg-surface-container-low transition-all" data-index="2" inputMode="numeric" maxLength={1} type="text" />
       </div>
       <div className="w-2.5 h-0.5 rounded-full bg-outline-variant mx-0.5"></div>
-      <div className="flex items-center gap-1.5 sm:gap-2">
-      <input className="otp-field w-11 h-14 sm:w-14 sm:h-16 rounded-xl bg-surface text-center font-display-currency text-display-currency-mobile text-primary font-bold focus:outline-none focus:bg-surface-container-low transition-all placeholder:text-outline-variant" data-index="3" inputMode="numeric" maxLength={1} placeholder="•" type="text" />
-      <input className="otp-field w-11 h-14 sm:w-14 sm:h-16 rounded-xl bg-surface text-center font-display-currency text-display-currency-mobile text-primary font-bold focus:outline-none focus:bg-surface-container-low transition-all placeholder:text-outline-variant" data-index="4" inputMode="numeric" maxLength={1} placeholder="•" type="text" />
-      <input className="otp-field w-11 h-14 sm:w-14 sm:h-16 rounded-xl bg-surface text-center font-display-currency text-display-currency-mobile text-primary font-bold focus:outline-none focus:bg-surface-container-low transition-all placeholder:text-outline-variant" data-index="5" inputMode="numeric" maxLength={1} placeholder="•" type="text" />
+      <div className="flex flex-1 min-w-0 items-center gap-1.5 sm:gap-2">
+      <input className="otp-field min-w-0 flex-1 basis-0 max-w-14 h-14 sm:h-16 p-0 rounded-xl bg-surface text-center font-display-currency text-display-currency-mobile text-primary font-bold focus:outline-none focus:bg-surface-container-low transition-all placeholder:text-outline-variant" data-index="3" inputMode="numeric" maxLength={1} placeholder="•" type="text" />
+      <input className="otp-field min-w-0 flex-1 basis-0 max-w-14 h-14 sm:h-16 p-0 rounded-xl bg-surface text-center font-display-currency text-display-currency-mobile text-primary font-bold focus:outline-none focus:bg-surface-container-low transition-all placeholder:text-outline-variant" data-index="4" inputMode="numeric" maxLength={1} placeholder="•" type="text" />
+      <input className="otp-field min-w-0 flex-1 basis-0 max-w-14 h-14 sm:h-16 p-0 rounded-xl bg-surface text-center font-display-currency text-display-currency-mobile text-primary font-bold focus:outline-none focus:bg-surface-container-low transition-all placeholder:text-outline-variant" data-index="5" inputMode="numeric" maxLength={1} placeholder="•" type="text" />
       </div>
       </div>
       <div className="flex items-center justify-between w-full max-w-xs mb-8 text-on-surface-variant font-label-md text-label-md">

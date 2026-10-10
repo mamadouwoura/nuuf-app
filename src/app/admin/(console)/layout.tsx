@@ -1,3 +1,4 @@
+import Chargement from "@/components/Chargement";
 import { Suspense } from "react";
 import AdminShell from "@/components/AdminShell";
 import { exigerAdmin } from "@/lib/admin";
@@ -16,7 +17,7 @@ async function Shell({ children }: { children: React.ReactNode }) {
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-6 text-body-md">{t("Chargement…")}</p>}>
+    <Suspense fallback={<Chargement />}>
       <Shell>{children}</Shell>
     </Suspense>
   );

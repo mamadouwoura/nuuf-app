@@ -87,6 +87,7 @@ model Organisation {
   comptesEncaissement CompteEncaissement[]
   messages            Message[]
   journal             JournalAction[]
+  consultations       ConsultationHistorique[]
 }
 
 // Une personne qui se connecte (téléphone + mot de passe + OTP).
@@ -223,13 +224,63 @@ model Locataire {
   nomComplet     String
   telephone      String
   cni            String?
+  cniNorm        String? // numéro de pièce sans espaces ni tirets, en majuscules : sert à la recherche d'historique
   profession     String?
   creeLe         DateTime @default(now())
 
+  // Fiche de renseignement (remplie par l'agent, en face du locataire)
+  dateNaissance           DateTime?
+  lieuNaissance           String?
+  dernierDomicile         String?
+  contactUrgenceNom       String?
+  contactUrgenceTel       String?
+  situationFamiliale      String? // CELIBATAIRE | MARIE | AUTRE
+  enfantsMineurs          Int?
+  enfantsMajeurs          Int?
+  statutPro               String? // ENTREPRENEUR | SALARIE | LIBERAL | AUTRE
+  lieuTravail             String?
+  justificatifs           String[] // CNI | BULLETIN | ATTESTATION | AUTRE
+  ficheRemplieLe          DateTime?
+  consentementHistoriqueLe DateTime?
+  signature               String? // image PNG (data URL) de la signature manuscrite à l'écran
+  signeLe                 DateTime?
+
   organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   baux         Bail[]
+  documents    DocumentLocataire[]
 
   @@index([organisationId])
+  @@index([cniNorm])
+}
+
+// Pièce d'identité, bulletin de salaire… remis par le locataire (fichier stocké hors base, nom aléatoire).
+model DocumentLocataire {
+  id             String   @id @default(cuid())
+  locataireId    String
+  organisationId String
+  categorie      String // CNI | BULLETIN | ATTESTATION | AUTRE
+  fichier        String   @unique
+  type           String // image/jpeg | image/png | image/webp | application/pdf
+  taille         Int
+  creeLe         DateTime @default(now())
+
+  locataire Locataire @relation(fields: [locataireId], references: [id], onDelete: Cascade)
+
+  @@index([locataireId])
+}
+
+// Trace de chaque consultation de l'historique d'un candidat (responsabilité et limitation du volume).
+model ConsultationHistorique {
+  id             String   @id @default(cuid())
+  organisationId String
+  utilisateurId  String?
+  telephone      String
+  dossiers       Int
+  creeLe         DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@index([organisationId, creeLe])
 }
 
 // Un bail relie un bien et un locataire pour une période.
@@ -244,6 +295,12 @@ model Bail {
   debutLe         DateTime
   finLe           DateTime?
   actif           Boolean   @default(true)
+  motifFin        String? // FIN_NORMALE | DEPART_LOCATAIRE | FIN_BAILLEUR | AUTRE (renseigné à l'archivage)
+  // Appréciation du bailleur à la fin de la location : listes fermées, pas de texte libre
+  apprLogement    String? // SOIGNE | CORRECT | DEGRADE
+  apprRegles      String? // BON | A_SURVEILLER | PROBLEMATIQUE
+  apprSortie      String? // BON_ETAT | USURE_NORMALE | DEGRADATIONS
+  apprRelouer     String? // OUI | RESERVE | NON
 
   bien      Bien       @relation(fields: [bienId], references: [id], onDelete: Cascade)
   locataire Locataire  @relation(fields: [locataireId], references: [id], onDelete: Restrict)

@@ -1,3 +1,4 @@
+import Chargement from "@/components/Chargement";
 import Pagination, { decouper, numeroPage } from "@/components/Pagination";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
@@ -75,7 +76,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
                   <div key={l.id} className="p-space-md rounded-xl bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-md text-label-md font-bold">{initiales(loc.nomComplet)}</div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col min-w-0">
                         <span className="font-label-lg text-label-lg text-on-surface font-semibold">{loc.nomComplet}</span>
                         <span className="font-body-sm text-body-sm text-on-surface-variant">{l.bail.bien.designation} • {telAffiche(loc.telephone)}</span>
                         <span className="font-body-sm text-body-sm text-error font-semibold">{fcfa(l.reste)} FCFA • {tn(l.jours, "{n} jour de retard", "{n} jours de retard")}</span>
@@ -145,7 +146,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
 export default async function Page({ searchParams }: { searchParams: Promise<Params> }) {
   const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">{t("Chargement…")}</p>}>
+    <Suspense fallback={<Chargement />}>
       <Contenu searchParams={searchParams} />
     </Suspense>
   );

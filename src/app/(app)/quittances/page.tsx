@@ -1,3 +1,4 @@
+import Chargement from "@/components/Chargement";
 import Link from "next/link";
 import Pagination, { TAILLE_PAGE, numeroPage } from "@/components/Pagination";
 import { Suspense } from "react";
@@ -104,18 +105,18 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
               const envoyee = transmises.has(q.id);
               return (
                 <div key={q.id} className="py-space-md flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
-                  <div className="flex items-center gap-3 lg:w-2/5">
+                  <div className="flex items-center gap-3 min-w-0 lg:w-2/5">
                     <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-md text-label-md font-bold">{initiales(loc.nomComplet)}</div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col min-w-0">
                       <span className="font-label-lg text-label-lg text-on-surface font-semibold">{loc.nomComplet}</span>
                       <span className="font-body-sm text-body-sm text-on-surface-variant">{q.numero} • {q.paiement.echeance.bail.bien.designation}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-space-md lg:w-1/4">
+                  <div className="flex flex-wrap items-center gap-x-space-md gap-y-1 lg:w-1/4">
                     <span className="font-label-lg text-label-lg text-on-surface font-bold">{fcfa(q.paiement.montant)} FCFA</span>
                     <span className="font-body-sm text-body-sm text-on-surface-variant">{t(CANAL[q.paiement.canal])}</span>
                   </div>
-                  <div className="flex items-center gap-2 lg:w-1/3 lg:justify-end">
+                  <div className="flex flex-wrap items-center gap-2 lg:w-1/3 lg:justify-end">
                     <span className={`px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${envoyee ? "bg-success-container text-on-success-container" : "bg-secondary-fixed text-on-secondary-fixed-variant"}`}>
                       {envoyee ? t("Envoyée") : t("Non transmise")}
                     </span>
@@ -143,7 +144,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
 export default async function Page({ searchParams }: { searchParams: Promise<Params> }) {
   const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">{t("Chargement…")}</p>}>
+    <Suspense fallback={<Chargement />}>
       <Contenu searchParams={searchParams} />
     </Suspense>
   );

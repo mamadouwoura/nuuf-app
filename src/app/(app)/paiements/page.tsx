@@ -1,3 +1,4 @@
+import Chargement from "@/components/Chargement";
 import Link from "next/link";
 import Pagination, { decouper, numeroPage } from "@/components/Pagination";
 import { Suspense } from "react";
@@ -163,7 +164,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
 export default async function Page({ searchParams }: { searchParams: Promise<Params> }) {
   const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">{t("Chargement…")}</p>}>
+    <Suspense fallback={<Chargement />}>
       <Contenu searchParams={searchParams} />
     </Suspense>
   );

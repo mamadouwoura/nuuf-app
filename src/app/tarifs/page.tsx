@@ -103,7 +103,22 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
 
         <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg overflow-x-auto">
           <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold mb-space-md">{t("Comparer les formules")}</h2>
-          <table className="w-full text-left">
+          <ul className="md:hidden flex flex-col gap-3">
+            {LIGNES.map(([nom, a, b, c]) => (
+              <li key={nom} className="rounded-xl bg-surface-container-low p-3">
+                <p className="font-label-lg text-label-lg font-semibold text-on-surface mb-2">{t(nom)}</p>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  {[[t("Bailleur"), a], ["Pro", b], [t("Agence"), c]].map(([plan, v]) => (
+                    <div key={plan} className="rounded-lg bg-surface-container-lowest px-1 py-1.5">
+                      <p className="font-body-sm text-[11px] text-on-surface-variant">{plan}</p>
+                      <p className={`font-label-md text-label-md ${v === "✓" ? "text-primary font-bold" : "text-on-surface-variant"}`}>{t(v)}</p>
+                    </div>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <table className="hidden md:table w-full text-left">
             <thead>
               <tr className="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">
                 <th className="py-3 pr-4">{t("Fonctionnalité")}</th>

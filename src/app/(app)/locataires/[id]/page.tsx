@@ -1,3 +1,5 @@
+import { anonymiserLocataire } from "@/app/actions/locataires";
+import Chargement from "@/components/Chargement";
 import Link from "next/link";
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
@@ -7,6 +9,7 @@ import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
 import { formaterDate, nomMois } from "@/lib/i18n/format";
 import { N_ } from "@/lib/i18n/translate";
+import { JUSTIFICATIFS, SITUATIONS, STATUTS_PRO, ficheComplete } from "@/lib/fiche";
 
 export async function generateMetadata() {
   const { t } = await getT();
@@ -21,9 +24,10 @@ const PASTILLE = {
   VACANT: "bg-surface-container-high text-on-surface-variant",
 } as const;
 
-async function Fiche({ params }: { params: Promise<{ id: string }> }) {
+async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ fiche?: string; erreur?: string }> }) {
   const { t, tn, locale } = await getT();
   const { id } = await params;
+  const { fiche, erreur } = await searchParams;
   const user = await getUser();
   if (!user) redirect("/connexion");
   const loc = await db.locataire.findFirst({
@@ -33,6 +37,7 @@ async function Fiche({ params }: { params: Promise<{ id: string }> }) {
         orderBy: { debutLe: "desc" },
         include: { bien: true, echeances: { orderBy: { mois: "desc" }, include: { paiements: { where: { statut: "CONFIRME" } } } } },
       },
+      documents: { orderBy: { creeLe: "asc" } },
     },
   });
   if (!loc) notFound();
@@ -45,6 +50,21 @@ async function Fiche({ params }: { params: Promise<{ id: string }> }) {
   const aTemps = closes.filter((e) => e.statut === "PAYEE").length;
   const st = statutLoyer(bail?.echeances[0], now);
   const prochaine = bail?.echeances.find((e) => e.statut !== "PAYEE");
+  const complete = ficheComplete(loc);
+  const peutEcrire = user.membres[0].role !== "LECTURE_SEULE";
+  const situation = SITUATIONS.find((x) => x.code === loc.situationFamiliale);
+  const statut = STATUTS_PRO.find((x) => x.code === loc.statutPro);
+  const remis = JUSTIFICATIFS.filter((j) => loc.justificatifs.includes(j.code));
+  const lignesFiche: [string, string | null][] = [
+    [t("Date de naissance"), loc.dateNaissance ? formaterDate(loc.dateNaissance, locale, { day: "2-digit", month: "long", year: "numeric", timeZone: "UTC" }) : null],
+    [t("Lieu de naissance"), loc.lieuNaissance],
+    [t("Lieu du dernier domicile"), loc.dernierDomicile],
+    [t("Personne à contacter en cas d'urgence"), loc.contactUrgenceNom ? `${loc.contactUrgenceNom}${loc.contactUrgenceTel ? ` · ${telAffiche(loc.contactUrgenceTel)}` : ""}` : loc.contactUrgenceTel ? telAffiche(loc.contactUrgenceTel) : null],
+    [t("Situation de famille"), situation ? t(situation.libelle) : null],
+    [t("Enfants"), loc.enfantsMineurs != null || loc.enfantsMajeurs != null ? t("{a} mineur(s) · {b} majeur(s)", { a: loc.enfantsMineurs ?? 0, b: loc.enfantsMajeurs ?? 0 }) : null],
+    [t("Statut professionnel"), statut ? t(statut.libelle) : null],
+    [t("Lieu de travail"), loc.lieuTravail],
+  ];
 
   return (
     <div className="flex flex-col w-full gap-space-lg">
@@ -107,6 +127,79 @@ async function Fiche({ params }: { params: Promise<{ id: string }> }) {
         </div>
       </section>
 
+      {erreur && <p role="alert" className="rounded-xl bg-error-container text-on-error-container px-3 py-2 font-body-md text-body-md">{erreur}</p>}
+      {fiche === "efface" && (
+        <p role="status" className="rounded-xl bg-success-container text-on-success-container px-3 py-2 font-body-md text-body-md">{t("Données personnelles supprimées. Les montants et quittances sont conservés.")}</p>
+      )}
+      {fiche === "ok" && (
+        <p role="status" className="rounded-xl bg-success-container text-on-success-container px-3 py-2 font-body-md text-body-md">{t("Fiche de renseignement enregistrée.")}</p>
+      )}
+
+      <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md">
+        <div className="flex flex-wrap items-center justify-between gap-space-sm">
+          <div className="flex items-center gap-space-sm">
+            <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Fiche de renseignement")}</h2>
+            <span className={`px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${complete ? "bg-success-container text-on-success-container" : "bg-secondary-fixed text-on-secondary-fixed-variant"}`}>
+              {complete ? t("Complète") : t("À compléter")}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-space-sm">
+            {peutEcrire && (
+              <Link href={`/locataires/${loc.id}/fiche`} className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-semibold">
+                <span className="material-symbols-outlined text-[18px]">edit_note</span>
+                {loc.ficheRemplieLe ? t("Modifier la fiche") : t("Remplir la fiche")}
+              </Link>
+            )}
+            {bail?.actif && (
+              <a href={`/biens/${bail.bienId}/contrat`} target="_blank" className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-surface-container text-primary font-label-md text-label-md font-semibold">
+                <span className="material-symbols-outlined text-[18px]">description</span>
+                {t("Contrat PDF")}
+              </a>
+            )}
+          </div>
+        </div>
+        {loc.ficheRemplieLe ? (
+          <>
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
+              {lignesFiche.map(([k, v]) => (
+                <div key={k} className="p-3 rounded-xl bg-surface-container-low">
+                  <dt className="font-body-sm text-body-sm text-on-surface-variant">{k}</dt>
+                  <dd className="font-label-lg text-label-lg text-on-surface font-semibold">{v ?? <span className="text-outline font-normal">{t("Non renseigné")}</span>}</dd>
+                </div>
+              ))}
+            </dl>
+            <div className="flex flex-wrap gap-2">
+              {remis.map((j) => (
+                <span key={j.code} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md">
+                  <span className="material-symbols-outlined text-[16px] text-success">check_circle</span>
+                  {t(j.libelle)}
+                </span>
+              ))}
+              {remis.length === 0 && <span className="font-body-sm text-body-sm text-on-surface-variant">{t("Aucun justificatif coché.")}</span>}
+            </div>
+            {loc.documents.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {loc.documents.map((d) => {
+                  const lib = JUSTIFICATIFS.find((j) => j.code === d.categorie);
+                  return (
+                    <a key={d.id} href={`/locataires/${loc.id}/documents/${d.id}`} target="_blank" className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-surface-container text-primary font-label-md text-label-md font-semibold">
+                      <span className="material-symbols-outlined text-[18px]">{d.type === "application/pdf" ? "picture_as_pdf" : "image"}</span>
+                      {lib ? t(lib.libelle) : t("Document")}
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+            <p className="font-body-sm text-body-sm text-on-surface-variant">
+              {loc.consentementHistoriqueLe ? t("Consentement à l'historique locatif recueilli le {date}.", { date: formaterDate(loc.consentementHistoriqueLe, locale, { day: "2-digit", month: "long", year: "numeric" }) }) : t("Consentement à l'historique locatif non recueilli.")}
+              {loc.signeLe ? ` ${t("Signature enregistrée.")}` : ""}
+            </p>
+          </>
+        ) : (
+          <p className="font-body-md text-body-md text-on-surface-variant">{t("Aucune fiche pour ce locataire. Remplissez-la avec lui : identité, famille, travail, justificatifs et signature.")}</p>
+        )}
+      </section>
+
       <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
         <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold mb-space-md">{t("Historique des loyers")}</h2>
         {echeances.length === 0 ? (
@@ -130,15 +223,37 @@ async function Fiche({ params }: { params: Promise<{ id: string }> }) {
           </div>
         )}
       </section>
+
+      {peutEcrire && !loc.baux.some((b) => b.actif) && loc.nomComplet !== "Locataire supprimé" && (
+        <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-sm">
+          <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Supprimer les données personnelles")}</h2>
+          <p className="font-body-md text-body-md text-on-surface-variant">
+            {t("À la demande de l'ancien locataire, son nom, son téléphone, sa fiche, sa signature et ses documents sont effacés. Les montants, échéances et quittances restent, sans lien avec une personne, pour votre comptabilité.")}
+          </p>
+          <details>
+            <summary className="inline-flex items-center gap-2 h-11 px-space-md rounded-xl bg-error-container text-on-error-container font-label-lg text-label-lg font-semibold cursor-pointer select-none">
+              <span className="material-symbols-outlined text-[20px]">delete_forever</span>
+              {t("Supprimer les données…")}
+            </summary>
+            <form action={anonymiserLocataire} className="mt-space-md flex flex-col gap-space-sm">
+              <input type="hidden" name="id" value={loc.id} />
+              <label className="flex items-start gap-3 rounded-xl bg-surface-container-low px-3 py-3 cursor-pointer">
+                <input type="checkbox" name="confirmer" required className="mt-0.5 w-5 h-5 accent-error" />
+                <span className="font-body-md text-body-md text-on-surface">{t("Je confirme : cette suppression est définitive.")}</span>
+              </label>
+              <button className="self-start h-11 px-space-lg rounded-xl bg-error text-on-error font-label-lg text-label-lg font-bold">{t("Supprimer définitivement")}</button>
+            </form>
+          </details>
+        </section>
+      )}
     </div>
   );
 }
 
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { t } = await getT();
+export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ fiche?: string; erreur?: string }> }) {
   return (
-    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">{t("Chargement…")}</p>}>
-      <Fiche params={params} />
+    <Suspense fallback={<Chargement />}>
+      <Fiche params={params} searchParams={searchParams} />
     </Suspense>
   );
 }

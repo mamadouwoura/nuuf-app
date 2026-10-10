@@ -1,3 +1,9 @@
+import BoutonEnvoi from "@/components/BoutonEnvoi";
+import ChampsAppreciation from "@/components/ChampsAppreciation";
+import { nouveauLocataire, terminerBail } from "@/app/actions/biens";
+import { MOTIFS_FIN } from "@/lib/motifs";
+import { ficheComplete } from "@/lib/fiche";
+import Chargement from "@/components/Chargement";
 import Link from "next/link";
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
@@ -22,11 +28,11 @@ const PASTILLE = {
   VACANT: "bg-surface-container-high text-on-surface-variant",
 } as const;
 
-async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ ok?: string }> }) {
+async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ ok?: string; erreur?: string }> }) {
   const { t, locale } = await getT();
   const moisFr = (d: Date) => `${nomMois(d, locale)} ${d.getUTCFullYear()}`;
   const dateFr = (d: Date) => formaterDate(d, locale);
-  const [{ id }, { ok }] = await Promise.all([params, searchParams]);
+  const [{ id }, { ok, erreur }] = await Promise.all([params, searchParams]);
   const user = await getUser();
   if (!user) redirect("/connexion");
   const bien = await db.bien.findFirst({
@@ -45,6 +51,7 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
   const now = new Date();
   const st = statutLoyer(bail?.echeances[0], now);
   const prochaine = bail?.echeances.find((e) => e.statut !== "PAYEE");
+  const peutEcrire = user.membres[0].role !== "LECTURE_SEULE";
 
   return (
     <div className="flex flex-col w-full gap-space-lg">
@@ -89,6 +96,17 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
         </div>
       </div>
 
+      {bail && user.membres[0].role !== "LECTURE_SEULE" && !ficheComplete(bail.locataire) && (
+        <div className="rounded-xl bg-secondary-fixed text-on-secondary-fixed px-space-md py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+          <p className="font-body-md text-body-md">{t("La fiche de renseignement de {nom} n'est pas complète. Remplissez-la avec lui avant d'éditer le contrat.", { nom: bail.locataire.nomComplet })}</p>
+          <Link href={`/locataires/${bail.locataire.id}/fiche`} className="shrink-0 inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold">
+            <span className="material-symbols-outlined text-[18px]">edit_note</span>
+            {t("Remplir la fiche")}
+          </Link>
+        </div>
+      )}
+
+      {erreur && <p role="alert" className="rounded-xl bg-error-container text-on-error-container px-space-md py-2 font-body-md text-body-md">{erreur}</p>}
       {ok && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">{t("Modifications enregistrées.")}</p>}
 
       {bien.photos.length > 0 && (
@@ -195,21 +213,99 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
               })}
             </div>
           </section>
+
+          {peutEcrire && (
+            <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-sm">
+              <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Le locataire quitte le bien")}</h2>
+              <p className="font-body-md text-body-md text-on-surface-variant">
+                {t("Le bail prend fin à la date indiquée, les loyers à venir non réglés sont retirés et le bien devient vacant. L'historique des loyers et les quittances sont conservés.")}
+              </p>
+              <details>
+                <summary className="inline-flex items-center gap-2 h-11 px-space-md rounded-xl bg-surface-container text-on-surface font-label-lg text-label-lg font-semibold cursor-pointer select-none">
+                  <span className="material-symbols-outlined text-[20px]">logout</span>
+                  {t("Enregistrer le départ…")}
+                </summary>
+                <form action={terminerBail} className="mt-space-md grid grid-cols-1 sm:grid-cols-2 gap-space-md items-end">
+                  <input type="hidden" name="id" value={id} />
+                  <div>
+                    <label htmlFor="finLe" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Date de départ")}</label>
+                    <input id="finLe" name="finLe" type="date" required defaultValue={now.toISOString().slice(0, 10)} className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface" />
+                  </div>
+                  <div>
+                    <label htmlFor="motifFin" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Motif de fin de location")}</label>
+                    <select id="motifFin" name="motifFin" defaultValue="FIN_NORMALE" className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface">
+                      {MOTIFS_FIN.map((m) => (
+                        <option key={m.code} value={m.code}>{t(m.libelle)}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <ChampsAppreciation t={t} idPrefixe="depart" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <BoutonEnvoi enCours={t("Enregistrement…")} className="h-11 px-space-lg rounded-xl bg-error text-on-error font-label-lg text-label-lg font-bold">
+                      {t("Confirmer le départ de {nom}", { nom: bail.locataire.nomComplet })}
+                    </BoutonEnvoi>
+                  </div>
+                </form>
+              </details>
+            </section>
+          )}
         </>
       ) : (
         <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-xl flex flex-col items-center text-center gap-2">
           <span className="material-symbols-outlined text-[40px] text-on-surface-variant">person_off</span>
           <p className="font-body-md text-body-md text-on-surface-variant">{t("Aucun locataire en place sur ce bien.")}</p>
+          {peutEcrire && !bien.archiveLe && (
+            <details className="w-full max-w-xl text-left mt-space-sm" open>
+              <summary className="inline-flex items-center gap-2 h-11 px-space-md rounded-xl bg-primary text-on-primary font-label-lg text-label-lg font-bold cursor-pointer select-none">
+                <span className="material-symbols-outlined text-[20px]">person_add</span>
+                {t("Installer un nouveau locataire")}
+              </summary>
+              <form action={nouveauLocataire} className="mt-space-md grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+                <input type="hidden" name="id" value={id} />
+                <div className="sm:col-span-2">
+                  <label htmlFor="locNom" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Nom et Prénom")}</label>
+                  <input id="locNom" name="locNom" required className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface" autoComplete="off" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label htmlFor="locTel" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Téléphone mobile & WhatsApp")}</label>
+                  <input id="locTel" name="locTel" type="tel" inputMode="tel" required placeholder="77 000 00 00" className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface" autoComplete="off" />
+                </div>
+                <div>
+                  <label htmlFor="loyer" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Loyer mensuel (FCFA)")}</label>
+                  <input id="loyer" name="loyer" inputMode="numeric" required placeholder="250 000" className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface" />
+                </div>
+                <div>
+                  <label htmlFor="cautionMois" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Caution (mois)")}</label>
+                  <input id="cautionMois" name="cautionMois" inputMode="numeric" defaultValue="2" className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface" />
+                </div>
+                <div>
+                  <label htmlFor="jour" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Jour d'échéance du loyer")}</label>
+                  <input id="jour" name="jour" inputMode="numeric" defaultValue="5" className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface" />
+                </div>
+                <div>
+                  <label htmlFor="debut" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Date de prise d'effet")}</label>
+                  <input id="debut" name="debut" type="date" required defaultValue={now.toISOString().slice(0, 10)} className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface" />
+                </div>
+                <div className="sm:col-span-2">
+                  <BoutonEnvoi enCours={t("Enregistrement…")} className="h-11 px-space-lg rounded-xl bg-primary text-on-primary font-label-lg text-label-lg font-bold">
+                    {t("Enregistrer et remplir la fiche")}
+                  </BoutonEnvoi>
+                </div>
+              </form>
+            </details>
+          )}
         </section>
       )}
     </div>
   );
 }
 
-export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ ok?: string }> }) {
+export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ ok?: string; erreur?: string }> }) {
   const { t } = await getT();
   return (
-    <Suspense fallback={<p className="p-space-lg font-body-md text-body-md">{t("Chargement…")}</p>}>
+    <Suspense fallback={<Chargement />}>
       <Fiche params={params} searchParams={searchParams} />
     </Suspense>
   );
