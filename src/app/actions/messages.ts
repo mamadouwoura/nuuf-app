@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { fcfa } from "@/lib/immo";
 import { lienPaiement } from "@/lib/encaissement";
 import { urlVerification } from "@/lib/quittance";
+import { etatAcces } from "@/lib/abonnement";
 import { getUser } from "@/lib/session";
 
 const chiffres = (tel: string) => tel.replace(/\D/g, "");
@@ -16,6 +17,7 @@ export async function partagerQuittance(form: FormData) {
   const user = await getUser();
   if (!user) redirect("/connexion");
   if (user.membres[0].role === "LECTURE_SEULE") redirect("/quittances");
+  if (!etatAcces(user.membres[0].organisation.abonnement).ecriture) redirect("/abonnement/forfait");
   const orgId = user.membres[0].organisationId;
   const q = await db.quittance.findFirst({
     where: { id: String(form.get("id") ?? ""), organisationId: orgId },
@@ -41,6 +43,7 @@ export async function relancer(form: FormData) {
   const user = await getUser();
   if (!user) redirect("/connexion");
   if (user.membres[0].role === "LECTURE_SEULE") redirect("/relances");
+  if (!etatAcces(user.membres[0].organisation.abonnement).ecriture) redirect("/abonnement/forfait");
   const orgId = user.membres[0].organisationId;
   const e = await db.echeance.findFirst({
     where: { id: String(form.get("echeanceId") ?? ""), bail: { bien: { organisationId: orgId } } },

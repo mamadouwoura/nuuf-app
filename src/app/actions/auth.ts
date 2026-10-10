@@ -2,12 +2,12 @@
 
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { envoyerMessage } from "@/lib/messagerie";
+import { envoyerMessage, modeMessagerie } from "@/lib/messagerie";
 import { plafondCodesAtteint, plafondInscriptionsAtteint, tropDEchecsCode } from "@/lib/garde";
 import { erreurMotDePasse } from "@/lib/mot-de-passe";
 import { estAdmin } from "@/lib/admin";
 import { generateOtp, hashOtp, hashPassword, normalizePhone, verifyPassword } from "@/lib/security";
-import { endSession, getPendingUid, setDevOtp, setPending, startSession } from "@/lib/session";
+import { codeAffiche, endSession, getPendingUid, setDevOtp, setPending, startSession } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
 
 export type FormState = { error?: string } | undefined;
@@ -17,22 +17,24 @@ const FENETRE = 15 * 60_000;
 // Mot de passe factice : on calcule toujours un hash, que le compte existe ou non (même durée de réponse).
 const FAUX_HASH = hashPassword("mot-de-passe-factice");
 
-async function issueOtp(uid: string, telephone: string) {
+/** Crée et envoie un code. Retourne faux quand le code n'a réellement pas pu partir (WhatsApp en échec ou non configuré). */
+async function issueOtp(uid: string, telephone: string): Promise<boolean> {
   const { t } = await getT();
   // Au plus 5 codes par 10 minutes et par compte (coût d'envoi, harcèlement).
   const recents = await db.codeOtp.count({ where: { utilisateurId: uid, creeLe: { gte: new Date(Date.now() - 10 * 60_000) } } });
   if (recents >= 5 || (await plafondCodesAtteint())) {
     await setPending(uid);
-    return;
+    return true; // plafond atteint : l'utilisateur utilise l'un de ses codes récents
   }
   const code = generateOtp();
   await db.codeOtp.create({
     data: { utilisateurId: uid, codeHash: hashOtp(code), expireLe: new Date(Date.now() + 10 * 60_000) },
   });
-  await envoyerMessage({ type: "OTP", destinataire: telephone, texte: t("Nuuf : votre code de vérification est {code}. Il expire dans 10 minutes. Ne le partagez avec personne.", { code }) });
+  const parti = await envoyerMessage({ type: "OTP", destinataire: telephone, texte: t("Nuuf : votre code de vérification est {code}. Il expire dans 10 minutes. Ne le partagez avec personne.", { code }) });
   if (process.env.NODE_ENV !== "production") console.log(`[OTP dev] ${telephone} -> ${code}`);
   await setDevOtp(code);
   await setPending(uid);
+  return parti || modeMessagerie() === "simulation" || codeAffiche();
 }
 
 export async function connexion(_: FormState, form: FormData): Promise<FormState> {
@@ -51,7 +53,9 @@ export async function connexion(_: FormState, form: FormData): Promise<FormState
     return { error: t("Numéro ou mot de passe incorrect.") };
   }
   await db.tentativeConnexion.deleteMany({ where: { cle: telephone } });
-  await issueOtp(user.id, telephone);
+  if (!(await issueOtp(user.id, telephone))) {
+    return { error: t("Le code n'a pas pu être envoyé. Réessayez dans un instant ou contactez l'assistance.") };
+  }
   redirect("/verification");
 }
 
@@ -96,7 +100,9 @@ export async function inscription(_: FormState, form: FormData): Promise<FormSta
       },
     },
   });
-  await issueOtp(user.id, telephone);
+  if (!(await issueOtp(user.id, telephone))) {
+    return { error: t("Compte créé, mais le code n'a pas pu être envoyé. Connectez-vous dans un instant pour en recevoir un nouveau.") };
+  }
   redirect("/verification");
 }
 
@@ -151,6 +157,9 @@ export async function renvoyerCode() {
   if (!uid) redirect("/connexion");
   const user = await db.utilisateur.findUnique({ where: { id: uid } });
   if (!user) redirect("/connexion");
-  await issueOtp(user.id, user.telephone);
+  const { t } = await getT();
+  if (!(await issueOtp(user.id, user.telephone))) {
+    redirect(`/verification?erreur=${encodeURIComponent(t("Le code n'a pas pu être envoyé. Réessayez dans un instant."))}`);
+  }
   redirect("/verification");
 }

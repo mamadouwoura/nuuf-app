@@ -3,6 +3,7 @@ import { etatAcces } from "./abonnement";
 import { lienPaiement } from "./encaissement";
 import { envoyerMessage, modeMessagerie } from "./messagerie";
 import { fcfa } from "./immo";
+import { assurerEcheances, debutMois } from "./loyers";
 
 const JOUR = 86_400_000;
 
@@ -17,10 +18,33 @@ export function declencheurDu(jours: number, p: { avantEcheance: boolean; apresJ
 }
 
 /**
+ * Crée les échéances du mois pour tous les baux actifs, sans attendre que le bailleur ouvre l'application :
+ * sans elles, aucun rappel ne partirait pour un bailleur qui ne se connecte pas. Dans les quatre derniers
+ * jours du mois, celles du mois suivant sont créées aussi, pour que le rappel « J-3 » d'un loyer dû le 1er parte.
+ */
+export async function creerEcheancesDuMois(now = new Date()) {
+  const baux = await db.bail.findMany({
+    where: { actif: true, bien: { archiveLe: null } },
+    select: { bien: { select: { organisationId: true } } },
+  });
+  const organisations = [...new Set(baux.map((b) => b.bien.organisationId))];
+  const ceMois = debutMois(now);
+  const dernierJour = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0)).getUTCDate();
+  const moisSuivant = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+  const bientotFinDeMois = dernierJour - now.getUTCDate() <= 3;
+  for (const id of organisations) {
+    await assurerEcheances(id, ceMois);
+    if (bientotFinDeMois) await assurerEcheances(id, moisSuivant);
+  }
+  return organisations.length;
+}
+
+/**
  * Parcourt les loyers impayés et envoie les rappels prévus (J-3, J+1, J+5) selon les réglages de
  * chaque organisation. Idempotent : un même rappel n'est jamais envoyé deux fois pour une échéance.
  */
 export async function lancerRelancesAutomatiques(now = new Date()) {
+  await creerEcheancesDuMois(now);
   const debutJour = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
   const echeances = await db.echeance.findMany({
     where: {

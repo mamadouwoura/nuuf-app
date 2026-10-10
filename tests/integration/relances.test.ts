@@ -30,6 +30,17 @@ describe.skipIf(!baseDeTest)("relances automatiques", () => {
     expect((await relancesDe(a.echeance.id)).map((x) => x.declencheur)).toEqual(["J-3"]);
   });
 
+  it("crée l'échéance du mois même si le bailleur n'ouvre jamais l'application", async () => {
+    const a = await creerOrganisation({ jourDeLimite: 10 });
+    orgs.push(a.org.id);
+    await db.echeance.deleteMany({ where: { bailId: a.bail.id } });
+    expect(await db.echeance.count({ where: { bailId: a.bail.id } })).toBe(0);
+    await lancerRelancesAutomatiques();
+    const maintenant = new Date();
+    const mois = new Date(Date.UTC(maintenant.getUTCFullYear(), maintenant.getUTCMonth(), 1));
+    expect(await db.echeance.count({ where: { bailId: a.bail.id, mois } })).toBe(1);
+  });
+
   it("n'envoie rien si le loyer est déjà soldé", async () => {
     const a = await creerOrganisation({ jourDeLimite: -2 });
     orgs.push(a.org.id);

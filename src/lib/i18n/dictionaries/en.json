@@ -1174,5 +1174,9 @@
  "Indiquez l'un des deux, ou les deux pour une recherche plus sûre.": "Enter one of the two, or both for a safer search.",
  "Enregistré sous : {nom}": "Recorded as: {nom}",
  "Indiquez le numéro de téléphone ou le numéro de pièce d'identité du candidat.": "Enter the applicant's phone number or ID document number.",
- "Numéro de pièce d'identité trop court (6 caractères minimum).": "ID document number too short (6 characters minimum)."
+ "Numéro de pièce d'identité trop court (6 caractères minimum).": "ID document number too short (6 characters minimum).",
+ "Le code n'a pas pu être envoyé. Réessayez dans un instant ou contactez l'assistance.": "The code could not be sent. Try again in a moment or contact support.",
+ "Compte créé, mais le code n'a pas pu être envoyé. Connectez-vous dans un instant pour en recevoir un nouveau.": "Account created, but the code could not be sent. Sign in again shortly to receive a new one.",
+ "Le code n'a pas pu être envoyé. Réessayez dans un instant.": "The code could not be sent. Try again in a moment.",
+ "Envoi trop lourd (20 Mo au total). Envoyez moins de fichiers à la fois.": "Upload too large (20 MB in total). Send fewer files at a time."
 }

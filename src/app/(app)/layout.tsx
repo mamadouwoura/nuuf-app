@@ -15,6 +15,7 @@ async function Shell({ children }: { children: React.ReactNode }) {
   const user = await getUser();
   if (!user) redirect("/connexion");
   if (estAdmin(user.telephone)) redirect("/admin"); // l'administrateur n'a pas d'espace bailleur
+  if (!user.membres[0]) redirect("/connexion"); // compte sans organisation : rien à afficher ici
   const orgId = user.membres[0].organisationId;
   const forfait = user.membres[0].organisation.abonnement?.forfait ?? "DECOUVERTE";
   const libelle = forfait === "PRO" ? t("Bailleur Pro") : forfait === "AGENCE" ? t("Agence") : t("Bailleur particulier");

@@ -194,7 +194,7 @@ export default async function ReinitMotDePasse({ etape, erreur, telephone, devCo
       <VoirMotDePasse cible="new-pass" className="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-0.5 text-xs" />
       </div>
       <div className="relative">
-      <input className="w-full py-2.5 px-3.5 bg-surface-container rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline-variant focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none transition-all" id="new-pass" name="motDePasse" minLength={8} placeholder="••••••••••••" required type="password" />
+      <input autoComplete="new-password" className="w-full py-2.5 px-3.5 bg-surface-container rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline-variant focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none transition-all" id="new-pass" name="motDePasse" minLength={8} placeholder="••••••••••••" required type="password" />
       </div>
       
       <div className="mt-2.5">
@@ -229,7 +229,7 @@ export default async function ReinitMotDePasse({ etape, erreur, telephone, devCo
                       </span>
       </div>
       <div className="relative">
-      <input className="w-full py-2.5 px-3.5 bg-surface-container rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline-variant focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none transition-all" id="confirm-pass" name="confirmation" minLength={8} placeholder="••••••••••••" required type="password" />
+      <input autoComplete="new-password" className="w-full py-2.5 px-3.5 bg-surface-container rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline-variant focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none transition-all" id="confirm-pass" name="confirmation" minLength={8} placeholder="••••••••••••" required type="password" />
       </div>
       </div>
       <button className="w-full flex items-center justify-center gap-2 py-3 px-space-md rounded-lg bg-primary text-on-primary font-label-lg text-label-lg hover:bg-primary-container transition-all active:scale-[0.99] shadow-sm" type="submit">

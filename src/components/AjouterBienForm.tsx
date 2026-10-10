@@ -90,9 +90,9 @@ export default function AjouterBienForm({ erreur }: { erreur?: string }) {
       <div className="space-y-space-md">
       
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Type de bien")}</label>
+      <label htmlFor="champ-type" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Type de bien")}</label>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-space-xs">
-      <label className="cursor-pointer"><input type="radio" name="type" value="APPARTEMENT" className="peer sr-only" defaultChecked /><span className="flex flex-col items-center justify-center p-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold text-center transition-colors peer-checked:bg-primary peer-checked:text-on-primary peer-checked:shadow-sm"><span className="material-symbols-outlined text-[22px] mb-1">domain</span>{t("Appartement")}</span></label>
+      <label className="cursor-pointer"><input id="champ-type" type="radio" name="type" value="APPARTEMENT" className="peer sr-only" defaultChecked /><span className="flex flex-col items-center justify-center p-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold text-center transition-colors peer-checked:bg-primary peer-checked:text-on-primary peer-checked:shadow-sm"><span className="material-symbols-outlined text-[22px] mb-1">domain</span>{t("Appartement")}</span></label>
       <label className="cursor-pointer"><input type="radio" name="type" value="VILLA" className="peer sr-only" /><span className="flex flex-col items-center justify-center p-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold text-center transition-colors peer-checked:bg-primary peer-checked:text-on-primary peer-checked:shadow-sm"><span className="material-symbols-outlined text-[22px] mb-1">villa</span>{t("Villa")}</span></label>
       <label className="cursor-pointer"><input type="radio" name="type" value="STUDIO" className="peer sr-only" /><span className="flex flex-col items-center justify-center p-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold text-center transition-colors peer-checked:bg-primary peer-checked:text-on-primary peer-checked:shadow-sm"><span className="material-symbols-outlined text-[22px] mb-1">single_bed</span>{t("Studio")}</span></label>
       <label className="cursor-pointer"><input type="radio" name="type" value="COMMERCIAL" className="peer sr-only" /><span className="flex flex-col items-center justify-center p-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold text-center transition-colors peer-checked:bg-primary peer-checked:text-on-primary peer-checked:shadow-sm"><span className="material-symbols-outlined text-[22px] mb-1">storefront</span>{t("Commercial")}</span></label>
@@ -101,16 +101,16 @@ export default function AjouterBienForm({ erreur }: { erreur?: string }) {
       </div>
       
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Désignation du bien")}</label>
-      <input className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container outline-none transition-all" type="text" name="designation" required value={designation} onChange={(e) => setDesignation(e.target.value)} placeholder={t("Appartement F3 - Ouakam, 2e étage")} />
+      <label htmlFor="champ-designation" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Désignation du bien")}</label>
+      <input id="champ-designation" className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container outline-none transition-all" type="text" name="designation" required value={designation} onChange={(e) => setDesignation(e.target.value)} placeholder={t("Appartement F3 - Ouakam, 2e étage")} />
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t("Précisez l'étage et le numéro de porte pour faciliter l'identification sur les quittances.")}</p>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Quartier & Ville")}</label>
+      <label htmlFor="champ-quartier" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Quartier & Ville")}</label>
       <div className="relative">
-      <select name="quartier" aria-label={t("Quartier")} value={quartier} onChange={(e) => setQuartier(e.target.value)} className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none appearance-none pr-10 cursor-pointer">
+      <select id="champ-quartier" name="quartier" aria-label={t("Quartier")} value={quartier} onChange={(e) => setQuartier(e.target.value)} className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none appearance-none pr-10 cursor-pointer">
       <option>{t("Almadies, Dakar")}</option>
       <option>{t("Ngor, Dakar")}</option>
       <option>{t("Ouakam, Dakar")}</option>
@@ -124,9 +124,9 @@ export default function AjouterBienForm({ erreur }: { erreur?: string }) {
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t("Quartier et ville du logement (visible dans vos listes).")}</p>
       </div>
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Superficie habitable (m²)")}</label>
+      <label htmlFor="champ-surfaceM2" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Superficie habitable (m²)")}</label>
       <div className="relative">
-      <input className="w-full h-11 pl-space-md pr-12 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="number" name="surfaceM2" placeholder="85" />
+      <input id="champ-surfaceM2" className="w-full h-11 pl-space-md pr-12 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="number" name="surfaceM2" placeholder="85" />
       <span className="absolute right-3 top-1/2 -translate-y-1/2 font-label-md text-label-md text-on-surface-variant font-bold">m²</span>
       </div>
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t("Facultatif : surface habitable du logement.")}</p>
@@ -135,18 +135,18 @@ export default function AjouterBienForm({ erreur }: { erreur?: string }) {
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Compteur Woyofal Senelec n°")}</label>
+      <label htmlFor="champ-compteurElec" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Compteur Woyofal Senelec n°")}</label>
       <div className="relative">
       <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">bolt</span>
-      <input className="w-full h-11 pl-10 pr-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="compteurElec" aria-label={t("Numéro du compteur d'électricité")} />
+      <input id="champ-compteurElec" className="w-full h-11 pl-10 pr-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="compteurElec" aria-label={t("Numéro du compteur d'électricité")} />
       </div>
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t("Facultatif : numéro du compteur d'électricité, pour mémoire.")}</p>
       </div>
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Sous-compteur SEN'EAU")}</label>
+      <label htmlFor="champ-compteurEau" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Sous-compteur SEN'EAU")}</label>
       <div className="relative">
       <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">water_drop</span>
-      <input className="w-full h-11 pl-10 pr-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="compteurEau" aria-label={t("Numéro du compteur d'eau")} />
+      <input id="champ-compteurEau" className="w-full h-11 pl-10 pr-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="compteurEau" aria-label={t("Numéro du compteur d'eau")} />
       </div>
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t("Facultatif : référence du compteur d'eau, pour mémoire.")}</p>
       </div>
@@ -172,36 +172,36 @@ export default function AjouterBienForm({ erreur }: { erreur?: string }) {
       <div className="space-y-space-md">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Nom et Prénom")}</label>
-      <input className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="locNom" required value={nom} onChange={(e) => setNom(e.target.value)} placeholder={t("Prénom et nom")} />
+      <label htmlFor="champ-locNom" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Nom et Prénom")}</label>
+      <input id="champ-locNom" className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="locNom" required value={nom} onChange={(e) => setNom(e.target.value)} placeholder={t("Prénom et nom")} />
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t("Nom complet tel qu'inscrit sur la pièce d'identité officielle.")}</p>
       </div>
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Téléphone mobile & WhatsApp")}</label>
+      <label htmlFor="champ-locTel" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Téléphone mobile & WhatsApp")}</label>
       <div className="flex items-center gap-2">
       <span className="shrink-0 inline-flex items-center justify-center px-3 h-11 rounded-xl bg-surface-container font-label-md text-label-md text-on-surface font-bold">
                         🇸🇳 +221
                       </span>
-      <input className="flex-1 min-w-0 w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none font-semibold" type="tel" name="locTel" required value={tel} onChange={(e) => setTel(e.target.value)} placeholder="77 000 00 00" />
+      <input id="champ-locTel" className="flex-1 min-w-0 w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none font-semibold" type="tel" name="locTel" required value={tel} onChange={(e) => setTel(e.target.value)} placeholder="77 000 00 00" />
       </div>
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t("Indispensable pour l'envoi automatique des quittances et des liens Wave / OM.")}</p>
       </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Numéro CNI / Passeport")}</label>
-      <input className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="locCni" aria-label={t("Numéro de pièce d'identité du locataire")} />
+      <label htmlFor="champ-locCni" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Numéro CNI / Passeport")}</label>
+      <input id="champ-locCni" className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="locCni" aria-label={t("Numéro de pièce d'identité du locataire")} />
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t("Sera servent à générer ses quittances et à lui envoyer son lien de paiement.")}</p>
       </div>
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Courriel électronique")} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">{t("(Optionnel)")}</span></label>
-      <input className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="email" name="locEmail" aria-label={t("E-mail du locataire")} />
+      <label htmlFor="champ-locEmail" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Courriel électronique")} <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">{t("(Optionnel)")}</span></label>
+      <input id="champ-locEmail" className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="email" name="locEmail" aria-label={t("E-mail du locataire")} />
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t("Une copie PDF de la quittance y sera transmise chaque mois.")}</p>
       </div>
       </div>
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Profession & Employeur")}</label>
-      <input className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="locProfession" aria-label={t("Profession du locataire")} />
+      <label htmlFor="champ-locProfession" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Profession & Employeur")}</label>
+      <input id="champ-locProfession" className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="text" name="locProfession" aria-label={t("Profession du locataire")} />
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t("Garantie d'employabilité enregistrée au dossier de solvabilité Nuuf.")}</p>
       </div>
       </div>
@@ -225,17 +225,17 @@ export default function AjouterBienForm({ erreur }: { erreur?: string }) {
       <div className="space-y-space-md">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Loyer mensuel charges comprises")}</label>
+      <label htmlFor="champ-loyer" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Loyer mensuel charges comprises")}</label>
       <div className="relative">
-      <input className="w-full h-11 pl-space-md pr-16 rounded-xl bg-surface-container-low text-on-surface font-headline-sm text-headline-sm font-bold focus:ring-2 focus:ring-primary-container outline-none" type="text" name="loyer" required inputMode="numeric" value={loyer} onChange={(e) => setLoyer(e.target.value)} placeholder="250 000" />
+      <input id="champ-loyer" className="w-full h-11 pl-space-md pr-16 rounded-xl bg-surface-container-low text-on-surface font-headline-sm text-headline-sm font-bold focus:ring-2 focus:ring-primary-container outline-none" type="text" name="loyer" required inputMode="numeric" value={loyer} onChange={(e) => setLoyer(e.target.value)} placeholder="250 000" />
       <span className="absolute right-3 top-1/2 -translate-y-1/2 font-label-currency-unit text-label-currency-unit text-primary font-bold">FCFA</span>
       </div>
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t("Le montant net facturé chaque mois sans frais supplémentaires pour le locataire.")}</p>
       </div>
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Dépôt de garantie / Caution")}</label>
+      <label htmlFor="champ-caution" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Dépôt de garantie / Caution")}</label>
       <div className="relative">
-      <input className="w-full h-11 pl-space-md pr-16 rounded-xl bg-surface-container-low text-on-surface font-headline-sm text-headline-sm font-bold focus:ring-2 focus:ring-primary-container outline-none" type="text" name="caution" inputMode="numeric" value={caution} onChange={(e) => setCaution(e.target.value)} placeholder="500 000" />
+      <input id="champ-caution" className="w-full h-11 pl-space-md pr-16 rounded-xl bg-surface-container-low text-on-surface font-headline-sm text-headline-sm font-bold focus:ring-2 focus:ring-primary-container outline-none" type="text" name="caution" inputMode="numeric" value={caution} onChange={(e) => setCaution(e.target.value)} placeholder="500 000" />
       <span className="absolute right-3 top-1/2 -translate-y-1/2 font-label-currency-unit text-label-currency-unit text-primary font-bold">FCFA</span>
       </div>
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t("Montant de la caution versée par le locataire (pour mémoire).")}</p>
@@ -243,17 +243,17 @@ export default function AjouterBienForm({ erreur }: { erreur?: string }) {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Date de prise d'effet (Entrée)")}</label>
+      <label htmlFor="champ-debut" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Date de prise d'effet (Entrée)")}</label>
       <div className="relative">
       <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">calendar_today</span>
-      <input className="w-full h-11 pl-10 pr-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="date" name="debut" aria-label={t("Date de prise d'effet")} required value={debut} onChange={(e) => setDebut(e.target.value)} />
+      <input id="champ-debut" className="w-full h-11 pl-10 pr-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none" type="date" name="debut" aria-label={t("Date de prise d'effet")} required value={debut} onChange={(e) => setDebut(e.target.value)} />
       </div>
       <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{t("Date d'ouverture officielle du bail et remise des clés.")}</p>
       </div>
       <div>
-      <label className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Jour d'exigibilité mensuelle")}</label>
+      <label htmlFor="champ-jour" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Jour d'exigibilité mensuelle")}</label>
       <div className="relative">
-      <select name="jour" aria-label={t("Jour d'échéance du loyer")} value={jour} onChange={(e) => setJour(e.target.value)} className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none appearance-none pr-10 cursor-pointer">
+      <select id="champ-jour" name="jour" aria-label={t("Jour d'échéance du loyer")} value={jour} onChange={(e) => setJour(e.target.value)} className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none appearance-none pr-10 cursor-pointer">
       <option value="5">{t("Le 05 de chaque mois")}</option>
       <option value="1">{t("Le 01 de chaque mois")}</option>
       <option value="10">{t("Le 10 de chaque mois")}</option>

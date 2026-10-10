@@ -174,11 +174,11 @@ export default async function Inscription({ erreur }: { erreur?: string }) {
       </div>
       
       <div className="space-y-2">
-      <label className="block font-label-md text-label-md text-on-surface font-semibold">
+      <label htmlFor="champ-ville" className="block font-label-md text-label-md text-on-surface font-semibold">
                     {t("Ville principale de vos biens")}
                   </label>
       <div className="grid grid-cols-4 gap-2" id="city-selector">
-      <label className="cursor-pointer"><input type="radio" name="ville" value="Dakar" className="peer sr-only" defaultChecked /><span className="block py-2.5 px-3 rounded-xl font-label-md text-label-md text-center transition bg-surface-container text-on-surface hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary peer-checked:font-bold peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary">Dakar</span></label>
+      <label className="cursor-pointer"><input id="champ-ville" type="radio" name="ville" value="Dakar" className="peer sr-only" defaultChecked /><span className="block py-2.5 px-3 rounded-xl font-label-md text-label-md text-center transition bg-surface-container text-on-surface hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary peer-checked:font-bold peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary">Dakar</span></label>
       <label className="cursor-pointer"><input type="radio" name="ville" value="Thiès" className="peer sr-only" /><span className="block py-2.5 px-3 rounded-xl font-label-md text-label-md text-center transition bg-surface-container text-on-surface hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary peer-checked:font-bold peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary">Thiès</span></label>
       <label className="cursor-pointer"><input type="radio" name="ville" value="Mbour" className="peer sr-only" /><span className="block py-2.5 px-3 rounded-xl font-label-md text-label-md text-center transition bg-surface-container text-on-surface hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary peer-checked:font-bold peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary">Mbour</span></label>
       <label className="cursor-pointer"><input type="radio" name="ville" value="Autre" className="peer sr-only" /><span className="block py-2.5 px-3 rounded-xl font-label-md text-label-md text-center transition bg-surface-container text-on-surface hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary peer-checked:font-bold peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary">{t("Autre")}</span></label>
@@ -186,11 +186,11 @@ export default async function Inscription({ erreur }: { erreur?: string }) {
       </div>
       
       <div className="space-y-2">
-      <label className="block font-label-md text-label-md text-on-surface font-semibold">
+      <label htmlFor="champ-tailleParc" className="block font-label-md text-label-md text-on-surface font-semibold">
                     {t("Nombre de logements ou locaux gérés")}
                   </label>
       <div className="grid grid-cols-4 gap-2" id="units-selector">
-      <label className="cursor-pointer"><input type="radio" name="tailleParc" value="1-5" className="peer sr-only" defaultChecked /><span className="block py-2.5 px-3 rounded-xl font-label-md text-label-md text-center transition bg-surface-container text-on-surface hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary peer-checked:font-bold peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary">{t("1 à 5")}</span></label>
+      <label className="cursor-pointer"><input id="champ-tailleParc" type="radio" name="tailleParc" value="1-5" className="peer sr-only" defaultChecked /><span className="block py-2.5 px-3 rounded-xl font-label-md text-label-md text-center transition bg-surface-container text-on-surface hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary peer-checked:font-bold peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary">{t("1 à 5")}</span></label>
       <label className="cursor-pointer"><input type="radio" name="tailleParc" value="6-20" className="peer sr-only" /><span className="block py-2.5 px-3 rounded-xl font-label-md text-label-md text-center transition bg-surface-container text-on-surface hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary peer-checked:font-bold peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary">{t("6 à 20")}</span></label>
       <label className="cursor-pointer"><input type="radio" name="tailleParc" value="21-50" className="peer sr-only" /><span className="block py-2.5 px-3 rounded-xl font-label-md text-label-md text-center transition bg-surface-container text-on-surface hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary peer-checked:font-bold peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary">{t("21 à 50")}</span></label>
       <label className="cursor-pointer"><input type="radio" name="tailleParc" value="50+" className="peer sr-only" /><span className="block py-2.5 px-3 rounded-xl font-label-md text-label-md text-center transition bg-surface-container text-on-surface hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary peer-checked:font-bold peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary">50+</span></label>
@@ -203,7 +203,7 @@ export default async function Inscription({ erreur }: { erreur?: string }) {
                   </label>
       <div className="relative">
       <span className="material-symbols-outlined absolute left-3.5 top-3.5 text-outline text-lg pointer-events-none">lock</span>
-      <input className="w-full bg-surface-container-lowest text-on-surface rounded-xl pl-11 pr-12 py-3 font-body-md text-body-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:bg-surface-container-low transition" id="password" name="motDePasse" required minLength={8} placeholder={t("Au moins 8 caractères")} type="password" />
+      <input autoComplete="new-password" className="w-full bg-surface-container-lowest text-on-surface rounded-xl pl-11 pr-12 py-3 font-body-md text-body-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:bg-surface-container-low transition" id="password" name="motDePasse" required minLength={8} placeholder={t("Au moins 8 caractères")} type="password" />
       <VoirMotDePasse cible="password" className="absolute right-3.5 top-3.5 text-outline hover:text-on-surface transition" />
       </div>
       <div className="flex items-center space-x-2 pt-1 pl-1">

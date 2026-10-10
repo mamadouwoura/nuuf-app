@@ -25,7 +25,8 @@ const nextConfig: NextConfig = {
   output: process.env.NETLIFY ? undefined : "standalone",
   experimental: {
     serverActions: {
-      bodySizeLimit: "6mb",
+      // Plusieurs photos de téléphone dans un même envoi ; le total est borné à 20 Mo par les actions elles-mêmes.
+      bodySizeLimit: "25mb",
       // Domaine public derrière le proxy (en plus de l'en-tête X-Forwarded-Host).
       allowedOrigins: process.env.APP_URL ? [new URL(process.env.APP_URL).host] : undefined,
     },

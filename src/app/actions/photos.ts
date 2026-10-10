@@ -26,6 +26,7 @@ export async function ajouterPhotos(form: FormData) {
   const { user, orgId, retour } = await autorise(bienId);
   const fichiers = form.getAll("photos").filter((f): f is File => f instanceof File && f.size > 0);
   if (!fichiers.length) retour(t("Choisissez au moins une image."));
+  if (fichiers.reduce((s, f) => s + f.size, 0) > 20 * 1024 * 1024) retour(t("Envoi trop lourd (20 Mo au total). Envoyez moins de fichiers à la fois."));
 
   let ajoutees = 0;
   for (const f of fichiers) {

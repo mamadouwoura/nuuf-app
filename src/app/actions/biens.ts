@@ -43,7 +43,7 @@ export async function creerBienEtLocataire(form: FormData) {
   const telephone = normalizePhone(texte(form.get("locTel")));
   const locNom = texte(form.get("locNom"));
   const debut = new Date(texte(form.get("debut")));
-  const jour = chiffres(form.get("jour")) || 5;
+  const jour = Math.min(28, Math.max(1, chiffres(form.get("jour")) || 5));
 
   if (designation.length < 3) echec(t("Indiquez la désignation du bien."));
   if (!TYPES.includes(type)) echec(t("Choisissez un type de bien."));
@@ -89,13 +89,13 @@ export async function creerBienEtLocataire(form: FormData) {
       },
     });
     // Première échéance : mois de prise d'effet
-    const mois = new Date(Date.UTC(debut.getFullYear(), debut.getMonth(), 1));
+    const mois = new Date(Date.UTC(debut.getUTCFullYear(), debut.getUTCMonth(), 1));
     await tx.echeance.create({
       data: {
         bailId: bail.id,
         mois,
         montantDu: loyer,
-        dateLimite: new Date(Date.UTC(debut.getFullYear(), debut.getMonth(), jour)),
+        dateLimite: new Date(Date.UTC(debut.getUTCFullYear(), debut.getUTCMonth(), jour)),
         jetonPaiement: randomBytes(16).toString("hex"),
         jetonExpireLe: new Date(Date.now() + 72 * 3_600_000),
       },

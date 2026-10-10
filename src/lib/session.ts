@@ -10,6 +10,8 @@ const DEV_OTP = "nuuf_dev_otp";
 const secure = process.env.NODE_ENV === "production";
 /** Démonstration : le code de connexion s'affiche à l'écran, même en production (NUUF_DEMO=1). Jamais pour de vrais clients. */
 const afficheCode = !secure || process.env.NUUF_DEMO === "1";
+/** Vrai quand le code est montré à l'écran (développement, démonstration) : aucun envoi n'est alors nécessaire. */
+export const codeAffiche = () => afficheCode;
 
 type Token = { uid: string; exp: number; v?: number };
 

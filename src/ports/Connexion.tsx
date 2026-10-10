@@ -147,7 +147,7 @@ export default async function Connexion({ erreur, info }: { erreur?: string; inf
       {erreur && <p role="alert" className="rounded-xl bg-error-container text-on-error-container px-3 py-2 font-body-md text-body-md">{erreur}</p>}
       
       <div className="space-y-1.5">
-      <label className="block font-label-lg text-xs text-on-surface font-semibold tracking-wide">
+      <label htmlFor="phone-input" className="block font-label-lg text-xs text-on-surface font-semibold tracking-wide">
                     {t("Numéro de téléphone mobile")}
                   </label>
       <div className="relative flex rounded-xl bg-surface-container-low focus-within:bg-surface-container-lowest focus-within:shadow-md transition-all">
@@ -169,7 +169,7 @@ export default async function Connexion({ erreur, info }: { erreur?: string; inf
       
       <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-      <label className="block font-label-lg text-xs text-on-surface font-semibold tracking-wide">
+      <label htmlFor="password-input" className="block font-label-lg text-xs text-on-surface font-semibold tracking-wide">
                       {t("Mot de passe")}
                     </label>
       <a className="font-label-md text-xs text-primary hover:underline transition-all" href="/mot-de-passe-oublie">
@@ -178,7 +178,7 @@ export default async function Connexion({ erreur, info }: { erreur?: string; inf
       </div>
       <div className="relative flex items-center rounded-xl bg-surface-container-low focus-within:bg-surface-container-lowest focus-within:shadow-md transition-all">
       <span className="material-symbols-outlined absolute left-3.5 text-outline text-lg pointer-events-none">lock</span>
-      <input className="w-full py-3.5 pl-10 pr-11 bg-transparent text-on-surface font-body-lg text-base placeholder:text-outline focus:outline-none" id="password-input" name="motDePasse" placeholder="••••••••••••" required type="password" />
+      <input autoComplete="current-password" className="w-full py-3.5 pl-10 pr-11 bg-transparent text-on-surface font-body-lg text-base placeholder:text-outline focus:outline-none" id="password-input" name="motDePasse" placeholder="••••••••••••" required type="password" />
       <VoirMotDePasse cible="password-input" className="absolute right-3.5 p-1 text-outline hover:text-on-surface focus:outline-none flex items-center" />
       </div>
       </div>

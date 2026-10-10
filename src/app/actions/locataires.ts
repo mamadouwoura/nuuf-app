@@ -105,6 +105,7 @@ export async function ajouterDocuments(form: FormData) {
   if (!CATEGORIES.includes(categorie)) retour(t("Choisissez le type de document."));
   const fichiers = form.getAll("fichiers").filter((f): f is File => f instanceof File && f.size > 0);
   if (!fichiers.length) retour(t("Choisissez au moins un fichier."));
+  if (fichiers.reduce((s, f) => s + f.size, 0) > 20 * 1024 * 1024) retour(t("Envoi trop lourd (20 Mo au total). Envoyez moins de fichiers à la fois."));
 
   for (const f of fichiers) {
     const nb = await db.documentLocataire.count({ where: { locataireId: loc.id } });
