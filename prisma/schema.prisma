@@ -104,6 +104,37 @@ model Utilisateur {
   membres  Membre[]
   codesOtp CodeOtp[]
   journal  JournalAction[]
+  sessions SessionUtilisateur[]
+}
+
+// Une session ouverte : le cookie signé porte son identifiant ; la déconnexion la supprime ici.
+model SessionUtilisateur {
+  id            String   @id // aléatoire, jamais deviné
+  utilisateurId String
+  creeLe        DateTime @default(now())
+  expireLe      DateTime
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  @@index([utilisateurId])
+  @@index([expireLe])
+}
+
+// Inscription non encore confirmée : le compte n'existe qu'après validation du code reçu sur le téléphone.
+model InscriptionEnAttente {
+  id         String   @id @default(cuid())
+  telephone  String   @unique
+  nomComplet String
+  motDePasse String // haché
+  ville      String?
+  tailleParc String?
+  codeHash   String
+  tentatives Int      @default(0)
+  envois     Int      @default(1)
+  creeLe     DateTime @default(now())
+  expireLe   DateTime
+
+  @@index([expireLe])
 }
 
 // Appartenance d'un utilisateur à une organisation, avec son rôle.

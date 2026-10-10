@@ -23,6 +23,10 @@ export async function plafondCodesAtteint() {
 
 /** Plafond global de créations de compte par heure (INSCRIPTIONS_MAX_PAR_HEURE, 100 par défaut). */
 export async function plafondInscriptionsAtteint() {
-  const n = await db.utilisateur.count({ where: { creeLe: { gte: new Date(Date.now() - HEURE) } } });
-  return n >= entier(process.env.INSCRIPTIONS_MAX_PAR_HEURE, 100);
+  const depuis = new Date(Date.now() - HEURE);
+  const [comptes, attente] = await Promise.all([
+    db.utilisateur.count({ where: { creeLe: { gte: depuis } } }),
+    db.inscriptionEnAttente.count({ where: { creeLe: { gte: depuis } } }),
+  ]);
+  return comptes + attente >= entier(process.env.INSCRIPTIONS_MAX_PAR_HEURE, 100);
 }

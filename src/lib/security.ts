@@ -1,4 +1,7 @@
-import { createHash, createHmac, randomInt, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomInt, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
+import { promisify } from "node:util";
+
+const scryptAsync = promisify(scrypt) as (motDePasse: string, sel: string, longueur: number) => Promise<Buffer>;
 
 /** Clé de signature des sessions : obligatoire, 32 caractères minimum (jamais de valeur par défaut). */
 const secret = () => {
@@ -7,15 +10,16 @@ const secret = () => {
   return s;
 };
 
-export function hashPassword(password: string): string {
+/** Asynchrone : le calcul ne bloque pas le serveur pendant qu'il s'exécute. */
+export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16).toString("hex");
-  return `${salt}:${scryptSync(password, salt, 64).toString("hex")}`;
+  return `${salt}:${(await scryptAsync(password, salt, 64)).toString("hex")}`;
 }
 
-export function verifyPassword(password: string, stored: string): boolean {
+export async function verifyPassword(password: string, stored: string): Promise<boolean> {
   const [salt, hash] = stored.split(":");
   if (!salt || !hash) return false;
-  const candidate = scryptSync(password, salt, 64);
+  const candidate = await scryptAsync(password, salt, 64);
   const expected = Buffer.from(hash, "hex");
   return candidate.length === expected.length && timingSafeEqual(candidate, expected);
 }

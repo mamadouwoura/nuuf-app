@@ -16,13 +16,13 @@ describe("numéros de téléphone", () => {
 });
 
 describe("mots de passe", () => {
-  it("vérifie le bon mot de passe et refuse les autres", () => {
-    const h = hashPassword("MotDePasse-Correct1");
-    expect(verifyPassword("MotDePasse-Correct1", h)).toBe(true);
-    expect(verifyPassword("mauvais", h)).toBe(false);
+  it("vérifie le bon mot de passe et refuse les autres", async () => {
+    const h = await hashPassword("MotDePasse-Correct1");
+    expect(await verifyPassword("MotDePasse-Correct1", h)).toBe(true);
+    expect(await verifyPassword("mauvais", h)).toBe(false);
   });
-  it("deux hachages du même mot de passe diffèrent (sel aléatoire)", () => {
-    expect(hashPassword("abc12345")).not.toBe(hashPassword("abc12345"));
+  it("deux hachages du même mot de passe diffèrent (sel aléatoire)", async () => {
+    expect(await hashPassword("abc12345")).not.toBe(await hashPassword("abc12345"));
   });
 });
 

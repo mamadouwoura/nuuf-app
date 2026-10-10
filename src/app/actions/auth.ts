@@ -7,7 +7,7 @@ import { plafondCodesAtteint, plafondInscriptionsAtteint, tropDEchecsCode } from
 import { erreurMotDePasse } from "@/lib/mot-de-passe";
 import { estAdmin } from "@/lib/admin";
 import { generateOtp, hashOtp, hashPassword, normalizePhone, verifyPassword } from "@/lib/security";
-import { codeAffiche, endSession, getPendingUid, setDevOtp, setPending, startSession } from "@/lib/session";
+import { codeAffiche, endSession, getPendingInscription, getPendingUid, setDevOtp, setPending, setPendingInscription, startSession } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
 
 export type FormState = { error?: string } | undefined;
@@ -15,7 +15,7 @@ export type FormState = { error?: string } | undefined;
 const MAX_ECHECS = 5;
 const FENETRE = 15 * 60_000;
 // Mot de passe factice : on calcule toujours un hash, que le compte existe ou non (même durée de réponse).
-const FAUX_HASH = hashPassword("mot-de-passe-factice");
+const FAUX_HASH = hashPassword("mot-de-passe-factice"); // promesse : calculée une fois, attendue au besoin
 
 /** Crée et envoie un code. Retourne faux quand le code n'a réellement pas pu partir (WhatsApp en échec ou non configuré). */
 async function issueOtp(uid: string, telephone: string): Promise<boolean> {
@@ -47,7 +47,7 @@ export async function connexion(_: FormState, form: FormData): Promise<FormState
   if (echecs >= MAX_ECHECS) return { error: t("Trop de tentatives. Réessayez dans 15 minutes ou réinitialisez votre mot de passe.") };
 
   const user = await db.utilisateur.findUnique({ where: { telephone } });
-  const valide = user ? verifyPassword(motDePasse, user.motDePasse) : (verifyPassword(motDePasse, FAUX_HASH), false);
+  const valide = user ? await verifyPassword(motDePasse, user.motDePasse) : (await verifyPassword(motDePasse, await FAUX_HASH), false);
   if (!user || !valide) {
     await db.tentativeConnexion.create({ data: { cle: telephone } });
     return { error: t("Numéro ou mot de passe incorrect.") };
@@ -73,20 +73,61 @@ export async function inscription(_: FormState, form: FormData): Promise<FormSta
   if (await db.utilisateur.findUnique({ where: { telephone } })) {
     return { error: t("Un compte existe déjà avec ce numéro.") };
   }
-  if (await plafondInscriptionsAtteint()) return { error: t("Le service est très sollicité en ce moment. Réessayez dans quelques minutes.") };
+  if ((await plafondInscriptionsAtteint()) || (await plafondCodesAtteint())) {
+    return { error: t("Le service est très sollicité en ce moment. Réessayez dans quelques minutes.") };
+  }
+  // Aucun compte n'est créé tant que le code reçu sur le téléphone n'a pas été saisi : on ne peut pas
+  // inscrire le numéro de quelqu'un d'autre ni l'empêcher de s'inscrire lui-même.
+  const code = generateOtp();
+  const attente = await db.$transaction(async (tx) => {
+    await tx.inscriptionEnAttente.deleteMany({ where: { expireLe: { lt: new Date() } } });
+    const valeurs = { nomComplet, motDePasse: await hashPassword(motDePasse), ville, tailleParc, codeHash: hashOtp(code), expireLe: new Date(Date.now() + 10 * 60_000) };
+    return tx.inscriptionEnAttente.upsert({
+      where: { telephone },
+      create: { telephone, ...valeurs },
+      update: { ...valeurs, tentatives: 0, envois: 1, creeLe: new Date() },
+    });
+  });
+  const parti = await envoyerMessage({ type: "OTP", destinataire: telephone, texte: t("Nuuf : votre code de vérification est {code}. Il expire dans 10 minutes. Ne le partagez avec personne.", { code }) });
+  if (process.env.NODE_ENV !== "production") console.log(`[OTP dev] ${telephone} -> ${code}`);
+  await setDevOtp(code);
+  await setPendingInscription(attente.id);
+  if (!(parti || modeMessagerie() === "simulation" || codeAffiche())) {
+    return { error: t("Le code n'a pas pu être envoyé. Réessayez dans un instant ou contactez l'assistance.") };
+  }
+  redirect("/verification");
+}
+
+/** Crée le compte une fois le code de l'inscription validé. */
+async function confirmerInscription(id: string, form: FormData): Promise<FormState> {
+  const { t } = await getT();
+  const a = await db.inscriptionEnAttente.findUnique({ where: { id } });
+  if (!a || a.expireLe < new Date() || a.tentatives >= 5) {
+    return { error: t("Code expiré. Recommencez l'inscription pour en recevoir un nouveau.") };
+  }
+  const code = String(form.get("code") ?? "").replace(/\D/g, "");
+  if (a.codeHash !== hashOtp(code)) {
+    await db.inscriptionEnAttente.update({ where: { id }, data: { tentatives: { increment: 1 } } });
+    return { error: t("Code incorrect.") };
+  }
+  if (await db.utilisateur.findUnique({ where: { telephone: a.telephone } })) {
+    await db.inscriptionEnAttente.delete({ where: { id } }).catch(() => {});
+    return { error: t("Un compte existe déjà avec ce numéro.") };
+  }
   const user = await db.utilisateur.create({
     data: {
-      telephone,
-      nomComplet,
-      motDePasse: hashPassword(motDePasse),
+      telephone: a.telephone,
+      nomComplet: a.nomComplet,
+      motDePasse: a.motDePasse,
+      telVerifieLe: new Date(),
       membres: {
         create: {
           role: "PROPRIETAIRE",
           organisation: {
             create: {
-              nom: nomComplet,
-              ville,
-              tailleParc,
+              nom: a.nomComplet,
+              ville: a.ville,
+              tailleParc: a.tailleParc,
               abonnement: {
                 create: {
                   forfait: "DECOUVERTE",
@@ -100,14 +141,15 @@ export async function inscription(_: FormState, form: FormData): Promise<FormSta
       },
     },
   });
-  if (!(await issueOtp(user.id, telephone))) {
-    return { error: t("Compte créé, mais le code n'a pas pu être envoyé. Connectez-vous dans un instant pour en recevoir un nouveau.") };
-  }
-  redirect("/verification");
+  await db.inscriptionEnAttente.delete({ where: { id } }).catch(() => {});
+  await startSession(user.id);
+  redirect(estAdmin(a.telephone) ? "/admin" : "/bienvenue");
 }
 
 export async function verifierCode(_: FormState, form: FormData): Promise<FormState> {
   const { t } = await getT();
+  const inscriptionId = await getPendingInscription();
+  if (inscriptionId) return confirmerInscription(inscriptionId, form);
   const uid = await getPendingUid();
   if (!uid) redirect("/connexion");
   const code = String(form.get("code") ?? "").replace(/\D/g, "");
@@ -153,6 +195,27 @@ export async function verifierCodeForm(form: FormData) {
 
 /** Renvoie un code de vérification au compte en cours de connexion (limité à 5 codes / 10 min). */
 export async function renvoyerCode() {
+  const inscriptionId = await getPendingInscription();
+  if (inscriptionId) {
+    const { t } = await getT();
+    const a = await db.inscriptionEnAttente.findUnique({ where: { id: inscriptionId } });
+    if (!a) redirect("/inscription");
+    if (a!.envois >= 5 || (await plafondCodesAtteint())) {
+      redirect(retour("/verification", t("Trop de codes demandés. Réessayez plus tard.")));
+    }
+    const code = generateOtp();
+    await db.inscriptionEnAttente.update({
+      where: { id: inscriptionId },
+      data: { codeHash: hashOtp(code), expireLe: new Date(Date.now() + 10 * 60_000), tentatives: 0, envois: { increment: 1 } },
+    });
+    const parti = await envoyerMessage({ type: "OTP", destinataire: a!.telephone, texte: t("Nuuf : votre code de vérification est {code}. Il expire dans 10 minutes. Ne le partagez avec personne.", { code }) });
+    if (process.env.NODE_ENV !== "production") console.log(`[OTP dev] ${a!.telephone} -> ${code}`);
+    await setDevOtp(code);
+    if (!(parti || modeMessagerie() === "simulation" || codeAffiche())) {
+      redirect(retour("/verification", t("Le code n'a pas pu être envoyé. Réessayez dans un instant.")));
+    }
+    redirect("/verification");
+  }
   const uid = await getPendingUid();
   if (!uid) redirect("/connexion");
   const user = await db.utilisateur.findUnique({ where: { id: uid } });

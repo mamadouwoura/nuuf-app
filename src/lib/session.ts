@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { connection } from "next/server";
@@ -13,7 +14,7 @@ const afficheCode = !secure || process.env.NUUF_DEMO === "1";
 /** Vrai quand le code est montré à l'écran (développement, démonstration) : aucun envoi n'est alors nécessaire. */
 export const codeAffiche = () => afficheCode;
 
-type Token = { uid: string; exp: number; v?: number };
+type Token = { uid?: string; ins?: string; exp: number; v?: number; sid?: string };
 
 export async function setPending(uid: string) {
   (await cookies()).set(PENDING, sign({ uid, exp: Date.now() + 10 * 60_000 }), {
@@ -24,29 +25,50 @@ export async function getPendingUid() {
   await connection();
   return verify<Token>((await cookies()).get(PENDING)?.value)?.uid ?? null;
 }
+/** Inscription en attente de confirmation du code (aucun compte n'existe encore). */
+export async function setPendingInscription(id: string) {
+  (await cookies()).set(PENDING, sign({ ins: id, exp: Date.now() + 10 * 60_000 }), {
+    httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: 600,
+  });
+}
+export async function getPendingInscription() {
+  await connection();
+  return verify<Token>((await cookies()).get(PENDING)?.value)?.ins ?? null;
+}
 export async function startSession(uid: string) {
   const u = await db.utilisateur.findUnique({ where: { id: uid }, select: { sessionVersion: true } });
   const jar = await cookies();
   jar.delete(PENDING);
   jar.delete(DEV_OTP);
-  jar.set(SESSION, sign({ uid, v: u?.sessionVersion ?? 0, exp: Date.now() + 30 * 86_400_000 }), {
+  // La session existe côté serveur : se déconnecter la supprime, même si le cookie a été copié ailleurs.
+  const sid = randomBytes(24).toString("hex");
+  const expireLe = new Date(Date.now() + 30 * 86_400_000);
+  await db.sessionUtilisateur.deleteMany({ where: { utilisateurId: uid, expireLe: { lt: new Date() } } });
+  await db.sessionUtilisateur.create({ data: { id: sid, utilisateurId: uid, expireLe } });
+  jar.set(SESSION, sign({ uid, v: u?.sessionVersion ?? 0, sid, exp: expireLe.getTime() }), {
     httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: 30 * 86400,
   });
 }
 export async function endSession() {
-  (await cookies()).delete(SESSION);
+  const jar = await cookies();
+  const jeton = verify<Token>(jar.get(SESSION)?.value);
+  if (jeton?.sid) await db.sessionUtilisateur.deleteMany({ where: { id: jeton.sid } });
+  jar.delete(SESSION);
 }
 /** Utilisateur connecté : une seule lecture en base par requête, même appelée par la mise en page et la page. */
 export const getUser = cache(async function getUser() {
   await connection();
   const jeton = verify<Token>((await cookies()).get(SESSION)?.value);
-  if (!jeton) return null;
+  if (!jeton?.uid || !jeton.sid) return null;
   const user = await db.utilisateur.findUnique({
     where: { id: jeton.uid },
-    include: { membres: { include: { organisation: { include: { abonnement: true } } } } },
+    include: {
+      membres: { include: { organisation: { include: { abonnement: true } } } },
+      sessions: { where: { id: jeton.sid, expireLe: { gt: new Date() } }, select: { id: true } },
+    },
   });
-  // Mot de passe changé depuis l'ouverture de cette session : elle n'est plus valable.
-  if (!user || user.sessionVersion !== (jeton.v ?? 0)) return null;
+  // Session supprimée (déconnexion) ou mot de passe changé depuis son ouverture : elle n'est plus valable.
+  if (!user || user.sessions.length === 0 || user.sessionVersion !== (jeton.v ?? 0)) return null;
   return user;
 });
 /** Dev uniquement : le code s'affiche à l'écran au lieu d'être envoyé par WhatsApp. */

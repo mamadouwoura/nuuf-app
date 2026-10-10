@@ -79,7 +79,7 @@ export async function ajouterMembre(form: FormData) {
     data: {
       telephone: tel!,
       nomComplet: nom,
-      motDePasse: hashPassword(mdp),
+      motDePasse: await hashPassword(mdp),
       membres: { create: { organisationId: membre.organisationId, role } },
     },
   });
@@ -120,10 +120,10 @@ export async function changerMotDePasse(form: FormData) {
   if (!user) redirect("/connexion");
   const ancien = String(form.get("ancien") ?? "");
   const nouveau = String(form.get("nouveau") ?? "");
-  if (!verifyPassword(ancien, user.motDePasse)) retour(t("Mot de passe actuel incorrect."));
+  if (!(await verifyPassword(ancien, user.motDePasse))) retour(t("Mot de passe actuel incorrect."));
   const faible = erreurMotDePasse(nouveau, user.telephone);
   if (faible) retour(t(faible));
-  await db.utilisateur.update({ where: { id: user.id }, data: { motDePasse: hashPassword(nouveau), sessionVersion: { increment: 1 } } });
+  await db.utilisateur.update({ where: { id: user.id }, data: { motDePasse: await hashPassword(nouveau), sessionVersion: { increment: 1 } } });
   // La session en cours reste ouverte ; toutes les autres (autres appareils) sont coupées.
   await startSession(user.id);
   retour(t("Mot de passe modifié."), "ok");

@@ -1176,7 +1176,8 @@
  "Indiquez le numéro de téléphone ou le numéro de pièce d'identité du candidat.": "Enter the applicant's phone number or ID document number.",
  "Numéro de pièce d'identité trop court (6 caractères minimum).": "ID document number too short (6 characters minimum).",
  "Le code n'a pas pu être envoyé. Réessayez dans un instant ou contactez l'assistance.": "The code could not be sent. Try again in a moment or contact support.",
- "Compte créé, mais le code n'a pas pu être envoyé. Connectez-vous dans un instant pour en recevoir un nouveau.": "Account created, but the code could not be sent. Sign in again shortly to receive a new one.",
  "Le code n'a pas pu être envoyé. Réessayez dans un instant.": "The code could not be sent. Try again in a moment.",
- "Envoi trop lourd (20 Mo au total). Envoyez moins de fichiers à la fois.": "Upload too large (20 MB in total). Send fewer files at a time."
+ "Envoi trop lourd (20 Mo au total). Envoyez moins de fichiers à la fois.": "Upload too large (20 MB in total). Send fewer files at a time.",
+ "Code expiré. Recommencez l'inscription pour en recevoir un nouveau.": "Code expired. Start the sign-up again to receive a new one.",
+ "Trop de codes demandés. Réessayez plus tard.": "Too many codes requested. Try again later."
 }

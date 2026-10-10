@@ -66,7 +66,7 @@ export async function nouveauMotDePasse(form: FormData) {
   const faible = erreurMotDePasse(a, await lireJeton("nuuf_reinit_tel"));
   if (faible) vers(3, t(faible));
   if (a !== b) vers(3, t("Les deux mots de passe ne correspondent pas."));
-  await db.utilisateur.update({ where: { id: uid! }, data: { motDePasse: hashPassword(a), sessionVersion: { increment: 1 } } });
+  await db.utilisateur.update({ where: { id: uid! }, data: { motDePasse: await hashPassword(a), sessionVersion: { increment: 1 } } });
   await retirerJeton("nuuf_reinit_ok");
   await retirerJeton("nuuf_reinit_tel");
   redirect("/connexion?info=" + encodeURIComponent(t("Mot de passe modifié. Vous pouvez vous connecter.")));
