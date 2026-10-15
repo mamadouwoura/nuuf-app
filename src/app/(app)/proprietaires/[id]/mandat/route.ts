@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { chargerIdentite } from "@/lib/identite";
 import { genererMandat } from "@/lib/mandat-pdf";
 import { getUser } from "@/lib/session";
 
@@ -21,6 +22,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   if (!proprietaire || !mandat) return new Response("Aucun mandat pour ce propriétaire.", { status: 404 });
   const pdf = await genererMandat(mandat, {
     agence: { nom: proprietaire.organisation.nom, ninea: proprietaire.organisation.ninea, representant: user.nomComplet },
+    identite: await chargerIdentite(orgId),
     proprietaire,
     biens: proprietaire.biens,
   });

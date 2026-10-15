@@ -1,6 +1,7 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import QRCode from "qrcode";
 import { db } from "./db";
+import { chargerIdentite } from "./identite";
 
 export const appUrl = () => process.env.APP_URL ?? "http://localhost:3000";
 export const urlVerification = (jeton: string) => `${appUrl()}/verifier/${jeton}`;
@@ -47,7 +48,22 @@ export async function genererPdf(q: QuittanceComplete): Promise<Uint8Array> {
     page.drawText(sur(t, o.bold ? gras : normal), { x, y, size: o.size ?? 11, font: o.bold ? gras : normal, color: o.color ?? rgb(0.07, 0.12, 0.09) });
 
   page.drawRectangle({ x: 0, y: 762, width: 595, height: 80, color: vert });
-  texte("nuuf", 40, 795, { size: 26, bold: true, color: rgb(1, 1, 1) });
+  const identite = await chargerIdentite(bail.bien.organisationId);
+  let xNom = 40;
+  if (identite.logo) {
+    try {
+      const img = identite.logo.type === "png" ? await pdf.embedPng(identite.logo.octets) : await pdf.embedJpg(identite.logo.octets);
+      const e = Math.min(100 / img.width, 54 / img.height);
+      page.drawRectangle({ x: 30, y: 768, width: img.width * e + 20, height: 68, color: rgb(1, 1, 1) });
+      page.drawImage(img, { x: 40, y: 775 + (54 - img.height * e) / 2, width: img.width * e, height: img.height * e });
+      xNom = 40 + img.width * e + 28;
+    } catch {
+      /* logo illisible : on garde le nom seul */
+    }
+  }
+  let nomTaille = 20;
+  while (nomTaille > 11 && gras.widthOfTextAtSize(sur(identite.nom, gras), nomTaille) > 370 - xNom) nomTaille -= 1;
+  texte(identite.nom, xNom, 795, { size: nomTaille, bold: true, color: rgb(1, 1, 1) });
   texte("Quittance de loyer", 380, 800, { size: 16, bold: true, color: rgb(1, 1, 1) });
   texte(`N° ${q.numero}`, 380, 780, { size: 11, color: rgb(1, 1, 1) });
 

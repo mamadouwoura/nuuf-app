@@ -1,15 +1,16 @@
 import { VERT, GRIS, dateFr, nombre, nouveauDocument } from "./pdf-outils";
 import type { Bilan } from "./bilan";
+import type { Identite } from "./identite";
 
 const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 const periode = (d: Date) => `${MOIS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 const f = (n: number) => `${n < 0 ? "-" : ""}${nombre(Math.abs(n))}`;
 
 /** Compte rendu mensuel de gérance remis au propriétaire. */
-export async function genererBilanPdf(b: Bilan, agence: { nom: string; ninea: string | null }): Promise<Uint8Array> {
+export async function genererBilanPdf(b: Bilan, agence: Identite): Promise<Uint8Array> {
   const d = await nouveauDocument();
+  await d.entete(agence);
   d.ligne("COMPTE RENDU DE GESTION", { taille: 20, gras: true, couleur: VERT });
-  d.ligne(`${agence.nom}${agence.ninea ? ` - NINEA ${agence.ninea}` : ""}`, { taille: 11 });
   d.espace(6);
   d.ligne(`Propriétaire : ${b.proprietaire.nomComplet}`, { gras: true });
   d.ligne(`Période : ${periode(b.mois)}${b.mandat ? `   -   Mandat ${b.mandat.numero}` : ""}`);

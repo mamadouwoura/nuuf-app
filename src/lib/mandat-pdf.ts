@@ -1,5 +1,6 @@
 import { VERT, GRIS, dateFr, nombre, nouveauDocument } from "./pdf-outils";
 import type { Bilan } from "./bilan";
+import type { Identite } from "./identite";
 
 type Mandat = {
   numero: string;
@@ -17,6 +18,7 @@ type Mandat = {
 
 type Parties = {
   agence: { nom: string; ninea: string | null; representant: string };
+  identite: Identite;
   proprietaire: { nomComplet: string; telephone: string | null; cni: string | null; adresse: string | null };
   biens: { designation: string; quartier: string; ville: string }[];
 };
@@ -26,6 +28,7 @@ const pct = (p: number) => `${String(p).replace(".", ",")} %`;
 /** Contrat de mandat de gestion locative (modèle simple, à faire relire avant usage juridique). */
 export async function genererMandat(m: Mandat, p: Parties): Promise<Uint8Array> {
   const d = await nouveauDocument();
+  await d.entete(p.identite);
   d.ligne("MANDAT DE GESTION LOCATIVE", { taille: 20, gras: true, couleur: VERT });
   d.ligne(`N° ${m.numero}`, { taille: 12 });
   d.espace(8);

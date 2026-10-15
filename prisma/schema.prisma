@@ -76,6 +76,10 @@ model Organisation {
   id     String   @id @default(cuid())
   nom    String
   ninea  String?
+  // Coordonnées imprimées sur les documents (contrats, mandats, bilans, quittances).
+  adresse      String?
+  telephonePro String?
+  email        String?
   ville      String? // Dakar, Thiès, Mbour, Autre (déclaré à l'inscription)
   tailleParc String? // 1-5, 6-20, 21-50, 50+
   profil     String? // déclaré à l'inscription : PARTICULIER ou AGENCE (indicatif, aucun droit n'en découle)
@@ -90,6 +94,16 @@ model Organisation {
   journal             JournalAction[]
   consultations       ConsultationHistorique[]
   proprietaires       Proprietaire[]
+  logo                LogoOrganisation?
+}
+
+// Logo de l'organisation : table à part pour ne pas alourdir les requêtes courantes.
+model LogoOrganisation {
+  organisationId String       @id
+  octets         Bytes
+  type           String // png ou jpg
+  majLe          DateTime     @default(now()) @updatedAt
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
 }
 
 // Une personne qui se connecte (téléphone + mot de passe + OTP).

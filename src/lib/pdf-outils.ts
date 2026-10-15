@@ -1,4 +1,5 @@
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFImage, type PDFPage } from "pdf-lib";
+import type { Identite } from "./identite";
 
 export const VERT = rgb(0.059, 0.369, 0.294);
 export const ENCRE = rgb(0.07, 0.12, 0.09);
@@ -69,6 +70,10 @@ export async function nouveauDocument() {
   const espace = (n: number) => {
     y -= n;
   };
+  /** En-tête personnalisé (logo, nom, coordonnées) de l'organisation, en haut de la première page. */
+  const entete = async (identite: Identite) => {
+    y = await dessinerEntete(pdf, page, { normal, gras }, identite, y + 20);
+  };
 
   /** Tableau : `colonnes` = largeurs en points (somme = 495), `droite` = indices alignés à droite. */
   const tableau = (entetes: string[], lignes: string[][], colonnes: number[], droite: number[] = [], pied?: string[]) => {
@@ -135,10 +140,49 @@ export async function nouveauDocument() {
     paragraphe,
     article,
     espace,
+    entete,
     tableau,
     signatures,
     piedDePage,
     nouvellePage,
     sauver: () => pdf.save(),
   };
+}
+
+/**
+ * En-tête personnalisé d'un document : logo (s'il existe), nom, coordonnées et NINEA, puis un filet.
+ * Dessine à partir de `y` (haut du bloc) et renvoie la nouvelle position verticale.
+ */
+export async function dessinerEntete(
+  pdf: PDFDocument,
+  page: PDFPage,
+  polices: { normal: PDFFont; gras: PDFFont },
+  identite: Identite,
+  y: number,
+): Promise<number> {
+  const { normal, gras } = polices;
+  let x = MARGE;
+  let hauteurLogo = 0;
+  if (identite.logo) {
+    try {
+      const img = identite.logo.type === "png" ? await pdf.embedPng(identite.logo.octets) : await pdf.embedJpg(identite.logo.octets);
+      const e = Math.min(130 / img.width, 54 / img.height);
+      hauteurLogo = img.height * e;
+      page.drawImage(img, { x, y: y - hauteurLogo, width: img.width * e, height: hauteurLogo });
+      x += img.width * e + 14;
+    } catch {
+      /* image illisible : le document est produit sans logo */
+    }
+  }
+  let yt = y - 12;
+  page.drawText(sur(identite.nom, gras), { x, y: yt, size: 13, font: gras, color: ENCRE });
+  const coordonnees = [identite.telephone, identite.email].filter(Boolean).join("  -  ");
+  const details = [identite.adresse, coordonnees, identite.ninea ? `NINEA ${identite.ninea}` : ""].filter(Boolean) as string[];
+  for (const d of details) {
+    yt -= 12;
+    page.drawText(sur(d, normal), { x, y: yt, size: 8.5, font: normal, color: GRIS });
+  }
+  const bas = Math.min(y - hauteurLogo, yt) - 8;
+  page.drawLine({ start: { x: MARGE, y: bas }, end: { x: L - MARGE, y: bas }, thickness: 1, color: VERT });
+  return bas - 22;
 }

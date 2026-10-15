@@ -1,6 +1,6 @@
-import { db } from "@/lib/db";
 import { calculerBilan } from "@/lib/bilan";
 import { genererBilanPdf } from "@/lib/bilan-pdf";
+import { chargerIdentite } from "@/lib/identite";
 import { cleMois, debutMois, depuisCle } from "@/lib/loyers";
 import { getUser } from "@/lib/session";
 
@@ -15,8 +15,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const mois = depuisCle(new URL(req.url).searchParams.get("mois") ?? undefined, debutMois(maintenant));
   const bilan = await calculerBilan(orgId, id, mois, maintenant);
   if (!bilan) return new Response("Introuvable", { status: 404 });
-  const org = await db.organisation.findUnique({ where: { id: orgId }, select: { nom: true, ninea: true } });
-  const pdf = await genererBilanPdf(bilan, { nom: org?.nom ?? "Agence", ninea: org?.ninea ?? null });
+  const pdf = await genererBilanPdf(bilan, await chargerIdentite(orgId));
   return new Response(Buffer.from(pdf), {
     headers: {
       "Content-Type": "application/pdf",

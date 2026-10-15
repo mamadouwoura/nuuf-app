@@ -1,6 +1,8 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { db } from "./db";
 import { TYPE_LIBELLE } from "./immo";
+import { chargerIdentite } from "./identite";
+import { dessinerEntete } from "./pdf-outils";
 
 const nombre = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 const dateFr = (d: Date) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
@@ -74,6 +76,7 @@ export async function genererContrat(bail: Bail, proprietaire: string): Promise<
   const bien = bail.bien;
   const caution = bail.loyerMensuel * bail.cautionMois;
 
+  y = await dessinerEntete(pdf, page, { normal, gras }, await chargerIdentite(bail.bien.organisationId), y + 20);
   ligne("CONTRAT DE LOCATION", { size: 20, bold: true, color: vert });
   ligne(`${bien.designation} (${TYPE_LIBELLE[bien.type].toLowerCase()})`, { size: 12 });
   y -= 8;

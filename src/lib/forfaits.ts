@@ -11,10 +11,13 @@ export const FORFAITS: Record<Forfait, { nom: string; prix: number; logements: n
 
 const AGENCE_INCLUS = 50;
 const AGENCE_PAR_LOGEMENT = 300;
+/** Palier d'entrée : les petites agences (jusqu'à 20 logements) paient 15 000 FCFA. */
+export const AGENCE_PALIER_ENTREE = { logements: 20, prix: 15_000 } as const;
 
 /** Prix mensuel d'un abonnement pour un nombre de logements donné. */
 export function prixMensuel(forfait: Forfait, nbLogements: number): number {
   if (forfait === "AGENCE") {
+    if (nbLogements <= AGENCE_PALIER_ENTREE.logements) return AGENCE_PALIER_ENTREE.prix;
     return FORFAITS.AGENCE.prix + Math.max(0, nbLogements - AGENCE_INCLUS) * AGENCE_PAR_LOGEMENT;
   }
   return FORFAITS[forfait].prix;

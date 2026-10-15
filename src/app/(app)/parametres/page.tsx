@@ -8,6 +8,7 @@ import {
   changerMotDePasse,
   deconnecterAutresAppareils,
   changerRole,
+  majIdentite,
   majProfil,
   retirerMembre,
   supprimerCompteEncaissement,
@@ -41,7 +42,8 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
   const org = membre.organisation;
   const proprio = membre.role === "PROPRIETAIRE";
   const forfait = FORFAITS[org.abonnement?.forfait ?? "DECOUVERTE"];
-  const [comptes, equipe] = await Promise.all([
+  const [aLogo, comptes, equipe] = await Promise.all([
+    db.logoOrganisation.count({ where: { organisationId: org.id } }),
     db.compteEncaissement.findMany({ where: { organisationId: org.id }, orderBy: { id: "asc" } }),
     db.membre.findMany({ where: { organisationId: org.id }, include: { utilisateur: true }, orderBy: { creeLe: "asc" } }),
   ]);
@@ -75,6 +77,42 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
           <div className="md:col-span-2"><button className={bouton}>{t("Enregistrer")}</button></div>
         </form>
       </section>
+
+      {proprio && (
+        <section className={carte}>
+          <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold flex items-center gap-2"><span className="material-symbols-outlined text-primary">badge</span>{t("Identité sur vos documents")}</h2>
+          <p className="font-body-md text-body-md text-on-surface-variant">{t("Votre logo et vos coordonnées figurent en tête des contrats, mandats, bilans et quittances.")}</p>
+          <form action={majIdentite} className="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+            <label className="flex flex-col gap-1 md:col-span-2">
+              <span className="font-label-lg text-label-lg font-semibold">{t("Adresse")}</span>
+              <input name="adresse" defaultValue={org.adresse ?? ""} maxLength={160} className={champ} />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="font-label-lg text-label-lg font-semibold">{t("Téléphone de l'agence ou du bailleur")}</span>
+              <input name="telephonePro" defaultValue={org.telephonePro ? telAffiche(org.telephonePro) : ""} inputMode="tel" className={champ} />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="font-label-lg text-label-lg font-semibold">{t("E-mail")}</span>
+              <input name="email" type="email" defaultValue={org.email ?? ""} maxLength={120} className={champ} />
+            </label>
+            <div className="flex flex-col gap-2 md:col-span-2">
+              <span className="font-label-lg text-label-lg font-semibold">{t("Logo (PNG ou JPEG, 400 Ko maximum)")}</span>
+              {aLogo > 0 && (
+                <div className="flex items-center gap-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/parametres/logo" alt={t("Logo actuel")} className="h-14 w-auto max-w-40 object-contain rounded-lg bg-surface-container-low p-1" />
+                  <label className="flex items-center gap-2 font-body-md text-body-md">
+                    <input type="checkbox" name="retirerLogo" />
+                    {t("Retirer le logo")}
+                  </label>
+                </div>
+              )}
+              <input name="logo" type="file" accept="image/png,image/jpeg" className="font-body-md text-body-md" />
+            </div>
+            <div className="md:col-span-2"><button className={bouton}>{t("Enregistrer")}</button></div>
+          </form>
+        </section>
+      )}
 
       <section className={carte}>
         <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold flex items-center gap-2"><span className="material-symbols-outlined text-primary">account_balance_wallet</span>{t("Comptes d'encaissement")}</h2>
