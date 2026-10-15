@@ -13,6 +13,8 @@ const NAV = [
   { href: "/tableau-de-bord", icon: "grid_view", label: N_("Tableau de bord") },
   { href: "/biens", icon: "apartment", label: N_("Biens"), badge: "biens" },
   { href: "/locataires", icon: "group", label: N_("Locataires") },
+  { href: "/proprietaires", icon: "badge", label: N_("Propriétaires") },
+  { href: "/bilans", icon: "summarize", label: N_("Bilans du mois") },
   { href: "/historique", icon: "manage_search", label: N_("Vérifier un candidat") },
   { href: "/paiements", icon: "account_balance_wallet", label: N_("Paiements") },
   { href: "/relances", icon: "schedule", label: N_("Relances"), badge: "retards", alert: true },
@@ -30,6 +32,8 @@ const BARRE = [
 ];
 const PLUS = [
   { href: "/locataires", icon: "group", label: N_("Locataires") },
+  { href: "/proprietaires", icon: "badge", label: N_("Propriétaires") },
+  { href: "/bilans", icon: "summarize", label: N_("Bilans du mois") },
   { href: "/historique", icon: "manage_search", label: N_("Vérifier un candidat") },
   { href: "/relances", icon: "schedule", label: N_("Relances") },
   { href: "/parametres", icon: "tune", label: N_("Paramètres") },

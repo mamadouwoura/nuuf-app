@@ -88,6 +88,7 @@ model Organisation {
   messages            Message[]
   journal             JournalAction[]
   consultations       ConsultationHistorique[]
+  proprietaires       Proprietaire[]
 }
 
 // Une personne qui se connecte (téléphone + mot de passe + OTP).
@@ -226,12 +227,90 @@ model Bien {
   description    String?
   creeLe         DateTime  @default(now())
   archiveLe      DateTime?
+  proprietaireId String? // propriétaire pour le compte duquel une agence gère ce bien
 
-  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  organisation Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  proprietaire Proprietaire? @relation(fields: [proprietaireId], references: [id], onDelete: SetNull)
   baux         Bail[]
   photos       PhotoBien[]
 
   @@index([organisationId])
+  @@index([proprietaireId])
+}
+
+// Un propriétaire dont l'agence gère les biens (mandat de gestion).
+model Proprietaire {
+  id             String   @id @default(cuid())
+  organisationId String
+  nomComplet     String
+  telephone      String?
+  cni            String?
+  adresse        String?
+  creeLe         DateTime @default(now())
+
+  organisation Organisation       @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  biens        Bien[]
+  mandats      Mandat[]
+  retenues     RetenueBilan[]
+  reversements Reversement[]
+
+  @@index([organisationId])
+}
+
+// Contrat de mandat de gestion entre l'agence et un propriétaire.
+model Mandat {
+  id                    String    @id @default(cuid())
+  organisationId        String
+  proprietaireId        String
+  numero                String // MG-2026-001, séquentiel par organisation
+  commissionPct         Float // pourcentage des loyers encaissés
+  debutLe               DateTime
+  dureeMois             Int       @default(12)
+  reconduction          Boolean   @default(true)
+  jourReversement       Int       @default(10)
+  plafondTravaux        Int? // FCFA, sans accord préalable
+  preavisMois           Int       @default(1)
+  actif                 Boolean   @default(true)
+  signatureAgence       String?
+  signatureProprietaire String?
+  signeLe               DateTime?
+  creeLe                DateTime  @default(now())
+
+  proprietaire Proprietaire @relation(fields: [proprietaireId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, numero])
+  @@index([proprietaireId])
+}
+
+// Retenue du mois sur le net à reverser (travaux, frais…).
+model RetenueBilan {
+  id             String   @id @default(cuid())
+  organisationId String
+  proprietaireId String
+  mois           DateTime // 1er jour du mois concerné
+  libelle        String
+  montant        Int
+  creeLe         DateTime @default(now())
+
+  proprietaire Proprietaire @relation(fields: [proprietaireId], references: [id], onDelete: Cascade)
+
+  @@index([proprietaireId, mois])
+}
+
+// Reversement d'un mois au propriétaire (suivi manuel : Nuuf ne déplace aucun fonds).
+model Reversement {
+  id             String   @id @default(cuid())
+  organisationId String
+  proprietaireId String
+  mois           DateTime
+  montant        Int
+  reverseLe      DateTime
+  reference      String?
+  creeLe         DateTime @default(now())
+
+  proprietaire Proprietaire @relation(fields: [proprietaireId], references: [id], onDelete: Cascade)
+
+  @@unique([proprietaireId, mois])
 }
 
 // Photos d'un bien : le fichier est sur disque (UPLOAD_DIR), seule sa référence est en base.

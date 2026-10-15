@@ -7,7 +7,7 @@ const L = 640;
 const H = 220;
 
 /** Zone de signature manuscrite au doigt ou au stylet. L'image PNG est envoyée dans le champ caché « signature ». */
-export default function SignatureTactile({ existante }: { existante?: string | null }) {
+export default function SignatureTactile({ existante, nom = "signature" }: { existante?: string | null; nom?: string }) {
   const { t } = useT();
   const canvas = useRef<HTMLCanvasElement>(null);
   const [valeur, setValeur] = useState("");
@@ -78,7 +78,7 @@ export default function SignatureTactile({ existante }: { existante?: string | n
         />
         {!trace && <span className="pointer-events-none absolute inset-0 flex items-center justify-center font-body-md text-body-md text-outline">{t("Signez ici avec le doigt")}</span>}
       </div>
-      <input type="hidden" name="signature" value={valeur} readOnly />
+      <input type="hidden" name={nom} value={valeur} readOnly />
       <div className="flex items-center justify-between gap-3">
         {existante && !trace ? (
           <span className="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant">
