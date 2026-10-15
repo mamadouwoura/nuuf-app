@@ -53,6 +53,7 @@ export default function AppShell({
   bandeau,
   moisLabel,
   simulation,
+  agence,
   }: {
   children: React.ReactNode;
   nom: string;
@@ -62,11 +63,14 @@ export default function AppShell({
   bandeau: { ton: "info" | "alerte"; texte: string } | null;
   moisLabel: string;
   simulation: boolean;
+  /** Compte agence : affiche les entrées liées aux propriétaires gérés (mandats, bilans). */
+  agence: boolean;
 }) {
   const { t, tn } = useT();
   const pathname = usePathname();
-  const navigation = NAV;
-  const plusLiens = PLUS;
+  const EXCLUS_BAILLEUR = ["/proprietaires", "/bilans"];
+  const navigation = agence ? NAV : NAV.filter((l) => !EXCLUS_BAILLEUR.includes(l.href));
+  const plusLiens = agence ? PLUS : PLUS.filter((l) => !EXCLUS_BAILLEUR.includes(l.href));
   const [plus, setPlus] = useState(false);
   const [confirmer, setConfirmer] = useState(false);
   return (
