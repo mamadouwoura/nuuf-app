@@ -78,6 +78,7 @@ model Organisation {
   ninea  String?
   ville      String? // Dakar, Thiès, Mbour, Autre (déclaré à l'inscription)
   tailleParc String? // 1-5, 6-20, 21-50, 50+
+  profil     String? // déclaré à l'inscription : PARTICULIER ou AGENCE (indicatif, aucun droit n'en découle)
   creeLe DateTime @default(now())
 
   membres             Membre[]
@@ -129,6 +130,7 @@ model InscriptionEnAttente {
   motDePasse String // haché
   ville      String?
   tailleParc String?
+  profil     String?
   codeHash   String
   tentatives Int      @default(0)
   envois     Int      @default(1)

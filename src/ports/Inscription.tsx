@@ -186,6 +186,16 @@ export default async function Inscription({ erreur }: { erreur?: string }) {
       </div>
       
       <div className="space-y-2">
+      <label htmlFor="champ-profil" className="block font-label-md text-label-md text-on-surface font-semibold">
+                    {t("Vous êtes")}
+                  </label>
+      <div className="grid grid-cols-2 gap-2">
+      <label className="cursor-pointer"><input id="champ-profil" type="radio" name="profil" value="PARTICULIER" className="peer sr-only" defaultChecked /><span className="block py-2.5 px-3 rounded-xl font-label-md text-label-md text-center transition bg-surface-container text-on-surface hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary peer-checked:font-bold peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary">{t("Bailleur particulier")}</span></label>
+      <label className="cursor-pointer"><input type="radio" name="profil" value="AGENCE" className="peer sr-only" /><span className="block py-2.5 px-3 rounded-xl font-label-md text-label-md text-center transition bg-surface-container text-on-surface hover:bg-surface-container-high peer-checked:bg-primary peer-checked:text-on-primary peer-checked:font-bold peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-primary">{t("Agence immobilière")}</span></label>
+      </div>
+      </div>
+
+      <div className="space-y-2">
       <label htmlFor="champ-tailleParc" className="block font-label-md text-label-md text-on-surface font-semibold">
                     {t("Nombre de logements ou locaux gérés")}
                   </label>

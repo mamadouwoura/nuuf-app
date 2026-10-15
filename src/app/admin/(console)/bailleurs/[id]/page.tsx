@@ -36,7 +36,7 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
         <Link href="/admin/bailleurs" className="font-label-md text-label-md text-primary font-semibold">← {t("Bailleurs")}</Link>
         <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight mt-1">{l.nom}</h1>
         <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-          {l.proprio ? telAffiche(l.proprio.telephone) : "—"} • {t(FORFAITS[l.forfait].nom)} • {l.logements} {t("Logements")}
+          {l.proprio ? telAffiche(l.proprio.telephone) : "—"} • {l.profil === "AGENCE" ? t("Agence immobilière") : t("Bailleur particulier")} • {t(FORFAITS[l.forfait].nom)} • {l.logements} {t("Logements")}
         </p>
       </div>
 

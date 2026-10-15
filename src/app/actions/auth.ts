@@ -66,6 +66,7 @@ export async function inscription(_: FormState, form: FormData): Promise<FormSta
   const motDePasse = String(form.get("motDePasse") ?? "");
   const ville = ["Dakar", "Thiès", "Mbour", "Autre"].find((v) => v === form.get("ville")) ?? null;
   const tailleParc = ["1-5", "6-20", "21-50", "50+"].find((v) => v === form.get("tailleParc")) ?? null;
+  const profil = form.get("profil") === "AGENCE" ? "AGENCE" : "PARTICULIER";
   if (nomComplet.length < 3) return { error: t("Indiquez votre prénom et nom.") };
   if (!telephone) return { error: t("Numéro invalide. Exemple : 77 123 45 67") };
   const faible = erreurMotDePasse(motDePasse, telephone);
@@ -81,7 +82,7 @@ export async function inscription(_: FormState, form: FormData): Promise<FormSta
   const code = generateOtp();
   const attente = await db.$transaction(async (tx) => {
     await tx.inscriptionEnAttente.deleteMany({ where: { expireLe: { lt: new Date() } } });
-    const valeurs = { nomComplet, motDePasse: await hashPassword(motDePasse), ville, tailleParc, codeHash: hashOtp(code), expireLe: new Date(Date.now() + 10 * 60_000) };
+    const valeurs = { nomComplet, motDePasse: await hashPassword(motDePasse), ville, tailleParc, profil, codeHash: hashOtp(code), expireLe: new Date(Date.now() + 10 * 60_000) };
     return tx.inscriptionEnAttente.upsert({
       where: { telephone },
       create: { telephone, ...valeurs },
@@ -128,9 +129,11 @@ async function confirmerInscription(id: string, form: FormData): Promise<FormSta
               nom: a.nomComplet,
               ville: a.ville,
               tailleParc: a.tailleParc,
+              profil: a.profil,
               abonnement: {
                 create: {
-                  forfait: "DECOUVERTE",
+                  // L'essai ouvre les fonctions du profil déclaré ; le forfait payant reste soumis à ses quotas.
+                  forfait: a.profil === "AGENCE" ? "AGENCE" : "DECOUVERTE",
                   statut: "ESSAI",
                   essaiFinLe: new Date(Date.now() + 14 * 86_400_000),
                 },
