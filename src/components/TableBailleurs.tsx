@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { FORFAITS } from "@/lib/forfaits";
 import { fcfa, initiales, telAffiche } from "@/lib/immo";
 import type { LigneBailleur } from "@/lib/admin";
@@ -32,7 +33,7 @@ export default async function TableBailleurs({ lignes }: { lignes: LigneBailleur
             <div className="flex items-center gap-3 min-w-0">
               <div className="shrink-0 w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-md text-label-md font-bold">{initiales(l.nom)}</div>
               <div className="flex flex-col min-w-0">
-                <span className="font-label-lg text-label-lg text-on-surface font-semibold truncate">{l.nom}</span>
+                <Link href={`/admin/bailleurs/${l.id}`} className="font-label-lg text-label-lg text-primary font-semibold truncate">{l.nom}</Link>
                 <span className="font-body-sm text-body-sm text-on-surface-variant">{l.proprio ? telAffiche(l.proprio.telephone) : "—"}</span>
               </div>
               <span className={`ml-auto shrink-0 px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${FORFAIT_CLASSE[l.forfait]}`}>{t(FORFAITS[l.forfait].nom)}</span>
@@ -71,7 +72,7 @@ export default async function TableBailleurs({ lignes }: { lignes: LigneBailleur
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-md text-label-md font-bold">{initiales(l.nom)}</div>
                     <div className="flex flex-col">
-                      <span className="font-label-lg text-label-lg text-on-surface font-semibold">{l.nom}</span>
+                      <Link href={`/admin/bailleurs/${l.id}`} className="font-label-lg text-label-lg text-primary font-semibold">{l.nom}</Link>
                       <span className="font-body-sm text-body-sm text-on-surface-variant">{l.proprio ? telAffiche(l.proprio.telephone) : "—"}</span>
                     </div>
                   </div>
