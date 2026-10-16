@@ -35,6 +35,7 @@ export async function genererBilanPdf(b: Bilan, agence: Identite): Promise<Uint8
     ["Loyers encaissés", f(b.encaisse)],
     [`Commission de l'agence (${String(b.commissionPct).replace(".", ",")} %)`, `- ${f(b.commission)}`],
     ...b.retenues.map((r) => [`Retenue : ${r.libelle}`, `- ${f(r.montant)}`]),
+    ...b.avances.filter((a) => a.prelevement > 0).map((a) => [`Remboursement d'avance${a.motif ? ` (${a.motif})` : ""} - reste ${f(a.resteApres)}`, `- ${f(a.prelevement)}`]),
   ];
   d.tableau(["Libellé", "Montant"], lignes, [395, 100], [1], ["Net à reverser au propriétaire", f(b.net)]);
 

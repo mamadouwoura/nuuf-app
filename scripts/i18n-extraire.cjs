@@ -54,7 +54,7 @@ if (require.main === module) {
     const manquantes = [...cles.keys()].filter((k) => !dict[k]);
     const inutiles = Object.keys(dict).filter((k) => !cles.has(k));
     console.log(`${cles.size} clés, ${manquantes.length} manquantes, ${inutiles.length} inutilisées`);
-    manquantes.slice(0, 40).forEach((k) => console.log("  MANQUE:", k.slice(0, 100), "←", cles.get(k)));
+    manquantes.slice(0, Number(process.env.I18N_MAX ?? 40)).forEach((k) => console.log("  MANQUE:", k.slice(0, process.env.I18N_MAX ? 1000 : 100), "←", cles.get(k)));
     inutiles.slice(0, 20).forEach((k) => console.log("  INUTILE:", k.slice(0, 100)));
     const attendu = JSON.stringify(tri(extraire(true).keys()), null, 1) + "\n";
     const perime = !fs.existsSync(CLIENT) || fs.readFileSync(CLIENT, "utf8") !== attendu;

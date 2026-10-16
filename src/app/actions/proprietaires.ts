@@ -97,6 +97,10 @@ export async function enregistrerMandat(form: FormData) {
   const jourReversement = Math.min(Math.max(entier(form.get("jourReversement")) || 10, 1), 28);
   const preavisMois = Math.min(Math.max(entier(form.get("preavisMois")) || 1, 0), 12);
   const plafond = entier(form.get("plafondTravaux"));
+  const agentNom = texte(form.get("agentNom"), 80) || null;
+  const commissionAgentPct = agentNom ? lirePourcentage(form.get("commissionAgentPct")) : 0;
+  if (commissionAgentPct === null) vers(t("Indiquez la commission de l'agent entre 0 et 50 %."));
+  if (commissionAgentPct! > commissionPct!) vers(t("La commission de l'agent est prélevée sur celle de l'agence : elle ne peut pas la dépasser."));
   const sigA = texte(form.get("signatureAgence"), 260_000);
   const sigP = texte(form.get("signatureProprietaire"), 260_000);
   if ((sigA && !signatureValide(sigA)) || (sigP && !signatureValide(sigP))) vers(t("La signature n'a pas pu être enregistrée. Signez à nouveau."));
@@ -110,6 +114,8 @@ export async function enregistrerMandat(form: FormData) {
     jourReversement,
     plafondTravaux: plafond > 0 ? plafond : null,
     preavisMois,
+    agentNom,
+    commissionAgentPct: commissionAgentPct!,
     ...(sigA ? { signatureAgence: sigA } : {}),
     ...(sigP ? { signatureProprietaire: sigP } : {}),
     ...(sigA || sigP ? { signeLe: new Date() } : {}),
@@ -161,11 +167,23 @@ export async function marquerReverse(form: FormData) {
   if (!bilan) redirect("/proprietaires");
   if (bilan!.net <= 0) vers(t("Il n'y a rien à reverser pour ce mois."));
   const reference = texte(form.get("reference"), 60) || null;
-  await db.reversement.upsert({
-    where: { proprietaireId_mois: { proprietaireId: p.id, mois } },
-    create: { organisationId: orgId, proprietaireId: p.id, mois, montant: bilan!.net, reverseLe: new Date(), reference },
-    update: { montant: bilan!.net, reverseLe: new Date(), reference },
-  });
+  await db.$transaction([
+    db.reversement.upsert({
+      where: { proprietaireId_mois: { proprietaireId: p.id, mois } },
+      create: { organisationId: orgId, proprietaireId: p.id, mois, montant: bilan!.net, reverseLe: new Date(), reference },
+      update: { montant: bilan!.net, reverseLe: new Date(), reference },
+    }),
+    // Les remboursements d'avances de ce bilan deviennent définitifs : les mois suivants repartent du reste réel.
+    ...bilan!.avances
+      .filter((a) => a.prelevement > 0)
+      .map((a) =>
+        db.remboursementAvance.upsert({
+          where: { avanceId_mois: { avanceId: a.id, mois } },
+          create: { avanceId: a.id, organisationId: orgId, montant: a.prelevement, mois },
+          update: { montant: a.prelevement },
+        }),
+      ),
+  ]);
   await db.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "bilan.reverse", cible: p.id } });
   redirect(`${retour}&ok=1`);
 }
@@ -175,7 +193,13 @@ export async function annulerReversement(form: FormData) {
   const cle = texte(form.get("mois"), 7);
   const { orgId } = await autorise(`/proprietaires/${id}/bilan?mois=${cle}`);
   const p = await proprietaireDe(orgId, id);
-  if (KEY_MOIS.test(cle)) await db.reversement.deleteMany({ where: { organisationId: orgId, proprietaireId: p.id, mois: depuisCle(cle, new Date()) } });
+  if (KEY_MOIS.test(cle)) {
+    const mois = depuisCle(cle, new Date());
+    await db.$transaction([
+      db.reversement.deleteMany({ where: { organisationId: orgId, proprietaireId: p.id, mois } }),
+      db.remboursementAvance.deleteMany({ where: { organisationId: orgId, mois, avance: { proprietaireId: p.id } } }),
+    ]);
+  }
   redirect(`/proprietaires/${id}/bilan?mois=${cle}`);
 }
 
@@ -197,8 +221,52 @@ export async function partagerBilan(form: FormData) {
     `Bonjour ${prenom}, voici votre compte rendu de gestion de ${mois} (${org?.nom ?? "votre agence"}) : ` +
     `loyers encaissés ${fcfa(b!.encaisse)} FCFA, commission ${fcfa(b!.commission)} FCFA` +
     (b!.totalRetenues ? `, retenues ${fcfa(b!.totalRetenues)} FCFA` : "") +
+    (b!.totalAvances ? `, remboursement d'avance ${fcfa(b!.totalAvances)} FCFA` : "") +
     `, net à vous reverser ${fcfa(b!.net)} FCFA.` +
     (b!.impayes > 0 ? ` Loyers restant dus : ${fcfa(b!.impayes)} FCFA.` : "");
   await db.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "bilan.partage", cible: p.id } });
   redirect(`https://wa.me/${p.telephone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`);
+}
+
+/** Avance (acompte) consentie au propriétaire ; remboursée automatiquement sur ses bilans. */
+export async function creerAvance(form: FormData) {
+  const id = texte(form.get("id"), 40);
+  const { user, orgId, vers, t } = await autorise(`/proprietaires/${id}`);
+  const p = await proprietaireDe(orgId, id);
+  const montant = entier(form.get("montant"));
+  if (montant <= 0) vers(t("Indiquez le montant de l'avance."));
+  const date = new Date(`${texte(form.get("accordeLe"), 10)}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime())) vers(t("Indiquez la date de l'avance."));
+  const mensualite = entier(form.get("mensualite"));
+  await db.avanceProprietaire.create({
+    data: { organisationId: orgId, proprietaireId: p.id, montant, accordeLe: date, motif: texte(form.get("motif"), 120) || null, mensualite: mensualite > 0 ? mensualite : null },
+  });
+  await db.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "avance.creee", cible: p.id } });
+  redirect(`/proprietaires/${p.id}?ok=${encodeURIComponent(t("Avance enregistrée."))}`);
+}
+
+export async function supprimerAvance(form: FormData) {
+  const id = texte(form.get("id"), 40);
+  const { orgId, vers, t } = await autorise(`/proprietaires/${id}`);
+  const p = await proprietaireDe(orgId, id);
+  const avanceId = texte(form.get("avanceId"), 40);
+  const deja = await db.remboursementAvance.count({ where: { avanceId, organisationId: orgId, avance: { proprietaireId: p.id } } });
+  if (deja > 0) vers(t("Cette avance a déjà été remboursée en partie : elle ne peut plus être supprimée."));
+  await db.avanceProprietaire.deleteMany({ where: { id: avanceId, organisationId: orgId, proprietaireId: p.id } });
+  redirect(`/proprietaires/${p.id}`);
+}
+
+/** Remboursement versé à part par le propriétaire (espèces, virement), hors bilan. */
+export async function rembourserAvance(form: FormData) {
+  const id = texte(form.get("id"), 40);
+  const { user, orgId, vers, t } = await autorise(`/proprietaires/${id}`);
+  const p = await proprietaireDe(orgId, id);
+  const avance = await db.avanceProprietaire.findFirst({ where: { id: texte(form.get("avanceId"), 40), organisationId: orgId, proprietaireId: p.id }, include: { remboursements: true } });
+  if (!avance) redirect(`/proprietaires/${p.id}`);
+  const reste = avance!.montant - avance!.remboursements.reduce((s, r) => s + r.montant, 0);
+  const montant = entier(form.get("montant"));
+  if (montant <= 0 || montant > reste) vers(t("Le montant doit être compris entre 1 FCFA et le reste dû ({reste} FCFA).", { reste: fcfa(reste) }));
+  await db.remboursementAvance.create({ data: { avanceId: avance!.id, organisationId: orgId, montant, note: texte(form.get("note"), 80) || null } });
+  await db.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "avance.remboursee", cible: p.id } });
+  redirect(`/proprietaires/${p.id}?ok=${encodeURIComponent(t("Remboursement enregistré."))}`);
 }

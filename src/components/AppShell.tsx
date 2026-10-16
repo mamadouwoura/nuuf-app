@@ -15,6 +15,8 @@ const NAV = [
   { href: "/locataires", icon: "group", label: N_("Locataires") },
   { href: "/proprietaires", icon: "badge", label: N_("Propriétaires") },
   { href: "/bilans", icon: "summarize", label: N_("Bilans du mois") },
+  { href: "/tresorerie", icon: "savings", label: N_("Trésorerie") },
+  { href: "/statistiques", icon: "monitoring", label: N_("Statistiques") },
   { href: "/historique", icon: "manage_search", label: N_("Vérifier un candidat") },
   { href: "/paiements", icon: "account_balance_wallet", label: N_("Paiements") },
   { href: "/relances", icon: "schedule", label: N_("Relances"), badge: "retards", alert: true },
@@ -34,6 +36,8 @@ const PLUS = [
   { href: "/locataires", icon: "group", label: N_("Locataires") },
   { href: "/proprietaires", icon: "badge", label: N_("Propriétaires") },
   { href: "/bilans", icon: "summarize", label: N_("Bilans du mois") },
+  { href: "/tresorerie", icon: "savings", label: N_("Trésorerie") },
+  { href: "/statistiques", icon: "monitoring", label: N_("Statistiques") },
   { href: "/historique", icon: "manage_search", label: N_("Vérifier un candidat") },
   { href: "/relances", icon: "schedule", label: N_("Relances") },
   { href: "/parametres", icon: "tune", label: N_("Paramètres") },
@@ -68,7 +72,7 @@ export default function AppShell({
 }) {
   const { t, tn } = useT();
   const pathname = usePathname();
-  const EXCLUS_BAILLEUR = ["/proprietaires", "/bilans"];
+  const EXCLUS_BAILLEUR = ["/proprietaires", "/bilans", "/tresorerie"];
   const navigation = agence ? NAV : NAV.filter((l) => !EXCLUS_BAILLEUR.includes(l.href));
   const plusLiens = agence ? PLUS : PLUS.filter((l) => !EXCLUS_BAILLEUR.includes(l.href));
   const [plus, setPlus] = useState(false);

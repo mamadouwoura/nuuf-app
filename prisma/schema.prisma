@@ -94,6 +94,7 @@ model Organisation {
   journal             JournalAction[]
   consultations       ConsultationHistorique[]
   proprietaires       Proprietaire[]
+  transactions        Transaction[]
   logo                LogoOrganisation?
 }
 
@@ -269,6 +270,7 @@ model Proprietaire {
   mandats      Mandat[]
   retenues     RetenueBilan[]
   reversements Reversement[]
+  avances      AvanceProprietaire[]
 
   @@index([organisationId])
 }
@@ -285,6 +287,9 @@ model Mandat {
   reconduction          Boolean   @default(true)
   jourReversement       Int       @default(10)
   plafondTravaux        Int? // FCFA, sans accord préalable
+  // Apporteur / agent : sa part est prélevée sur la commission de l'agence (le net du propriétaire ne change pas).
+  agentNom              String?
+  commissionAgentPct    Float     @default(0)
   preavisMois           Int       @default(1)
   actif                 Boolean   @default(true)
   signatureAgence       String?
@@ -545,4 +550,58 @@ model TentativeConnexion {
   creeLe DateTime @default(now())
 
   @@index([cle, creeLe])
+}
+
+// Avance (acompte) consentie à un propriétaire, remboursée automatiquement sur ses bilans mensuels.
+model AvanceProprietaire {
+  id             String   @id @default(cuid())
+  organisationId String
+  proprietaireId String
+  montant        Int
+  accordeLe      DateTime
+  motif          String?
+  mensualite     Int? // plafond de remboursement par mois ; vide = tout ce que le bilan permet
+  creeLe         DateTime @default(now())
+
+  proprietaire   Proprietaire         @relation(fields: [proprietaireId], references: [id], onDelete: Cascade)
+  remboursements RemboursementAvance[]
+
+  @@index([proprietaireId])
+}
+
+// Remboursement d'une avance : prélevé sur un bilan (mois renseigné) ou versé à part (mois vide).
+model RemboursementAvance {
+  id             String   @id @default(cuid())
+  avanceId       String
+  organisationId String
+  montant        Int
+  mois           DateTime?
+  recuLe         DateTime @default(now())
+  note           String?
+
+  avance AvanceProprietaire @relation(fields: [avanceId], references: [id], onDelete: Cascade)
+
+  @@unique([avanceId, mois])
+}
+
+enum SensTransaction {
+  ENTREE
+  SORTIE
+}
+
+// Dépense ou entrée de l'agence hors loyers (travaux, frais, honoraires…), pour le suivi de trésorerie.
+model Transaction {
+  id             String          @id @default(cuid())
+  organisationId String
+  sens           SensTransaction
+  categorie      String
+  libelle        String
+  montant        Int
+  date           DateTime
+  proprietaireId String?
+  creeLe         DateTime        @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@index([organisationId, date])
 }

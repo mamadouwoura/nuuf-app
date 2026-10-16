@@ -4,8 +4,10 @@ import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import BoutonEnvoi from "@/components/BoutonEnvoi";
 import SignatureTactile from "@/components/SignatureTactile";
-import { detacherBien, enregistrerMandat, majProprietaire, rattacherBiens } from "@/app/actions/proprietaires";
+import { creerAvance, detacherBien, enregistrerMandat, majProprietaire, rattacherBiens, rembourserAvance, supprimerAvance } from "@/app/actions/proprietaires";
 import { db } from "@/lib/db";
+import { fcfa } from "@/lib/immo";
+import { formaterDate } from "@/lib/i18n/format";
 import { cleMois, debutMois } from "@/lib/loyers";
 import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
@@ -32,7 +34,7 @@ function Bloc({ titre, icone, children }: { titre: string; icone: string; childr
 }
 
 async function Contenu({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ ok?: string; erreur?: string }> }) {
-  const { t, tn } = await getT();
+  const { t, tn, locale } = await getT();
   const { id } = await params;
   const { ok, erreur } = await searchParams;
   const user = await getUser();
@@ -45,6 +47,7 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
     include: {
       biens: { where: { archiveLe: null }, orderBy: { designation: "asc" } },
       mandats: { where: { actif: true }, orderBy: { creeLe: "desc" }, take: 1 },
+      avances: { include: { remboursements: true }, orderBy: { accordeLe: "desc" } },
     },
   });
   if (!p) notFound();
@@ -189,6 +192,14 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
               <label htmlFor="preavisMois" className={LABEL}>{t("Préavis de résiliation (mois)")}</label>
               <input id="preavisMois" name="preavisMois" inputMode="numeric" defaultValue={mandat?.preavisMois ?? 1} className={CHAMP} />
             </div>
+            <div>
+              <label htmlFor="agentNom" className={LABEL}>{t("Agent apporteur (facultatif)")}</label>
+              <input id="agentNom" name="agentNom" defaultValue={mandat?.agentNom ?? ""} maxLength={80} placeholder={t("Nom de l'agent")} className={CHAMP} />
+            </div>
+            <div>
+              <label htmlFor="commissionAgentPct" className={LABEL}>{t("Part de l'agent (% des loyers, prélevée sur la commission)")}</label>
+              <input id="commissionAgentPct" name="commissionAgentPct" inputMode="decimal" defaultValue={mandat && mandat.commissionAgentPct > 0 ? String(mandat.commissionAgentPct).replace(".", ",") : ""} placeholder="2" className={CHAMP} />
+            </div>
             <label className="sm:col-span-2 flex items-center gap-3 rounded-xl bg-surface-container-low px-3 py-3 cursor-pointer">
               <input type="checkbox" name="reconduction" defaultChecked={mandat?.reconduction ?? true} className="w-5 h-5 accent-primary" />
               <span className="font-body-md text-body-md text-on-surface">{t("Renouvellement par tacite reconduction")}</span>
@@ -205,6 +216,75 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
               <BoutonEnvoi enCours={t("Enregistrement…")} className="h-11 px-space-lg rounded-xl bg-primary text-on-primary font-label-lg text-label-lg font-bold">
                 {mandat ? t("Mettre à jour le mandat") : t("Établir le mandat")}
               </BoutonEnvoi>
+            </div>
+          </form>
+        )}
+      </Bloc>
+
+      <Bloc titre={t("Avances au propriétaire")} icone="payments">
+        <p className="font-body-sm text-body-sm text-on-surface-variant">{t("Une avance est remboursée automatiquement sur les bilans mensuels, sans jamais rendre le net négatif.")}</p>
+        {p.avances.length === 0 ? (
+          <p className="font-body-md text-body-md text-on-surface-variant">{t("Aucune avance enregistrée.")}</p>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {p.avances.map((a) => {
+              const rembourse = a.remboursements.reduce((n, r) => n + r.montant, 0);
+              const reste = a.montant - rembourse;
+              return (
+                <li key={a.id} className="rounded-xl bg-surface-container-low p-3 flex flex-col gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-label-lg text-label-lg text-on-surface font-semibold">
+                      {fcfa(a.montant)} FCFA <span className="font-body-sm text-body-sm text-on-surface-variant font-normal">· {formaterDate(a.accordeLe, locale, { day: "2-digit", month: "short", year: "numeric" })}{a.motif ? ` · ${a.motif}` : ""}</span>
+                    </span>
+                    <span className={`px-2.5 py-1 rounded-full font-label-md text-label-md font-bold ${reste === 0 ? "bg-success-container text-on-success-container" : "bg-secondary-fixed text-on-secondary-fixed-variant"}`}>
+                      {reste === 0 ? t("Soldée") : t("Reste {n} FCFA", { n: fcfa(reste) })}
+                    </span>
+                  </div>
+                  {a.mensualite ? <p className="font-body-sm text-body-sm text-on-surface-variant">{t("Remboursement : {n} FCFA par mois au maximum.", { n: fcfa(a.mensualite) })}</p> : null}
+                  {peutEcrire && reste > 0 && (
+                    <form action={rembourserAvance} className="flex flex-wrap items-end gap-2">
+                      <input type="hidden" name="id" value={p.id} />
+                      <input type="hidden" name="avanceId" value={a.id} />
+                      <div>
+                        <label htmlFor={`remb-${a.id}`} className="block font-label-md text-label-md text-on-surface-variant mb-1">{t("Remboursement reçu à part (FCFA)")}</label>
+                        <input id={`remb-${a.id}`} name="montant" inputMode="numeric" required className={CHAMP} />
+                      </div>
+                      <BoutonEnvoi enCours={t("Enregistrement…")} className="h-11 px-4 rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg font-bold">{t("Enregistrer")}</BoutonEnvoi>
+                    </form>
+                  )}
+                  {peutEcrire && rembourse === 0 && (
+                    <form action={supprimerAvance}>
+                      <input type="hidden" name="id" value={p.id} />
+                      <input type="hidden" name="avanceId" value={a.id} />
+                      <button className="h-9 px-3 rounded-lg text-error font-label-md text-label-md font-semibold hover:bg-error-container/40">{t("Supprimer l'avance")}</button>
+                    </form>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {peutEcrire && (
+          <form action={creerAvance} className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+            <input type="hidden" name="id" value={p.id} />
+            <div>
+              <label htmlFor="avance-montant" className={LABEL}>{t("Montant de l'avance (FCFA)")}</label>
+              <input id="avance-montant" name="montant" inputMode="numeric" required placeholder="200 000" className={CHAMP} />
+            </div>
+            <div>
+              <label htmlFor="avance-date" className={LABEL}>{t("Date")}</label>
+              <input id="avance-date" name="accordeLe" type="date" required defaultValue={aujourdhui} className={CHAMP} />
+            </div>
+            <div>
+              <label htmlFor="avance-motif" className={LABEL}>{t("Motif (facultatif)")}</label>
+              <input id="avance-motif" name="motif" maxLength={120} className={CHAMP} />
+            </div>
+            <div>
+              <label htmlFor="avance-mensualite" className={LABEL}>{t("Remboursement maximum par mois (facultatif)")}</label>
+              <input id="avance-mensualite" name="mensualite" inputMode="numeric" placeholder="50 000" className={CHAMP} />
+            </div>
+            <div className="sm:col-span-2">
+              <BoutonEnvoi enCours={t("Enregistrement…")} className="h-11 px-space-lg rounded-xl bg-primary text-on-primary font-label-lg text-label-lg font-bold">{t("Enregistrer l'avance")}</BoutonEnvoi>
             </div>
           </form>
         )}

@@ -157,6 +157,34 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
         )}
       </section>
 
+      {b.avances.length > 0 && (
+        <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-sm">
+          <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Remboursement des avances")}</h2>
+          <ul className="flex flex-col gap-2">
+            {b.avances.map((a) => (
+              <li key={a.id} className="flex items-center justify-between gap-3 rounded-xl bg-surface-container-low px-3 py-2">
+                <span className="min-w-0">
+                  <span className="block truncate font-body-md text-body-md text-on-surface">{a.motif ?? t("Avance")} · {fcfa(a.montantInitial)} FCFA</span>
+                  <span className="block font-body-sm text-body-sm text-on-surface-variant">{t("Reste {n} FCFA après ce bilan", { n: fcfa(a.resteApres) })}</span>
+                </span>
+                <span className="shrink-0 font-label-lg text-label-lg font-bold text-on-surface">- {fcfa(a.prelevement)} FCFA</span>
+              </li>
+            ))}
+          </ul>
+          {!b.reversement && <p className="font-body-sm text-body-sm text-on-surface-variant">{t("Ces montants deviennent définitifs quand vous marquez le mois comme reversé.")}</p>}
+        </section>
+      )}
+
+      {b.commissionAgent > 0 && (
+        <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-1">
+          <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Part de l'agent (interne)")}</h2>
+          <p className="font-body-md text-body-md text-on-surface">
+            {t("{nom} : {pct} % soit {montant} FCFA", { nom: b.mandat?.agentNom ?? t("Agent"), pct: String(b.mandat?.commissionAgentPct ?? 0).replace(".", ","), montant: fcfa(b.commissionAgent) })}
+          </p>
+          <p className="font-body-sm text-body-sm text-on-surface-variant">{t("Marge de l'agence après l'agent : {n} FCFA. Cette part n'apparaît pas sur le compte rendu du propriétaire.", { n: fcfa(b.margeAgence) })}</p>
+        </section>
+      )}
+
       <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-sm">
         <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Reversement")}</h2>
         {b.reversement ? (

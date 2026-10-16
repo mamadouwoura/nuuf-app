@@ -47,6 +47,8 @@ async function Contenu({ searchParams }: { searchParams: Promise<{ mois?: string
           [t("Encaissés"), r.encaisse, "text-primary"],
           [t("Commissions"), r.commission, "text-on-surface"],
           [t("Reste à reverser"), r.aReverser, "text-primary"],
+          ...(r.commissionAgent > 0 ? [[t("Marge de l'agence après les agents"), r.margeAgence, "text-primary"]] : []),
+          ...(r.avances > 0 ? [[t("Avances remboursées"), r.avances, "text-on-surface"]] : []),
         ].map(([lib, val, cl]) => (
           <div key={String(lib)} className="bg-surface-container-lowest rounded-xl shadow-sm p-space-md">
             <p className="font-body-sm text-body-sm text-on-surface-variant">{lib}</p>
