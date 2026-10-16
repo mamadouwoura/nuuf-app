@@ -10,6 +10,7 @@ import LangueSwitch from "@/components/LangueSwitch";
 import ThemeToggle from "@/components/ThemeToggle";
 import Tutoriel from "@/components/Tutoriel";
 import { moduleDeChemin } from "@/lib/modules";
+import { verrouillerMaintenant } from "@/app/actions/pin";
 
 const NAV = [
   { href: "/tableau-de-bord", icon: "grid_view", label: N_("Tableau de bord") },
@@ -57,6 +58,7 @@ export default function AppShell({
   nbBiens,
   nbRetards,
   nbNotifs,
+  aPin,
   modulesRefuses,
   bandeau,
   moisLabel,
@@ -69,6 +71,8 @@ export default function AppShell({
   nbBiens: number;
   nbRetards: number;
   nbNotifs: number;
+  /** L'utilisateur a un code PIN : le bouton « Verrouiller » est proposé. */
+  aPin: boolean;
   /** Modules retirés à ce collaborateur : leurs entrées disparaissent du menu. */
   modulesRefuses: string[];
   bandeau: { ton: "info" | "alerte"; texte: string } | null;
@@ -188,6 +192,11 @@ export default function AppShell({
                 <span className="font-label-md text-label-md text-on-surface font-semibold leading-tight">{nom}</span>
                 <span className="font-body-sm text-body-sm text-on-surface-variant leading-tight">{libelleCompte}</span>
               </div>
+              {aPin && (
+                <form action={verrouillerMaintenant}>
+                  <button aria-label={t("Verrouiller")} title={t("Verrouiller")} className="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors"><span className="material-symbols-outlined text-[22px]">lock</span></button>
+                </form>
+              )}
               <button type="button" onClick={() => setConfirmer(true)} aria-label={t("Se déconnecter")} title={t("Se déconnecter")} className="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-error transition-colors"><span className="material-symbols-outlined text-[22px]">logout</span></button>
             </div>
           </div>

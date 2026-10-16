@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { exigerAdmin, listerBailleurs } from "@/lib/admin";
-import { prolongerEssai, changerForfaitEssai } from "@/app/actions/admin";
+import { prolongerEssai, changerForfaitEssai, rappelerCompte } from "@/app/actions/admin";
 import { FORFAITS } from "@/lib/forfaits";
 import { telAffiche } from "@/lib/immo";
 import { getT } from "@/lib/i18n/server";
@@ -67,6 +67,17 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
           </form>
         )}
       </section>
+
+      {!paye && (
+        <section className={carte}>
+          <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Rappel de renouvellement")}</h2>
+          <p className="font-body-md text-body-md text-on-surface-variant">{t("Envoie un message WhatsApp au propriétaire du compte et une alerte dans son application. Un seul rappel tous les 3 jours.")}</p>
+          <form action={rappelerCompte}>
+            <input type="hidden" name="id" value={l.id} />
+            <BoutonEnvoi className={bouton} enCours={t("Envoi…")}>{t("Envoyer un rappel")}</BoutonEnvoi>
+          </form>
+        </section>
+      )}
 
       <section className={carte}>
         <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Forfait d'essai")}</h2>

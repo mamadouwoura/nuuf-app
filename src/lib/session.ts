@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { connection } from "next/server";
 import { db } from "./db";
 import { sign, verify } from "./security";
+import { ACTIVITE_RAFRAICHIE_MS, estVerrouillee } from "./pin";
 
 const SESSION = "nuuf_session";
 const PENDING = "nuuf_pending";
@@ -55,8 +56,11 @@ export async function endSession() {
   if (jeton?.sid) await db.sessionUtilisateur.deleteMany({ where: { id: jeton.sid } });
   jar.delete(SESSION);
 }
-/** Utilisateur connecté : une seule lecture en base par requête, même appelée par la mise en page et la page. */
-export const getUser = cache(async function getUser() {
+/**
+ * Session en cours : l'utilisateur et l'état de verrouillage. Une seule lecture en base par requête.
+ * Une session verrouillée (PIN demandé après inactivité) n'est reconnue que par l'écran de déverrouillage.
+ */
+const chargerSession = cache(async function chargerSession() {
   await connection();
   const jeton = verify<Token>((await cookies()).get(SESSION)?.value);
   if (!jeton?.uid || !jeton.sid) return null;
@@ -64,13 +68,32 @@ export const getUser = cache(async function getUser() {
     where: { id: jeton.uid },
     include: {
       membres: { include: { organisation: { include: { abonnement: true } } } },
-      sessions: { where: { id: jeton.sid, expireLe: { gt: new Date() } }, select: { id: true } },
+      sessions: { where: { id: jeton.sid, expireLe: { gt: new Date() } }, select: { id: true, activiteLe: true } },
     },
   });
   // Session supprimée (déconnexion) ou mot de passe changé depuis son ouverture : elle n'est plus valable.
   if (!user || user.sessions.length === 0 || user.sessionVersion !== (jeton.v ?? 0)) return null;
-  return user;
+  const session = user.sessions[0];
+  const now = new Date();
+  const verrouillee = estVerrouillee(user, session.activiteLe, now);
+  // Avec un PIN, on note le passage (au plus une fois par minute) pour mesurer l'inactivité.
+  if (user.pinHash && !verrouillee && now.getTime() - session.activiteLe.getTime() > ACTIVITE_RAFRAICHIE_MS) {
+    await db.sessionUtilisateur.updateMany({ where: { id: session.id }, data: { activiteLe: now } }).catch(() => {});
+  }
+  return { user, sessionId: session.id, verrouillee };
 });
+
+/** Utilisateur connecté et déverrouillé ; null si la session est absente, expirée ou verrouillée. */
+export const getUser = cache(async function getUser() {
+  const s = await chargerSession();
+  return s && !s.verrouillee ? s.user : null;
+});
+
+/** Pour l'écran de déverrouillage et la mise en page : l'utilisateur même si le PIN est demandé. */
+export async function getUserMemeVerrouille() {
+  return chargerSession();
+}
+
 /** Dev uniquement : le code s'affiche à l'écran au lieu d'être envoyé par WhatsApp. */
 export async function setDevOtp(code: string) {
   if (!afficheCode) return;

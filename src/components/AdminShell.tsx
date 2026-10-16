@@ -13,6 +13,7 @@ const NAV: { href: string; icon: string; label: string; court?: string; exact?: 
   { href: "/admin/bailleurs", icon: "real_estate_agent", label: N_("Bailleurs") },
   { href: "/admin/abonnements", icon: "card_membership", label: N_("Abonnements") },
   { href: "/admin/paiements", icon: "payments", label: N_("Paiements") },
+  { href: "/admin/integrations", icon: "hub", label: N_("Intégrations") },
 ];
 
 export default function AdminShell({ nom, simulation, children }: { nom: string; simulation: boolean; children: React.ReactNode }) {

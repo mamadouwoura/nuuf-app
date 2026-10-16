@@ -2,7 +2,9 @@ import Chargement from "@/components/Chargement";
 import Link from "next/link";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import ActiverPush from "@/components/ActiverPush";
 import BoutonEnvoi from "@/components/BoutonEnvoi";
+import { clePubliquePush } from "@/lib/push";
 import { majPreferences } from "@/app/actions/notifications";
 import { CATEGORIES, categoriesCoupees } from "@/lib/notifications";
 import { getUser } from "@/lib/session";
@@ -31,6 +33,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<{ ok?: string }
         <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">{t("Préférences de notifications")}</h1>
         <p className="font-body-md text-body-md text-on-surface-variant mt-1">{t("Choisissez ce pour quoi vous voulez être prévenu. Les alertes d'abonnement restent toujours actives.")}</p>
       </div>
+      <ActiverPush clePublique={clePubliquePush()} />
       {ok && <p role="status" className="rounded-xl bg-success-container text-on-success-container px-3 py-2 font-body-md text-body-md">{ok}</p>}
       <form action={majPreferences} className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-sm">
         {CATEGORIES.map((c) => (

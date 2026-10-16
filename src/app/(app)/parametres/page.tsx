@@ -12,6 +12,7 @@ import {
 } from "@/app/actions/compte";
 import { BoutonTutoriel } from "@/components/Tutoriel";
 import EquipeSection from "@/components/EquipeSection";
+import PinSection from "@/components/PinSection";
 import { db } from "@/lib/db";
 import { telAffiche } from "@/lib/immo";
 import { getUser } from "@/lib/session";
@@ -175,6 +176,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
           <input name="nouveau" type="password" placeholder={t("Nouveau mot de passe (8 caractères min.)")} minLength={8} required className={champ} />
           <button className={bouton}>{t("Modifier")}</button>
         </form>
+        <PinSection pinDefiniLe={user.pinDefiniLe} verrouillageMin={user.verrouillageMin} />
         <form action={deconnecterAutresAppareils} className="flex flex-wrap items-center gap-space-sm">
           <button className="h-11 px-space-md rounded-xl bg-surface-container text-on-surface font-label-lg text-label-lg font-semibold hover:bg-surface-container-high">{t("Déconnecter mes autres appareils")}</button>
           <span className="font-body-sm text-body-sm text-on-surface-variant">{t("Utile si vous avez perdu un téléphone ou utilisé un ordinateur partagé.")}</span>

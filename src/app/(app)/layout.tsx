@@ -7,13 +7,15 @@ import { etatAcces } from "@/lib/abonnement";
 import { estAdmin } from "@/lib/admin";
 import { libelleMois } from "@/lib/loyers";
 import { modeSimulation } from "@/lib/passerelle";
-import { getUser } from "@/lib/session";
+import { getUserMemeVerrouille } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
 
 async function Shell({ children }: { children: React.ReactNode }) {
   const { t, tn, locale } = await getT();
-  const user = await getUser();
-  if (!user) redirect("/connexion");
+  const session = await getUserMemeVerrouille();
+  if (!session) redirect("/connexion");
+  if (session.verrouillee) redirect("/verrouillage"); // PIN demandé après inactivité
+  const user = session.user;
   if (estAdmin(user.telephone)) redirect("/admin"); // l'administrateur n'a pas d'espace bailleur
   if (!user.membres[0]) redirect("/connexion"); // compte sans organisation : rien à afficher ici
   const orgId = user.membres[0].organisationId;
@@ -38,7 +40,7 @@ async function Shell({ children }: { children: React.ReactNode }) {
           ? { ton: "alerte" as const, texte: t("Accès en lecture seule : vos données sont conservées. Activez un abonnement pour reprendre l'encaissement.") }
           : null;
   return (
-    <AppShell nom={user.nomComplet} libelleCompte={libelle} nbBiens={nbBiens} nbRetards={nbRetards} nbNotifs={nbNotifs} modulesRefuses={user.membres[0].role === "PROPRIETAIRE" ? [] : user.membres[0].modulesRefuses} bandeau={bandeau} moisLabel={libelleMois(new Date(), locale)} simulation={modeSimulation()} agence={agence}>
+    <AppShell nom={user.nomComplet} libelleCompte={libelle} nbBiens={nbBiens} nbRetards={nbRetards} nbNotifs={nbNotifs} aPin={Boolean(user.pinHash)} modulesRefuses={user.membres[0].role === "PROPRIETAIRE" ? [] : user.membres[0].modulesRefuses} bandeau={bandeau} moisLabel={libelleMois(new Date(), locale)} simulation={modeSimulation()} agence={agence}>
       {children}
     </AppShell>
   );

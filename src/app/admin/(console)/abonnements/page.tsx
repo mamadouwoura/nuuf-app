@@ -2,6 +2,9 @@ import Chargement from "@/components/Chargement";
 import { Suspense } from "react";
 import { db } from "@/lib/db";
 import { exigerAdmin, listerBailleurs } from "@/lib/admin";
+import { rappelerCompte, rappelerComptes } from "@/app/actions/admin";
+import { ciblesRappel } from "@/lib/rappels";
+import BoutonEnvoi from "@/components/BoutonEnvoi";
 import { FORFAITS } from "@/lib/forfaits";
 import { fcfa } from "@/lib/immo";
 import { getT } from "@/lib/i18n/server";
@@ -14,12 +17,14 @@ export async function generateMetadata() {
 }
 
 
-async function Contenu() {
+async function Contenu({ searchParams }: { searchParams: Promise<{ ok?: string }> }) {
   const { t, locale } = await getT();
   const dateFr = (d: Date) => formaterDate(d, locale, { day: "2-digit", month: "short", year: "numeric" });
   await exigerAdmin(); // les données ne sont lues qu'après la vérification
-  const [lignes, factures] = await Promise.all([
+  const { ok } = await searchParams;
+  const [lignes, cibles, factures] = await Promise.all([
     listerBailleurs(),
+    ciblesRappel(),
     db.factureAbonnement.findMany({
       where: { payeeLe: { not: null } },
       orderBy: { payeeLe: "desc" },
@@ -38,6 +43,18 @@ async function Contenu() {
         <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">{t("Abonnements")}</h1>
         <p className="font-body-md text-body-md text-on-surface-variant mt-1">{t("Revenus récurrents, renouvellements et comptes à relancer.")}</p>
       </div>
+
+      {ok && <p role="status" className="rounded-xl bg-success-container text-on-success-container px-space-md py-3 font-body-md text-body-md">{ok}</p>}
+      {cibles.length > 0 && (
+        <section className="bg-secondary-fixed/60 rounded-xl p-space-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <p className="font-body-md text-body-md text-on-surface">
+            <b>{t("{n} compte(s) à rappeler", { n: cibles.length })}</b> — {t("essais qui se terminent, essais terminés et abonnements en retard. Un compte déjà rappelé depuis moins de 3 jours est ignoré.")}
+          </p>
+          <form action={rappelerComptes}>
+            <BoutonEnvoi enCours={t("Envoi des rappels…")} className="h-11 px-space-lg rounded-xl bg-primary text-on-primary font-label-lg text-label-lg font-bold whitespace-nowrap">{t("Rappeler tous")}</BoutonEnvoi>
+          </form>
+        </section>
+      )}
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-space-md">
         <div className={carte}>
@@ -66,9 +83,15 @@ async function Contenu() {
           {aRelancer.length === 0 ? <p className="font-body-md text-body-md text-on-surface-variant">{t("Aucun.")}</p> : aRelancer.map((l) => (
             <div key={l.id} className="flex items-center justify-between font-body-md text-body-md">
               <span>{l.nom}</span>
-              {l.proprio && (
-                <a href={`https://wa.me/${l.proprio.telephone.replace(/\D/g, "")}`} target="_blank" className="px-3 py-1 rounded-lg bg-action-soft text-on-action-soft font-label-md text-label-md font-semibold">WhatsApp</a>
-              )}
+              <span className="flex items-center gap-2">
+                <form action={rappelerCompte}>
+                  <input type="hidden" name="id" value={l.id} />
+                  <button className="px-3 py-1 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-semibold">{t("Rappel")}</button>
+                </form>
+                {l.proprio && (
+                  <a href={`https://wa.me/${l.proprio.telephone.replace(/\D/g, "")}`} target="_blank" className="px-3 py-1 rounded-lg bg-action-soft text-on-action-soft font-label-md text-label-md font-semibold">WhatsApp</a>
+                )}
+              </span>
             </div>
           ))}
         </div>
@@ -98,11 +121,10 @@ async function Contenu() {
   );
 }
 
-export default async function Page() {
-  const { t } = await getT();
+export default async function Page(props: { searchParams: Promise<{ ok?: string }> }) {
   return (
     <Suspense fallback={<Chargement />}>
-      <Contenu />
+      <Contenu {...props} />
     </Suspense>
   );
 }

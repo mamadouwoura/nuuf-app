@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "./db";
 import { N_ } from "./i18n/translate";
 import { programmerEmails } from "./email";
+import { programmerPush } from "./push";
 
 /** Catégories que chaque membre peut activer ou désactiver. L'abonnement n'en fait pas partie : il reste toujours actif. */
 export const CATEGORIES = [
@@ -63,6 +64,7 @@ export async function notifier(client: Client, a: Alerte): Promise<number> {
   });
   // L'e-mail part après la réponse (jamais pendant une transaction) et seulement pour qui a renseigné son adresse.
   programmerEmails(cree.map((n) => n.id));
+  programmerPush(cree.map((n) => n.id));
   return cree.length;
 }
 

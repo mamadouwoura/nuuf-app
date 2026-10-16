@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "vapid": "node scripts/vapid.mjs",
     "i18n:verifier": "node scripts/i18n-extraire.cjs --verifier",
     "i18n:cles": "node scripts/i18n-extraire.cjs --client",
     "demo:seed": "node scripts/demo-seed.mjs"
@@ -21,7 +22,8 @@
     "pg": "^8.23.1",
     "qrcode": "^1.5.4",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
@@ -29,6 +31,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
     "prisma": "^7.10.0",

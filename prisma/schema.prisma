@@ -120,6 +120,10 @@ model Utilisateur {
   creeLe       DateTime  @default(now())
   email        String? // facultatif : reçoit les notifications par e-mail
   emailNotifs  Boolean   @default(true)
+  // Code PIN de verrouillage (haché) : demandé après une période d'inactivité.
+  pinHash         String?
+  pinDefiniLe     DateTime?
+  verrouillageMin Int       @default(10)
   // Incrémenté à chaque changement de mot de passe : coupe toutes les sessions ouvertes.
   sessionVersion Int      @default(0)
 
@@ -127,6 +131,7 @@ model Utilisateur {
   codesOtp CodeOtp[]
   journal  JournalAction[]
   sessions SessionUtilisateur[]
+  abonnementsPush AbonnementPush[]
   notifications Notification[]
   preferencesNotif PreferenceNotification[]
 }
@@ -136,6 +141,7 @@ model SessionUtilisateur {
   id            String   @id // aléatoire, jamais deviné
   utilisateurId String
   creeLe        DateTime @default(now())
+  activiteLe    DateTime @default(now()) // dernière activité : sert au verrouillage par PIN
   expireLe      DateTime
 
   utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
@@ -690,4 +696,19 @@ model ImportApercu {
   organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
 
   @@index([utilisateurId, creeLe])
+}
+
+// Appareil qui reçoit les notifications push (Web Push) : une ligne par navigateur ou application installée.
+model AbonnementPush {
+  id            String   @id @default(cuid())
+  utilisateurId String
+  endpoint      String   @unique
+  p256dh        String
+  auth          String
+  appareil      String?
+  creeLe        DateTime @default(now())
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  @@index([utilisateurId])
 }

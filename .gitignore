@@ -47,3 +47,6 @@ public/_contraste.js
 
 # Local Netlify folder
 .netlify
+
+# Modèle documenté des variables (sans aucune valeur secrète)
+!.env.example
