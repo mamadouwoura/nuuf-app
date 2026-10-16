@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { etatAcces } from "@/lib/abonnement";
 import { cleMois } from "@/lib/loyers";
-import { CATEGORIES_ENTREE, CATEGORIES_SORTIE } from "@/lib/tresorerie";
+import { CATEGORIES_ENTREE, CATEGORIES_SORTIE, MODES_PAIEMENT } from "@/lib/tresorerie";
 import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
 
@@ -39,7 +39,9 @@ export async function ajouterTransaction(form: FormData) {
   const categorie = permises.includes(texte(form.get("categorie"))) ? texte(form.get("categorie")) : "Autre";
   const proprietaireId = texte(form.get("proprietaireId"), 40);
   const proprietaire = proprietaireId ? await db.proprietaire.findFirst({ where: { id: proprietaireId, organisationId: orgId }, select: { id: true } }) : null;
-  await db.transaction.create({ data: { organisationId: orgId, sens, categorie, libelle, montant, date, proprietaireId: proprietaire?.id ?? null } });
+  const modePaiement = MODES_PAIEMENT.find((m) => m.code === texte(form.get("modePaiement")))?.code ?? null;
+  const reference = texte(form.get("reference"), 60) || null;
+  await db.transaction.create({ data: { organisationId: orgId, sens, categorie, libelle, montant, date, proprietaireId: proprietaire?.id ?? null, modePaiement, reference } });
   await db.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "tresorerie.ajout", cible: sens } });
   redirect(retour);
 }

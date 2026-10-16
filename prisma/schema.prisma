@@ -95,6 +95,7 @@ model Organisation {
   consultations       ConsultationHistorique[]
   proprietaires       Proprietaire[]
   transactions        Transaction[]
+  notifications       Notification[]
   logo                LogoOrganisation?
 }
 
@@ -122,6 +123,8 @@ model Utilisateur {
   codesOtp CodeOtp[]
   journal  JournalAction[]
   sessions SessionUtilisateur[]
+  notifications Notification[]
+  preferencesNotif PreferenceNotification[]
 }
 
 // Une session ouverte : le cookie signé porte son identifiant ; la déconnexion la supprime ici.
@@ -261,9 +264,17 @@ model Proprietaire {
   organisationId String
   nomComplet     String
   telephone      String?
-  cni            String?
+  cni            String? // numéro de la pièce (CNI, passeport ou RCCM)
   adresse        String?
   creeLe         DateTime @default(now())
+  // Fiche complète : particulier ou société
+  email             String?
+  ville             String?
+  personneMorale    Boolean   @default(false)
+  typePiece         String? // CNI | PASSEPORT | RCCM | AUTRE
+  pieceEtablieLe    DateTime?
+  bp                String?
+  compteContribuable String?
 
   organisation Organisation       @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   biens        Bien[]
@@ -599,9 +610,41 @@ model Transaction {
   montant        Int
   date           DateTime
   proprietaireId String?
+  reference      String?
+  modePaiement   String? // ESPECES | WAVE | ORANGE_MONEY | VIREMENT | CHEQUE
   creeLe         DateTime        @default(now())
 
   organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
 
   @@index([organisationId, date])
+}
+
+// Alerte dans l'application, adressée à un membre de l'équipe (centre de notifications).
+model Notification {
+  id             String    @id @default(cuid())
+  organisationId String
+  utilisateurId  String
+  categorie      String // PAIEMENTS | BAUX | BIENS | PROPRIETAIRES | LOCATAIRES | ACOMPTES | ABONNEMENT
+  titre          String
+  texte          String?
+  lien           String? // chemin interne vers l'écran concerné
+  donnees        Json? // variables du modèle de texte, traduit à l'affichage
+  luLe           DateTime?
+  creeLe         DateTime  @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  utilisateur  Utilisateur  @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  @@index([utilisateurId, luLe, creeLe])
+}
+
+// Catégories de notifications désactivées par un utilisateur (tout est actif par défaut).
+model PreferenceNotification {
+  utilisateurId String
+  categorie     String
+  actif         Boolean @default(true)
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  @@id([utilisateurId, categorie])
 }

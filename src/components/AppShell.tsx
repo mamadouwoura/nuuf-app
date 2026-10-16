@@ -8,6 +8,7 @@ import { useT } from "@/lib/i18n/client";
 import { N_ } from "@/lib/i18n/translate";
 import LangueSwitch from "@/components/LangueSwitch";
 import ThemeToggle from "@/components/ThemeToggle";
+import Tutoriel from "@/components/Tutoriel";
 
 const NAV = [
   { href: "/tableau-de-bord", icon: "grid_view", label: N_("Tableau de bord") },
@@ -54,6 +55,7 @@ export default function AppShell({
   libelleCompte,
   nbBiens,
   nbRetards,
+  nbNotifs,
   bandeau,
   moisLabel,
   simulation,
@@ -64,6 +66,7 @@ export default function AppShell({
   libelleCompte: string;
   nbBiens: number;
   nbRetards: number;
+  nbNotifs: number;
   bandeau: { ton: "info" | "alerte"; texte: string } | null;
   moisLabel: string;
   simulation: boolean;
@@ -79,6 +82,7 @@ export default function AppShell({
   const [confirmer, setConfirmer] = useState(false);
   return (
     <>
+      <Tutoriel agence={agence} />
       <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-72 bg-surface-container-low shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex-col justify-between overflow-y-auto">
         <div className="flex flex-col">
           <div className="px-space-lg pt-space-lg pb-space-md">
@@ -163,9 +167,9 @@ export default function AppShell({
           <div className="flex items-center gap-1 sm:gap-space-sm shrink-0">
             <div className="hidden sm:block"><LangueSwitch /></div>
             <ThemeToggle />
-            <Link href="/relances" aria-label={nbRetards > 0 ? tn(nbRetards, "{n} loyer en retard", "{n} loyers en retard") : t("Aucune alerte")} className="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors">
+            <Link href="/notifications" aria-label={nbNotifs > 0 ? tn(nbNotifs, "{n} notification non lue", "{n} notifications non lues") : t("Notifications")} className="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors">
               <span className="material-symbols-outlined text-[22px]">notifications</span>
-              {nbRetards > 0 && <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-error ring-2 ring-surface"></span>}
+              {nbNotifs > 0 && <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-error text-on-error font-label-md text-[10px] font-bold flex items-center justify-center ring-2 ring-surface">{nbNotifs > 99 ? "99+" : nbNotifs}</span>}
             </Link>
             <div className="flex items-center gap-space-sm pl-space-sm">
               <div className="w-8 h-8 shrink-0 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-md text-label-md">

@@ -1,6 +1,8 @@
 import BoutonEnvoi from "@/components/BoutonEnvoi";
 import ChampsAppreciation from "@/components/ChampsAppreciation";
 import { nouveauLocataire, terminerBail } from "@/app/actions/biens";
+import { encaisserDAvance } from "@/app/actions/paiements";
+import { MOIS_D_AVANCE } from "@/lib/loyers";
 import { MOTIFS_FIN } from "@/lib/motifs";
 import { ficheComplete } from "@/lib/fiche";
 import Chargement from "@/components/Chargement";
@@ -107,7 +109,7 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
       )}
 
       {erreur && <p role="alert" className="rounded-xl bg-error-container text-on-error-container px-space-md py-2 font-body-md text-body-md">{erreur}</p>}
-      {ok && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">{t("Modifications enregistrées.")}</p>}
+      {ok && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">{ok === "avance" ? t("Loyer encaissé d'avance : la quittance est disponible dans Quittances.") : t("Modifications enregistrées.")}</p>}
 
       {bien.photos.length > 0 && (
         <section className="grid grid-cols-2 md:grid-cols-4 gap-space-sm">
@@ -213,6 +215,40 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
               })}
             </div>
           </section>
+
+          {peutEcrire && (
+            <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-sm">
+              <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Loyer payé d'avance")}</h2>
+              <p className="font-body-md text-body-md text-on-surface-variant">{t("Le locataire règle un mois à venir : le paiement et la quittance sont enregistrés tout de suite.")}</p>
+              <details>
+                <summary className="inline-flex items-center gap-2 h-11 px-space-md rounded-xl bg-surface-container text-on-surface font-label-lg text-label-lg font-semibold cursor-pointer select-none">
+                  <span className="material-symbols-outlined text-[20px]">event_upcoming</span>
+                  {t("Encaisser d'avance…")}
+                </summary>
+                <form action={encaisserDAvance} className="mt-space-md grid grid-cols-1 sm:grid-cols-2 gap-space-md items-end">
+                  <input type="hidden" name="bailId" value={bail.id} />
+                  <input type="hidden" name="retour" value={`/biens/${id}`} />
+                  <div>
+                    <label htmlFor="mois-avance" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Mois payé")}</label>
+                    <select id="mois-avance" name="mois" className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface">
+                      {Array.from({ length: MOIS_D_AVANCE }, (_, i) => new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1 + i, 1))).map((m) => (
+                        <option key={m.toISOString()} value={`${m.getUTCFullYear()}-${String(m.getUTCMonth() + 1).padStart(2, "0")}`}>{moisFr(m)}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="montant-avance" className="block font-label-lg text-label-lg text-on-surface font-semibold mb-space-xs">{t("Montant reçu (FCFA)")}</label>
+                    <input id="montant-avance" name="montant" inputMode="numeric" required defaultValue={String(bail.loyerMensuel)} className="w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface" autoComplete="off" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <BoutonEnvoi enCours={t("Enregistrement…")} className="h-11 px-space-lg rounded-xl bg-primary text-on-primary font-label-lg text-label-lg font-bold">
+                      {t("Enregistrer l'encaissement")}
+                    </BoutonEnvoi>
+                  </div>
+                </form>
+              </details>
+            </section>
+          )}
 
           {peutEcrire && (
             <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-sm">

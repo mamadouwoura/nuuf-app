@@ -8,6 +8,8 @@ import { justificatifsValides, normaliserCni, signatureValide, situationValide, 
 import { normalizePhone } from "@/lib/security";
 import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
+import { notifierSansEchec } from "@/lib/notifications";
+import { N_ } from "@/lib/i18n/translate";
 
 const texte = (v: FormDataEntryValue | null, max = 200) => String(v ?? "").trim().slice(0, max);
 const entier = (v: FormDataEntryValue | null) => {
@@ -79,6 +81,9 @@ export async function enregistrerFiche(form: FormData) {
     db.locataire.update({ where: { id: loc.id }, data }),
     db.journalAction.create({ data: { organisationId: membre.organisationId, utilisateurId: user.id, action: "locataire.fiche", cible: loc.id } }),
   ]);
+  if (!loc.ficheRemplieLe) {
+    await notifierSansEchec({ organisationId: membre.organisationId, categorie: "LOCATAIRES", titre: N_("Fiche locataire complétée"), texte: N_("La fiche de {locataire} est enregistrée."), donnees: { locataire: loc.nomComplet }, lien: `/locataires/${loc.id}`, sauf: user.id });
+  }
   redirect(`/locataires/${loc.id}?fiche=ok`);
 }
 

@@ -3,6 +3,9 @@ import type { Locale } from "./i18n/config";
 import { moisAnnee, moisCourt } from "./i18n/format";
 
 /** Premier jour du mois (UTC) contenant `d`. */
+/** Nombre de mois à venir pour lesquels un loyer peut être encaissé d'avance. */
+export const MOIS_D_AVANCE = 3;
+
 export const debutMois = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
 export const moisPrecedent = (d: Date, n = 1) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - n, 1));
 export const cleMois = (d: Date) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;

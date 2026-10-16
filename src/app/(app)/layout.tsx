@@ -19,12 +19,13 @@ async function Shell({ children }: { children: React.ReactNode }) {
   const orgId = user.membres[0].organisationId;
   const forfait = user.membres[0].organisation.abonnement?.forfait ?? "DECOUVERTE";
   const libelle = forfait === "PRO" ? t("Bailleur Pro") : forfait === "AGENCE" ? t("Agence") : t("Bailleur particulier");
-  const [nbBiens, nbRetards, nbProprietaires] = await Promise.all([
+  const [nbBiens, nbRetards, nbProprietaires, nbNotifs] = await Promise.all([
     db.bien.count({ where: { organisationId: orgId, archiveLe: null } }),
     db.echeance.count({
       where: { statut: { in: ["EN_ATTENTE", "PARTIELLE"] }, dateLimite: { lt: new Date() }, bail: { bien: { organisationId: orgId } } },
     }),
     db.proprietaire.count({ where: { organisationId: orgId } }),
+    db.notification.count({ where: { utilisateurId: user.id, luLe: null } }),
   ]);
   const agence = forfait === "AGENCE" || nbProprietaires > 0;
   const acces = etatAcces(user.membres[0].organisation.abonnement);
@@ -37,7 +38,7 @@ async function Shell({ children }: { children: React.ReactNode }) {
           ? { ton: "alerte" as const, texte: t("Accès en lecture seule : vos données sont conservées. Activez un abonnement pour reprendre l'encaissement.") }
           : null;
   return (
-    <AppShell nom={user.nomComplet} libelleCompte={libelle} nbBiens={nbBiens} nbRetards={nbRetards} bandeau={bandeau} moisLabel={libelleMois(new Date(), locale)} simulation={modeSimulation()} agence={agence}>
+    <AppShell nom={user.nomComplet} libelleCompte={libelle} nbBiens={nbBiens} nbRetards={nbRetards} nbNotifs={nbNotifs} bandeau={bandeau} moisLabel={libelleMois(new Date(), locale)} simulation={modeSimulation()} agence={agence}>
       {children}
     </AppShell>
   );

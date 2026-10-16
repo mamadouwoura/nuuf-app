@@ -2,6 +2,8 @@ import { randomBytes } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { db } from "./db";
 import { appUrl } from "./quittance";
+import { notifier } from "./notifications";
+import { N_ } from "./i18n/translate";
 
 /**
  * Appelée dès qu'un paiement passe à CONFIRME (espèces, simulation ou webhook opérateur) :
@@ -9,7 +11,7 @@ import { appUrl } from "./quittance";
  */
 export async function solderEtQuittancer(
   tx: Prisma.TransactionClient,
-  p: { organisationId: string; echeanceId: string; paiementId: string },
+  p: { organisationId: string; echeanceId: string; paiementId: string; acteurId?: string },
 ) {
   // Sérialise la numérotation des quittances d'une même organisation (pas de doublon sous charge).
   await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${p.organisationId}))`;
@@ -26,8 +28,10 @@ export async function solderEtQuittancer(
   // Numéro séquentiel par organisation et par mois : Q-2026-10-001
   const now = new Date();
   const prefixe = `Q-${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-`;
-  const n = await tx.quittance.count({ where: { organisationId: p.organisationId, numero: { startsWith: prefixe } } });
-  return tx.quittance.create({
+  // Dernier numéro émis ce mois-ci + 1 (et non un simple comptage : une quittance supprimée ferait réutiliser un numéro).
+  const dernier = await tx.quittance.findFirst({ where: { organisationId: p.organisationId, numero: { startsWith: prefixe } }, orderBy: { numero: "desc" }, select: { numero: true } });
+  const n = dernier ? Number(dernier.numero.slice(prefixe.length)) || 0 : 0;
+  const quittance = await tx.quittance.create({
     data: {
       organisationId: p.organisationId,
       paiementId: p.paiementId,
@@ -35,6 +39,20 @@ export async function solderEtQuittancer(
       jetonQr: randomBytes(16).toString("hex"),
     },
   });
+  const [bail, paiement] = await Promise.all([
+    tx.bail.findUniqueOrThrow({ where: { id: echeance.bailId }, include: { locataire: { select: { nomComplet: true } }, bien: { select: { designation: true } } } }),
+    tx.paiement.findUniqueOrThrow({ where: { id: p.paiementId }, select: { montant: true } }),
+  ]);
+  await notifier(tx, {
+    organisationId: p.organisationId,
+    categorie: "PAIEMENTS",
+    titre: N_("Paiement reçu"),
+    texte: N_("{locataire} a payé {montant} FCFA ({bien})."),
+    donnees: { locataire: bail.locataire.nomComplet, montant: String(paiement.montant).replace(/\B(?=(\d{3})+(?!\d))/g, " "), bien: bail.bien.designation },
+    lien: `/quittances`,
+    sauf: p.acteurId,
+  });
+  return quittance;
 }
 
 /** Lien de paiement locataire (valable 72 h) : le renouvelle s'il a expiré. */

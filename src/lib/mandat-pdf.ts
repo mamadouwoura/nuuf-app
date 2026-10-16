@@ -19,9 +19,40 @@ type Mandat = {
 type Parties = {
   agence: { nom: string; ninea: string | null; representant: string };
   identite: Identite;
-  proprietaire: { nomComplet: string; telephone: string | null; cni: string | null; adresse: string | null };
+  proprietaire: {
+    nomComplet: string;
+    telephone: string | null;
+    cni: string | null;
+    adresse: string | null;
+    email?: string | null;
+    ville?: string | null;
+    personneMorale?: boolean;
+    typePiece?: string | null;
+    pieceEtablieLe?: Date | null;
+    bp?: string | null;
+    compteContribuable?: string | null;
+  };
   biens: { designation: string; quartier: string; ville: string }[];
 };
+
+
+const TYPE_PIECE: Record<string, string> = { CNI: "carte nationale d'identité", PASSEPORT: "passeport", RCCM: "RCCM", AUTRE: "pièce" };
+
+/** Désignation du propriétaire dans le mandat : particulier ou société, pièce, coordonnées et références fiscales. */
+function decrireProprietaire(p: Parties["proprietaire"]) {
+  const piece = p.cni
+    ? `, ${p.typePiece ? TYPE_PIECE[p.typePiece] ?? "pièce" : p.personneMorale ? "RCCM" : "pièce d'identité"} n° ${p.cni}${p.pieceEtablieLe ? ` établie le ${dateFr(p.pieceEtablieLe)}` : ""}`
+    : "";
+  const lieu = [p.adresse, p.ville].filter(Boolean).join(", ");
+  return (
+    `${p.personneMorale ? "la société " : ""}${p.nomComplet}${piece}` +
+    (p.compteContribuable ? `, compte contribuable ${p.compteContribuable}` : "") +
+    (lieu ? `, ${p.personneMorale ? "dont le siège est à" : "domicilié(e) à"} ${lieu}` : "") +
+    (p.bp ? `, ${/^b.?s?p/i.test(p.bp) ? p.bp : `BP ${p.bp}`}` : "") +
+    (p.telephone ? `, téléphone ${p.telephone}` : "") +
+    (p.email ? `, e-mail ${p.email}` : "")
+  );
+}
 
 const pct = (p: number) => `${String(p).replace(".", ",")} %`;
 
@@ -36,7 +67,7 @@ export async function genererMandat(m: Mandat, p: Parties): Promise<Uint8Array> 
   d.article(
     "Entre les soussignés",
     `L'agence : ${p.agence.nom}${p.agence.ninea ? ` (NINEA ${p.agence.ninea})` : ""}, représentée par ${p.agence.representant}, ci-après « l'Agence ». ` +
-      `Le propriétaire : ${p.proprietaire.nomComplet}${p.proprietaire.cni ? `, pièce d'identité n° ${p.proprietaire.cni}` : ""}${p.proprietaire.telephone ? `, téléphone ${p.proprietaire.telephone}` : ""}${p.proprietaire.adresse ? `, domicilié(e) à ${p.proprietaire.adresse}` : ""}, ci-après « le Propriétaire ».`,
+      `Le propriétaire : ${decrireProprietaire(p.proprietaire)}, ci-après « le Propriétaire ».`,
   );
   d.article(
     "Article 1 - Objet",

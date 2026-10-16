@@ -6,6 +6,8 @@ import type { Forfait } from "@prisma/client";
 import { db } from "@/lib/db";
 import { exigerAdmin } from "@/lib/admin";
 import { getT } from "@/lib/i18n/server";
+import { notifierSansEchec } from "@/lib/notifications";
+import { N_ } from "@/lib/i18n/translate";
 
 const JOUR = 86_400_000;
 const texte = (v: FormDataEntryValue | null) => String(v ?? "").trim();
@@ -38,6 +40,7 @@ export async function prolongerEssai(form: FormData) {
   await db.journalAction.create({
     data: { organisationId: org.id, utilisateurId: admin.id, action: "admin.essai_prolonge", cible: `${jours}j` },
   });
+  await notifierSansEchec({ organisationId: org.id, categorie: "ABONNEMENT", titre: N_("Essai prolongé"), texte: N_("Votre essai gratuit est prolongé de {n} jours."), donnees: { n: jours }, lien: "/parametres/abonnement" });
   revalidatePath("/admin", "layout");
   retour(org.id, t("Essai prolongé de {n} jours.", { n: jours }), "ok");
 }
@@ -59,6 +62,7 @@ export async function changerForfaitEssai(form: FormData) {
   await db.journalAction.create({
     data: { organisationId: org.id, utilisateurId: admin.id, action: "admin.forfait_essai", cible: forfait },
   });
+  await notifierSansEchec({ organisationId: org.id, categorie: "ABONNEMENT", titre: N_("Forfait d'essai mis à jour"), texte: N_("Votre essai donne maintenant accès au forfait {forfait}."), donnees: { forfait }, lien: "/parametres/abonnement" });
   revalidatePath("/admin", "layout");
   retour(org.id, t("Forfait d'essai mis à jour."), "ok");
 }

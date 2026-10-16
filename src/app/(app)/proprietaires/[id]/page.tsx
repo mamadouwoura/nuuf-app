@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import BoutonEnvoi from "@/components/BoutonEnvoi";
+import ChampsProprietaire from "@/components/ChampsProprietaire";
 import SignatureTactile from "@/components/SignatureTactile";
 import { creerAvance, detacherBien, enregistrerMandat, majProprietaire, rattacherBiens, rembourserAvance, supprimerAvance } from "@/app/actions/proprietaires";
 import { db } from "@/lib/db";
@@ -80,22 +81,7 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
       <Bloc titre={t("Coordonnées")} icone="badge">
         <form action={majProprietaire} className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
           <input type="hidden" name="id" value={p.id} />
-          <div className="sm:col-span-2">
-            <label htmlFor="nomComplet" className={LABEL}>{t("Prénom et nom")}</label>
-            <input id="nomComplet" name="nomComplet" required defaultValue={p.nomComplet} className={CHAMP} disabled={!peutEcrire} />
-          </div>
-          <div>
-            <label htmlFor="telephone" className={LABEL}>{t("Téléphone mobile & WhatsApp")}</label>
-            <input id="telephone" name="telephone" type="tel" inputMode="tel" defaultValue={p.telephone ? p.telephone.replace("+221", "") : ""} placeholder="77 000 00 00" className={CHAMP} disabled={!peutEcrire} />
-          </div>
-          <div>
-            <label htmlFor="cni" className={LABEL}>{t("N° de pièce d'identité (CNI / passeport)")}</label>
-            <input id="cni" name="cni" defaultValue={p.cni ?? ""} className={CHAMP} disabled={!peutEcrire} />
-          </div>
-          <div className="sm:col-span-2">
-            <label htmlFor="adresse" className={LABEL}>{t("Adresse")}</label>
-            <input id="adresse" name="adresse" defaultValue={p.adresse ?? ""} className={CHAMP} disabled={!peutEcrire} />
-          </div>
+          <ChampsProprietaire v={p} desactive={!peutEcrire} />
           {peutEcrire && (
             <div className="sm:col-span-2">
               <BoutonEnvoi enCours={t("Enregistrement…")} className="h-11 px-space-lg rounded-xl bg-primary text-on-primary font-label-lg text-label-lg font-bold">

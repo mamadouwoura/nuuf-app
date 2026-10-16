@@ -64,6 +64,13 @@ async function Contenu({ searchParams }: { searchParams: Promise<{ mois?: string
         </div>
       </section>
 
+      {s.payeDAvance.montant > 0 && (
+        <p className="rounded-xl bg-secondary-fixed text-on-secondary-fixed px-3 py-2 font-body-md text-body-md flex items-center gap-2">
+          <span className="material-symbols-outlined text-[20px]">event_upcoming</span>
+          {t("{montant} FCFA déjà payés d'avance pour les mois à venir ({n} paiement(s)).", { montant: fcfa(s.payeDAvance.montant), n: s.payeDAvance.nb })}
+        </p>
+      )}
+
       <section className={CARTE}>
         <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Recouvrement sur 6 mois")}</h2>
         <div className="flex items-end gap-3 h-40 px-1" role="img" aria-label={t("Loyers encaissés et attendus sur 6 mois")}>

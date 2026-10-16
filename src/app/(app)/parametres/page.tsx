@@ -13,6 +13,7 @@ import {
   retirerMembre,
   supprimerCompteEncaissement,
 } from "@/app/actions/compte";
+import { BoutonTutoriel } from "@/components/Tutoriel";
 import { db } from "@/lib/db";
 import { FORFAITS } from "@/lib/forfaits";
 import { initiales, telAffiche } from "@/lib/immo";
@@ -113,6 +114,18 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
           </form>
         </section>
       )}
+
+      <section className={carte}>
+        <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold flex items-center gap-2"><span className="material-symbols-outlined text-primary">help</span>{t("Aide")}</h2>
+        <p className="font-body-md text-body-md text-on-surface-variant">{t("Revoyez la visite guidée de Nuuf ou choisissez ce pour quoi vous êtes prévenu.")}</p>
+        <div className="flex flex-wrap gap-space-sm">
+          <BoutonTutoriel libelle={t("Revoir le tutoriel")} />
+          <Link href="/notifications/preferences" className="self-start inline-flex items-center gap-2 h-11 px-space-lg rounded-xl bg-surface-container text-primary font-label-lg text-label-lg font-semibold">
+            <span className="material-symbols-outlined text-[20px]">tune</span>
+            {t("Préférences de notifications")}
+          </Link>
+        </div>
+      </section>
 
       <section className={carte}>
         <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold flex items-center gap-2"><span className="material-symbols-outlined text-primary">account_balance_wallet</span>{t("Comptes d'encaissement")}</h2>

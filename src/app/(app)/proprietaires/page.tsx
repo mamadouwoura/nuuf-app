@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import BoutonEnvoi from "@/components/BoutonEnvoi";
+import ChampsProprietaire from "@/components/ChampsProprietaire";
 import { creerProprietaire } from "@/app/actions/proprietaires";
 import { db } from "@/lib/db";
 import { initiales, telAffiche } from "@/lib/immo";
@@ -55,22 +56,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<{ erreur?: stri
             {t("Ajouter un propriétaire")}
           </summary>
           <form action={creerProprietaire} className="mt-space-md grid grid-cols-1 sm:grid-cols-2 gap-space-md">
-            <div className="sm:col-span-2">
-              <label htmlFor="nomComplet" className={LABEL}>{t("Prénom et nom")}</label>
-              <input id="nomComplet" name="nomComplet" required className={CHAMP} autoComplete="off" />
-            </div>
-            <div>
-              <label htmlFor="telephone" className={LABEL}>{t("Téléphone mobile & WhatsApp")}</label>
-              <input id="telephone" name="telephone" type="tel" inputMode="tel" placeholder="77 000 00 00" className={CHAMP} autoComplete="off" />
-            </div>
-            <div>
-              <label htmlFor="cni" className={LABEL}>{t("N° de pièce d'identité (CNI / passeport)")}</label>
-              <input id="cni" name="cni" className={CHAMP} autoComplete="off" />
-            </div>
-            <div className="sm:col-span-2">
-              <label htmlFor="adresse" className={LABEL}>{t("Adresse")}</label>
-              <input id="adresse" name="adresse" className={CHAMP} autoComplete="off" />
-            </div>
+            <ChampsProprietaire />
             <div className="sm:col-span-2">
               <BoutonEnvoi enCours={t("Enregistrement…")} className="h-11 px-space-lg rounded-xl bg-primary text-on-primary font-label-lg text-label-lg font-bold">
                 {t("Enregistrer le propriétaire")}

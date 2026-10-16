@@ -30,7 +30,7 @@ export async function statistiques(organisationId: string, mois: Date, now = new
   if (mois <= debutMois(now)) await assurerEcheances(organisationId, mois);
   const debutTendance = moisPrecedent(mois, 5);
 
-  const [echeances, biens, occupes, impayes] = await Promise.all([
+  const [echeances, biens, occupes, impayes, avance] = await Promise.all([
     db.echeance.findMany({
       where: { mois: { gte: debutTendance, lte: mois }, bail: { bien: { organisationId } } },
       select: {
@@ -52,6 +52,12 @@ export async function statistiques(organisationId: string, mois: Date, now = new
         paiements: { where: { statut: "CONFIRME" }, select: { montant: true } },
         bail: { select: { locataire: { select: { id: true, nomComplet: true } }, bien: { select: { designation: true } } } },
       },
+    }),
+    // Loyers de mois à venir déjà réglés.
+    db.paiement.aggregate({
+      where: { statut: "CONFIRME", echeance: { mois: { gt: debutMois(now) }, bail: { bien: { organisationId } } } },
+      _sum: { montant: true },
+      _count: true,
     }),
   ]);
 
@@ -98,6 +104,7 @@ export async function statistiques(organisationId: string, mois: Date, now = new
     encaisse: courant.encaisse,
     reste: courant.attendu - courant.encaisse,
     tauxRecouvrement: courant.taux,
+    payeDAvance: { montant: avance._sum.montant ?? 0, nb: avance._count },
     tendance,
     occupation: { biens, occupes, vacants: biens - occupes, taux: taux(occupes, biens) },
     parProprietaire: [...parProprietaire.values()]

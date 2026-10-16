@@ -10,6 +10,8 @@ import { depuisCle } from "@/lib/loyers";
 import { normalizePhone } from "@/lib/security";
 import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
+import { notifierSansEchec } from "@/lib/notifications";
+import { N_ } from "@/lib/i18n/translate";
 
 const texte = (v: FormDataEntryValue | null, max = 200) => String(v ?? "").trim().slice(0, max);
 const entier = (v: FormDataEntryValue | null) => Number(String(v ?? "").replace(/\D/g, "")) || 0;
@@ -41,7 +43,25 @@ function lirePersonne(form: FormData, t: (c: string) => string, vers: (m: string
   const telBrut = texte(form.get("telephone"), 30);
   const telephone = telBrut ? normalizePhone(telBrut) : null;
   if (telBrut && !telephone) vers(t("Numéro invalide. Exemple : 77 123 45 67"));
-  return { nomComplet, telephone, cni: texte(form.get("cni"), 40) || null, adresse: texte(form.get("adresse"), 200) || null };
+  const email = texte(form.get("email"), 120);
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) vers(t("Adresse e-mail invalide."));
+  const typePiece = ["CNI", "PASSEPORT", "RCCM", "AUTRE"].find((x) => x === form.get("typePiece")) ?? null;
+  const brutPiece = texte(form.get("pieceEtablieLe"), 10);
+  const pieceEtablieLe = brutPiece ? new Date(`${brutPiece}T00:00:00.000Z`) : null;
+  if (pieceEtablieLe && Number.isNaN(pieceEtablieLe.getTime())) vers(t("Date de la pièce invalide."));
+  return {
+    nomComplet,
+    telephone,
+    cni: texte(form.get("cni"), 40) || null,
+    adresse: texte(form.get("adresse"), 200) || null,
+    email: email || null,
+    ville: texte(form.get("ville"), 80) || null,
+    personneMorale: form.get("personneMorale") === "on",
+    typePiece,
+    pieceEtablieLe,
+    bp: texte(form.get("bp"), 40) || null,
+    compteContribuable: texte(form.get("compteContribuable"), 40) || null,
+  };
 }
 
 export async function creerProprietaire(form: FormData) {
@@ -49,6 +69,7 @@ export async function creerProprietaire(form: FormData) {
   const donnees = lirePersonne(form, t, vers);
   const p = await db.proprietaire.create({ data: { organisationId: orgId, ...donnees } });
   await db.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "proprietaire.cree", cible: p.id } });
+  await notifierSansEchec({ organisationId: orgId, categorie: "PROPRIETAIRES", titre: N_("Nouveau propriétaire"), texte: N_("{nom} a été ajouté."), donnees: { nom: p.nomComplet }, lien: `/proprietaires/${p.id}`, sauf: user.id });
   redirect(`/proprietaires/${p.id}`);
 }
 
@@ -126,6 +147,7 @@ export async function enregistrerMandat(form: FormData) {
     await db.mandat.create({ data: { organisationId: orgId, proprietaireId: p.id, numero: await prochainNumeroMandat(orgId), ...donnees } });
   }
   await db.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "mandat.enregistre", cible: p.id } });
+  await notifierSansEchec({ organisationId: orgId, categorie: "PROPRIETAIRES", titre: N_("Mandat enregistré"), texte: N_("Mandat de {nom} mis à jour."), donnees: { nom: p.nomComplet }, lien: `/proprietaires/${p.id}`, sauf: user.id });
   redirect(`/proprietaires/${p.id}?ok=${encodeURIComponent(t("Mandat enregistré."))}`);
 }
 
@@ -185,6 +207,7 @@ export async function marquerReverse(form: FormData) {
       ),
   ]);
   await db.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "bilan.reverse", cible: p.id } });
+  await notifierSansEchec({ organisationId: orgId, categorie: "PROPRIETAIRES", titre: N_("Reversement enregistré"), texte: N_("{nom} : {montant} FCFA reversés pour {mois}."), donnees: { nom: p.nomComplet, montant: fcfa(bilan!.net), mois: cle }, lien: retour, sauf: user.id });
   redirect(`${retour}&ok=1`);
 }
 
@@ -242,6 +265,7 @@ export async function creerAvance(form: FormData) {
     data: { organisationId: orgId, proprietaireId: p.id, montant, accordeLe: date, motif: texte(form.get("motif"), 120) || null, mensualite: mensualite > 0 ? mensualite : null },
   });
   await db.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "avance.creee", cible: p.id } });
+  await notifierSansEchec({ organisationId: orgId, categorie: "ACOMPTES", titre: N_("Nouvelle avance"), texte: N_("{nom} : {montant} FCFA."), donnees: { nom: p.nomComplet, montant: fcfa(montant) }, lien: `/proprietaires/${p.id}`, sauf: user.id });
   redirect(`/proprietaires/${p.id}?ok=${encodeURIComponent(t("Avance enregistrée."))}`);
 }
 
@@ -268,5 +292,6 @@ export async function rembourserAvance(form: FormData) {
   if (montant <= 0 || montant > reste) vers(t("Le montant doit être compris entre 1 FCFA et le reste dû ({reste} FCFA).", { reste: fcfa(reste) }));
   await db.remboursementAvance.create({ data: { avanceId: avance!.id, organisationId: orgId, montant, note: texte(form.get("note"), 80) || null } });
   await db.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "avance.remboursee", cible: p.id } });
+  await notifierSansEchec({ organisationId: orgId, categorie: "ACOMPTES", titre: N_("Remboursement d'avance"), texte: N_("{nom} a remboursé {montant} FCFA."), donnees: { nom: p.nomComplet, montant: fcfa(montant) }, lien: `/proprietaires/${p.id}`, sauf: user.id });
   redirect(`/proprietaires/${p.id}?ok=${encodeURIComponent(t("Remboursement enregistré."))}`);
 }

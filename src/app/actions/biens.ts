@@ -11,6 +11,8 @@ import { lireAppreciation, motifValide } from "@/lib/motifs";
 import { normalizePhone } from "@/lib/security";
 import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
+import { notifierSansEchec } from "@/lib/notifications";
+import { N_ } from "@/lib/i18n/translate";
 
 const TYPES: TypeBien[] = ["APPARTEMENT", "VILLA", "STUDIO", "COMMERCIAL"];
 const chiffres = (v: FormDataEntryValue | null) => Number(String(v ?? "").replace(/\D/g, "")) || 0;
@@ -106,6 +108,8 @@ export async function creerBienEtLocataire(form: FormData) {
     return bien;
   });
 
+  await notifierSansEchec({ organisationId: orgId, categorie: "BIENS", titre: N_("Nouveau bien"), texte: N_("{bien} a été ajouté au parc."), donnees: { bien: bien.designation }, lien: `/biens/${bien.id}`, sauf: user.id });
+  await notifierSansEchec({ organisationId: orgId, categorie: "BAUX", titre: N_("Nouvelle location"), texte: N_("{locataire} loue {bien}."), donnees: { locataire: locNom, bien: bien.designation }, lien: `/biens/${bien.id}`, sauf: user.id });
   redirect(`/biens/${bien.id}`);
 }
 
@@ -206,6 +210,7 @@ export async function archiverBien(form: FormData) {
     await tx.bien.update({ where: { id }, data: { archiveLe: new Date() } });
     await tx.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "bien.archive", cible: id } });
   });
+  await notifierSansEchec({ organisationId: orgId, categorie: "BIENS", titre: N_("Bien archivé"), texte: N_("{bien} a été archivé."), donnees: { bien: bien.designation }, lien: "/biens", sauf: user.id });
   redirect("/biens?archive=1");
 }
 
@@ -240,6 +245,7 @@ export async function terminerBail(form: FormData) {
     });
     await tx.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "bail.termine", cible: bail.id } });
   });
+  await notifierSansEchec({ organisationId: orgId, categorie: "BAUX", titre: N_("Location terminée"), texte: N_("Le bail de {bien} est terminé : le bien est vacant."), donnees: { bien: bien.designation }, lien: `/biens/${id}`, sauf: user.id });
   redirect(`/biens/${id}?ok=${encodeURIComponent(t("Départ enregistré : le bien est vacant."))}`);
 }
 
@@ -279,5 +285,6 @@ export async function nouveauLocataire(form: FormData) {
     await tx.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "bail.cree", cible: bail.id } });
     return loc.id;
   });
+  await notifierSansEchec({ organisationId: orgId, categorie: "BAUX", titre: N_("Nouvelle location"), texte: N_("{locataire} loue {bien}."), donnees: { locataire: nom, bien: bien.designation }, lien: `/biens/${id}`, sauf: user.id });
   redirect(`/locataires/${locataireId}/fiche`);
 }

@@ -8,7 +8,7 @@ import { db } from "@/lib/db";
 import { fcfa } from "@/lib/immo";
 import { formaterDate } from "@/lib/i18n/format";
 import { cleMois, debutMois, depuisCle, libelleMois, moisPrecedent } from "@/lib/loyers";
-import { CATEGORIES_ENTREE, CATEGORIES_SORTIE, tresorerieDuMois } from "@/lib/tresorerie";
+import { CATEGORIES_ENTREE, CATEGORIES_SORTIE, MODES_PAIEMENT, tresorerieDuMois } from "@/lib/tresorerie";
 import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
 import { N_ } from "@/lib/i18n/translate";
@@ -86,6 +86,10 @@ async function Contenu({ searchParams }: { searchParams: Promise<{ mois?: string
       <section className={CARTE}>
         <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Détail du mois")}</h2>
         <ul className="flex flex-col divide-y divide-surface-container">
+          <li className="flex items-center justify-between py-2">
+            <span className="font-body-md text-body-md text-on-surface-variant">{t("Solde précédent")}</span>
+            <span className="font-label-lg text-label-lg font-bold text-on-surface">{r.soldePrecedent < 0 ? "- " : ""}{fcfa(Math.abs(r.soldePrecedent))} FCFA</span>
+          </li>
           {lignes.map(([lib, val, cl]) => (
             <li key={lib} className="flex items-center justify-between py-2">
               <span className="font-body-md text-body-md text-on-surface">{lib}</span>
@@ -93,6 +97,10 @@ async function Contenu({ searchParams }: { searchParams: Promise<{ mois?: string
             </li>
           ))}
         </ul>
+        <div className="flex items-center justify-between rounded-xl bg-surface-container-low px-3 py-2">
+          <span className="font-label-lg text-label-lg text-on-surface font-semibold">{t("Solde en fin de mois")}</span>
+          <span className={`font-label-lg text-label-lg font-bold ${r.soldeFinal >= 0 ? "text-primary" : "text-error"}`}>{r.soldeFinal < 0 ? "- " : ""}{fcfa(Math.abs(r.soldeFinal))} FCFA</span>
+        </div>
         {r.depensesParCategorie.length > 0 && (
           <>
             <h3 className="font-label-lg text-label-lg text-on-surface font-semibold mt-2">{t("Dépenses par catégorie")}</h3>
@@ -118,6 +126,8 @@ async function Contenu({ searchParams }: { searchParams: Promise<{ mois?: string
                 <span className="block truncate font-body-md text-body-md text-on-surface">{x.libelle}</span>
                 <span className="block truncate font-body-sm text-body-sm text-on-surface-variant">
                   {formaterDate(x.date, locale, { day: "2-digit", month: "short" })} · {t(x.categorie)}
+                  {x.modePaiement ? ` · ${t(MODES_PAIEMENT.find((m) => m.code === x.modePaiement)?.libelle ?? x.modePaiement)}` : ""}
+                  {x.reference ? ` · ${x.reference}` : ""}
                   {x.proprietaireId && nomProprio.get(x.proprietaireId) ? ` · ${nomProprio.get(x.proprietaireId)}` : ""}
                 </span>
               </span>
@@ -170,6 +180,17 @@ async function Contenu({ searchParams }: { searchParams: Promise<{ mois?: string
             <div>
               <label htmlFor="tr-date" className={LABEL}>{t("Date")}</label>
               <input id="tr-date" name="date" type="date" required defaultValue={aujourdhui} className={CHAMP} />
+            </div>
+            <div>
+              <label htmlFor="tr-mode" className={LABEL}>{t("Mode de paiement (facultatif)")}</label>
+              <select id="tr-mode" name="modePaiement" defaultValue="" className={CHAMP}>
+                <option value="">—</option>
+                {MODES_PAIEMENT.map((m) => <option key={m.code} value={m.code}>{t(m.libelle)}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="tr-ref" className={LABEL}>{t("Référence (facultatif)")}</label>
+              <input id="tr-ref" name="reference" maxLength={60} placeholder={t("N° de facture, de virement…")} className={CHAMP} autoComplete="off" />
             </div>
             {proprietaires.length > 0 && (
               <div className="sm:col-span-2">
