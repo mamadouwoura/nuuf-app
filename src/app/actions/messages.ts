@@ -8,6 +8,7 @@ import { lienPaiement } from "@/lib/encaissement";
 import { urlVerification } from "@/lib/quittance";
 import { etatAcces } from "@/lib/abonnement";
 import { getUser } from "@/lib/session";
+import { peutAcceder } from "@/lib/permissions";
 
 const chiffres = (tel: string) => tel.replace(/\D/g, "");
 const wa = (tel: string, texte: string) => `https://wa.me/${chiffres(tel)}?text=${encodeURIComponent(texte)}`;
@@ -16,7 +17,7 @@ const wa = (tel: string, texte: string) => `https://wa.me/${chiffres(tel)}?text=
 export async function partagerQuittance(form: FormData) {
   const user = await getUser();
   if (!user) redirect("/connexion");
-  if (user.membres[0].role === "LECTURE_SEULE") redirect("/quittances");
+  if (user.membres[0].role === "LECTURE_SEULE" || !peutAcceder(user.membres[0], "LOYERS")) redirect("/quittances");
   if (!etatAcces(user.membres[0].organisation.abonnement).ecriture) redirect("/abonnement/forfait");
   const orgId = user.membres[0].organisationId;
   const q = await db.quittance.findFirst({
@@ -42,7 +43,7 @@ export async function partagerQuittance(form: FormData) {
 export async function relancer(form: FormData) {
   const user = await getUser();
   if (!user) redirect("/connexion");
-  if (user.membres[0].role === "LECTURE_SEULE") redirect("/relances");
+  if (user.membres[0].role === "LECTURE_SEULE" || !peutAcceder(user.membres[0], "LOYERS")) redirect("/relances");
   if (!etatAcces(user.membres[0].organisation.abonnement).ecriture) redirect("/abonnement/forfait");
   const orgId = user.membres[0].organisationId;
   const e = await db.echeance.findFirst({
@@ -70,7 +71,7 @@ export async function sauverParametresRelance(form: FormData) {
   const user = await getUser();
   if (!user) redirect("/connexion");
   const membre = user.membres[0];
-  if (membre.role === "LECTURE_SEULE") redirect("/relances");
+  if (membre.role === "LECTURE_SEULE" || !peutAcceder(membre, "LOYERS")) redirect("/relances");
   const data = {
     avantEcheance: form.get("avantEcheance") === "on",
     apresJ1: form.get("apresJ1") === "on",

@@ -2,13 +2,13 @@ import { calculerBilan } from "@/lib/bilan";
 import { genererBilanPdf } from "@/lib/bilan-pdf";
 import { chargerIdentite } from "@/lib/identite";
 import { cleMois, debutMois, depuisCle } from "@/lib/loyers";
-import { getUser } from "@/lib/session";
+import { refuseSiModule } from "@/lib/permissions";
 
 /** Compte rendu mensuel du propriétaire, en PDF (réservé à l'organisation). `?mois=AAAA-MM`. */
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const user = await getUser();
-  if (!user) return new Response("Non autorisé", { status: 401 });
+  const { user, reponse } = await refuseSiModule("GERANCE");
+  if (reponse || !user) return reponse ?? new Response("Non autorisé", { status: 401 });
   const orgId = user.membres[0]?.organisationId;
   if (!orgId) return new Response("Non autorisé", { status: 401 });
   const maintenant = new Date();

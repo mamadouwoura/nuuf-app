@@ -4,19 +4,16 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   ajouterCompteEncaissement,
-  ajouterMembre,
   changerMotDePasse,
   deconnecterAutresAppareils,
-  changerRole,
   majIdentite,
   majProfil,
-  retirerMembre,
   supprimerCompteEncaissement,
 } from "@/app/actions/compte";
 import { BoutonTutoriel } from "@/components/Tutoriel";
+import EquipeSection from "@/components/EquipeSection";
 import { db } from "@/lib/db";
-import { FORFAITS } from "@/lib/forfaits";
-import { initiales, telAffiche } from "@/lib/immo";
+import { telAffiche } from "@/lib/immo";
 import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
 import { N_ } from "@/lib/i18n/translate";
@@ -27,7 +24,6 @@ export async function generateMetadata() {
 }
 
 type Params = { ok?: string; erreur?: string };
-const ROLE = { PROPRIETAIRE: N_("Propriétaire"), GESTIONNAIRE: N_("Gestionnaire"), LECTURE_SEULE: N_("Lecture seule") } as const;
 const CANAL = { WAVE: "Wave", ORANGE_MONEY: "Orange Money", ESPECES: N_("Espèces"), VIREMENT: N_("Virement") } as const;
 
 const champ = "w-full h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container outline-none";
@@ -42,11 +38,9 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
   const membre = user.membres[0];
   const org = membre.organisation;
   const proprio = membre.role === "PROPRIETAIRE";
-  const forfait = FORFAITS[org.abonnement?.forfait ?? "DECOUVERTE"];
-  const [aLogo, comptes, equipe] = await Promise.all([
+  const [aLogo, comptes] = await Promise.all([
     db.logoOrganisation.count({ where: { organisationId: org.id } }),
     db.compteEncaissement.findMany({ where: { organisationId: org.id }, orderBy: { id: "asc" } }),
-    db.membre.findMany({ where: { organisationId: org.id }, include: { utilisateur: true }, orderBy: { creeLe: "asc" } }),
   ]);
 
   return (
@@ -68,6 +62,14 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
           <label className="flex flex-col gap-1">
             <span className="font-label-lg text-label-lg font-semibold">{t("Téléphone (identifiant de connexion)")}</span>
             <input value={telAffiche(user.telephone)} readOnly className={`${champ} opacity-70`} />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="font-label-lg text-label-lg font-semibold">{t("E-mail (pour les notifications)")}</span>
+            <input name="email" type="email" defaultValue={user.email ?? ""} maxLength={120} autoComplete="email" className={champ} />
+          </label>
+          <label className="flex items-center gap-3 rounded-xl bg-surface-container-low px-3 py-3 cursor-pointer self-end">
+            <input type="checkbox" name="emailNotifs" defaultChecked={user.emailNotifs} className="w-5 h-5 accent-primary" />
+            <span className="font-body-md text-body-md text-on-surface">{t("Recevoir mes notifications par e-mail")}</span>
           </label>
           {proprio && (
             <label className="flex flex-col gap-1">
@@ -117,12 +119,16 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
 
       <section className={carte}>
         <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold flex items-center gap-2"><span className="material-symbols-outlined text-primary">help</span>{t("Aide")}</h2>
-        <p className="font-body-md text-body-md text-on-surface-variant">{t("Revoyez la visite guidée de Nuuf ou choisissez ce pour quoi vous êtes prévenu.")}</p>
+        <p className="font-body-md text-body-md text-on-surface-variant">{t("Revoyez la visite guidée, choisissez ce pour quoi vous êtes prévenu, ou importez votre fichier Excel.")}</p>
         <div className="flex flex-wrap gap-space-sm">
           <BoutonTutoriel libelle={t("Revoir le tutoriel")} />
           <Link href="/notifications/preferences" className="self-start inline-flex items-center gap-2 h-11 px-space-lg rounded-xl bg-surface-container text-primary font-label-lg text-label-lg font-semibold">
             <span className="material-symbols-outlined text-[20px]">tune</span>
             {t("Préférences de notifications")}
+          </Link>
+          <Link href="/import" className="self-start inline-flex items-center gap-2 h-11 px-space-lg rounded-xl bg-surface-container text-primary font-label-lg text-label-lg font-semibold">
+            <span className="material-symbols-outlined text-[20px]">upload_file</span>
+            {t("Importer des données")}
           </Link>
         </div>
       </section>
@@ -160,60 +166,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
         )}
       </section>
 
-      <section className={carte}>
-        <div className="flex items-center justify-between">
-          <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold flex items-center gap-2"><span className="material-symbols-outlined text-primary">group</span>{t("Équipe et rôles")}</h2>
-          <span className="font-label-md text-label-md text-on-surface-variant">{t("{a} / {b} accès", { a: equipe.length, b: forfait.acces })}</span>
-        </div>
-        <div className="flex flex-col divide-y divide-surface-container">
-          {equipe.map((m) => (
-            <div key={m.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-md text-label-md font-bold">{initiales(m.utilisateur.nomComplet)}</div>
-                <div className="flex flex-col">
-                  <span className="font-label-lg text-label-lg font-semibold">{m.utilisateur.nomComplet}</span>
-                  <span className="font-body-sm text-body-sm text-on-surface-variant">{telAffiche(m.utilisateur.telephone)}</span>
-                </div>
-              </div>
-              {m.role === "PROPRIETAIRE" || !proprio ? (
-                <span className="px-3 py-1 rounded-full bg-surface-container-high text-primary font-label-md text-label-md font-bold self-start">{t(ROLE[m.role])}</span>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <form action={changerRole} className="flex items-center gap-2">
-                    <input type="hidden" name="membreId" value={m.id} />
-                    <select name="role" aria-label={t("Rôle du membre")} defaultValue={m.role} className="h-10 px-3 rounded-xl bg-surface-container-low font-label-md text-label-md">
-                      <option value="GESTIONNAIRE">{t("Gestionnaire")}</option>
-                      <option value="LECTURE_SEULE">{t("Lecture seule")}</option>
-                    </select>
-                    <button className="h-10 px-3 rounded-xl bg-surface hover:bg-surface-container text-primary font-label-md text-label-md font-semibold">{t("Appliquer")}</button>
-                  </form>
-                  <form action={retirerMembre}>
-                    <input type="hidden" name="membreId" value={m.id} />
-                    <button className="h-10 px-3 rounded-xl bg-surface-container text-error font-label-md text-label-md font-semibold hover:bg-error-container">{t("Retirer")}</button>
-                  </form>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-        {proprio && forfait.acces > 1 && equipe.length < forfait.acces && (
-          <form action={ajouterMembre} className="grid grid-cols-1 md:grid-cols-5 gap-space-sm items-end pt-space-sm">
-            <input name="nomComplet" placeholder={t("Nom (ex. Awa, assistante)")} required className={champ} />
-            <input name="telephone" placeholder="77 123 45 67" required className={champ} />
-            <select name="role" aria-label={t("Rôle du nouveau membre")} className={champ}><option value="GESTIONNAIRE">{t("Gestionnaire")}</option><option value="LECTURE_SEULE">{t("Lecture seule")}</option></select>
-            <input name="motDePasse" type="password" placeholder={t("Mot de passe provisoire")} minLength={8} required className={champ} />
-            <button className={bouton}>{t("Ajouter")}</button>
-          </form>
-        )}
-        {proprio && forfait.acces === 1 && (
-          <p className="font-body-md text-body-md text-on-surface-variant">
-            {t("Votre forfait inclut un seul accès.")} <Link href="/abonnement/forfait" className="text-primary font-semibold underline">{t("Passez au forfait Pro")}</Link> {t("pour inviter votre équipe (jusqu'à 5 accès).")}
-          </p>
-        )}
-        <p className="font-body-sm text-body-sm text-on-surface-variant">
-          {t("Gestionnaire : biens, locataires, paiements, relances, quittances. Lecture seule : consultation uniquement. L'abonnement et les comptes d'encaissement restent réservés au propriétaire.")}
-        </p>
-      </section>
+      <EquipeSection organisationId={org.id} proprio={proprio} forfaitCode={org.abonnement?.forfait ?? "DECOUVERTE"} />
 
       <section className={carte}>
         <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold flex items-center gap-2"><span className="material-symbols-outlined text-primary">security</span>{t("Sécurité")}</h2>
@@ -233,7 +186,6 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
 }
 
 export default async function Page({ searchParams }: { searchParams: Promise<Params> }) {
-  const { t } = await getT();
   return (
     <Suspense fallback={<Chargement />}>
       <Contenu searchParams={searchParams} />

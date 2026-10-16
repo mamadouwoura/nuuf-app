@@ -13,6 +13,7 @@ import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
 import { notifierSansEchec } from "@/lib/notifications";
 import { N_ } from "@/lib/i18n/translate";
+import { peutAcceder } from "@/lib/permissions";
 
 const TYPES: TypeBien[] = ["APPARTEMENT", "VILLA", "STUDIO", "COMMERCIAL"];
 const chiffres = (v: FormDataEntryValue | null) => Number(String(v ?? "").replace(/\D/g, "")) || 0;
@@ -27,6 +28,7 @@ export async function creerBienEtLocataire(form: FormData) {
   if (!user) redirect("/connexion");
   const membre = user.membres[0];
   if (!membre || membre.role === "LECTURE_SEULE") echec(t("Votre rôle ne permet pas d'ajouter un bien."));
+  if (!peutAcceder(membre, "PATRIMOINE")) echec(t("Votre accès ne comprend pas ce module."));
   const orgId = membre.organisationId;
   if (!etatAcces(membre.organisation.abonnement).ecriture) {
     redirect(`/abonnement/forfait?erreur=${encodeURIComponent(t("Votre accès est en lecture seule. Activez un abonnement pour ajouter des biens."))}`);
@@ -118,7 +120,7 @@ async function bienAutorise(id: string) {
   const user = await getUser();
   if (!user) redirect("/connexion");
   const membre = user.membres[0];
-  if (membre.role === "LECTURE_SEULE") redirect(`/biens/${id}`);
+  if (membre.role === "LECTURE_SEULE" || !peutAcceder(membre, "PATRIMOINE")) redirect(`/biens/${id}`);
   if (!etatAcces(membre.organisation.abonnement).ecriture) {
     redirect(`/abonnement/forfait?erreur=${encodeURIComponent(t("Votre accès est en lecture seule. Activez un abonnement pour modifier vos biens."))}`);
   }

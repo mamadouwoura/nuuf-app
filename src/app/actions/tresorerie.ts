@@ -7,6 +7,7 @@ import { cleMois } from "@/lib/loyers";
 import { CATEGORIES_ENTREE, CATEGORIES_SORTIE, MODES_PAIEMENT } from "@/lib/tresorerie";
 import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
+import { peutAcceder } from "@/lib/permissions";
 
 const texte = (v: FormDataEntryValue | null, max = 200) => String(v ?? "").trim().slice(0, max);
 const entier = (v: FormDataEntryValue | null) => Number(String(v ?? "").replace(/\D/g, "")) || 0;
@@ -18,6 +19,7 @@ async function autorise(retour: string) {
   const membre = user.membres[0];
   const vers = (m: string): never => redirect(`${retour}${retour.includes("?") ? "&" : "?"}erreur=${encodeURIComponent(m)}`);
   if (!membre || membre.role === "LECTURE_SEULE") vers(t("Votre rôle ne permet pas de modifier la trésorerie."));
+  if (!peutAcceder(membre, "TRESORERIE")) vers(t("Votre accès ne comprend pas ce module."));
   if (!etatAcces(membre.organisation.abonnement).ecriture) {
     redirect(`/abonnement/forfait?erreur=${encodeURIComponent(t("Votre accès est en lecture seule. Activez un abonnement pour modifier votre trésorerie."))}`);
   }

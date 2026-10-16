@@ -8,6 +8,7 @@ import { solderEtQuittancer } from "@/lib/encaissement";
 import { MOIS_D_AVANCE, debutMois } from "@/lib/loyers";
 import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
+import { peutAcceder } from "@/lib/permissions";
 
 type Traduire = (cle: string, vars?: Record<string, string | number>) => string;
 
@@ -20,6 +21,7 @@ async function autoriseEncaissement(retourBrut: string, defaut: string) {
   const retour = /^\/(?!\/)[\w\-/?=&%.]*$/.test(retourBrut) ? retourBrut : defaut; // chemin interne uniquement, jamais d'URL externe
   const avec = (k: string, v: string) => `${retour}${retour.includes("?") ? "&" : "?"}${k}=${encodeURIComponent(v)}`;
   if (membre.role === "LECTURE_SEULE") redirect(avec("erreur", t("Votre rôle ne permet pas d'encaisser.")));
+  if (!peutAcceder(membre, "LOYERS")) redirect(avec("erreur", t("Votre accès ne comprend pas ce module.")));
   if (!etatAcces(membre.organisation.abonnement).ecriture) redirect(avec("erreur", t("Accès en lecture seule : activez un abonnement pour encaisser.")));
   return { t, user, membre, avec, fail: (m: string): never => redirect(avec("erreur", m)) };
 }

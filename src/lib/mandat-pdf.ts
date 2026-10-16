@@ -4,6 +4,7 @@ import type { Identite } from "./identite";
 
 type Mandat = {
   numero: string;
+  libelle?: string | null;
   commissionPct: number;
   debutLe: Date;
   dureeMois: number;
@@ -61,7 +62,7 @@ export async function genererMandat(m: Mandat, p: Parties): Promise<Uint8Array> 
   const d = await nouveauDocument();
   await d.entete(p.identite);
   d.ligne("MANDAT DE GESTION LOCATIVE", { taille: 20, gras: true, couleur: VERT });
-  d.ligne(`N° ${m.numero}`, { taille: 12 });
+  d.ligne(`N° ${m.numero}${m.libelle ? ` - ${m.libelle}` : ""}`, { taille: 12 });
   d.espace(8);
 
   d.article(

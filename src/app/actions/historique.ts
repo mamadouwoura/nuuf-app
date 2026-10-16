@@ -7,6 +7,7 @@ import { normaliserCni } from "@/lib/fiche";
 import { normalizePhone } from "@/lib/security";
 import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
+import { peutAcceder } from "@/lib/permissions";
 
 export type EtatRecherche = { erreur?: string; telephone?: string; resultat?: ResultatHistorique | null } | null;
 
@@ -16,7 +17,7 @@ export async function rechercherCandidat(_: EtatRecherche, form: FormData): Prom
   const user = await getUser();
   if (!user) return { erreur: t("Session expirée. Reconnectez-vous.") };
   const membre = user.membres[0];
-  if (!membre || membre.role === "LECTURE_SEULE") return { erreur: t("Votre rôle ne permet pas de consulter un historique.") };
+  if (!membre || membre.role === "LECTURE_SEULE" || !peutAcceder(membre, "PATRIMOINE")) return { erreur: t("Votre rôle ne permet pas de consulter un historique.") };
   if (!etatAcces(membre.organisation.abonnement).ecriture) return { erreur: t("Accès en lecture seule : activez un abonnement pour consulter un historique.") };
   if (form.get("accord") !== "on") return { erreur: t("Confirmez que le candidat a donné son accord pour cette vérification.") };
   const telBrut = String(form.get("telephone") ?? "").trim();

@@ -10,6 +10,7 @@ import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
 import { notifierSansEchec } from "@/lib/notifications";
 import { N_ } from "@/lib/i18n/translate";
+import { peutAcceder } from "@/lib/permissions";
 
 const texte = (v: FormDataEntryValue | null, max = 200) => String(v ?? "").trim().slice(0, max);
 const entier = (v: FormDataEntryValue | null) => {
@@ -25,7 +26,7 @@ export async function enregistrerFiche(form: FormData) {
   const user = await getUser();
   if (!user) redirect("/connexion");
   const membre = user.membres[0];
-  if (!membre || membre.role === "LECTURE_SEULE") redirect(`/locataires/${id}`);
+  if (!membre || membre.role === "LECTURE_SEULE" || !peutAcceder(membre, "PATRIMOINE")) redirect(`/locataires/${id}`);
   if (!etatAcces(membre.organisation.abonnement).ecriture) {
     redirect(`/abonnement/forfait?erreur=${encodeURIComponent(t("Votre accès est en lecture seule. Activez un abonnement pour modifier vos données."))}`);
   }
@@ -95,7 +96,7 @@ async function autoriseDocuments(locataireId: string) {
   const user = await getUser();
   if (!user) redirect("/connexion");
   const membre = user.membres[0];
-  if (!membre || membre.role === "LECTURE_SEULE") retour(t("Votre rôle ne permet pas de modifier les documents."));
+  if (!membre || membre.role === "LECTURE_SEULE" || !peutAcceder(membre, "PATRIMOINE")) retour(t("Votre rôle ne permet pas de modifier les documents."));
   if (!etatAcces(membre.organisation.abonnement).ecriture) retour(t("Accès en lecture seule : activez un abonnement."));
   const loc = await db.locataire.findFirst({ where: { id: locataireId, organisationId: membre.organisationId } });
   if (!loc) redirect("/locataires");
@@ -153,7 +154,7 @@ export async function anonymiserLocataire(form: FormData) {
   const user = await getUser();
   if (!user) redirect("/connexion");
   const membre = user.membres[0];
-  if (!membre || membre.role === "LECTURE_SEULE") retour(t("Votre rôle ne permet pas de supprimer des données."));
+  if (!membre || membre.role === "LECTURE_SEULE" || !peutAcceder(membre, "PATRIMOINE")) retour(t("Votre rôle ne permet pas de supprimer des données."));
   if (!etatAcces(membre.organisation.abonnement).ecriture) retour(t("Accès en lecture seule : activez un abonnement."));
   if (form.get("confirmer") !== "on") retour(t("Cochez la case pour confirmer la suppression."));
   const loc = await db.locataire.findFirst({ where: { id, organisationId: membre.organisationId }, include: { baux: { select: { actif: true } }, documents: true } });

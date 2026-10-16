@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { db } from "./db";
 import { N_ } from "./i18n/translate";
+import { programmerEmails } from "./email";
 
 /** Catégories que chaque membre peut activer ou désactiver. L'abonnement n'en fait pas partie : il reste toujours actif. */
 export const CATEGORIES = [
@@ -48,7 +49,8 @@ export async function notifier(client: Client, a: Alerte): Promise<number> {
     ids = ids.filter((id) => !exclus.has(id));
   }
   if (ids.length === 0) return 0;
-  const r = await client.notification.createMany({
+  const cree = await client.notification.createManyAndReturn({
+    select: { id: true },
     data: ids.map((utilisateurId) => ({
       organisationId: a.organisationId,
       utilisateurId,
@@ -59,7 +61,9 @@ export async function notifier(client: Client, a: Alerte): Promise<number> {
       lien: a.lien ?? null,
     })),
   });
-  return r.count;
+  // L'e-mail part après la réponse (jamais pendant une transaction) et seulement pour qui a renseigné son adresse.
+  programmerEmails(cree.map((n) => n.id));
+  return cree.length;
 }
 
 /** Variante qui ne fait jamais échouer l'action appelante (utilisée hors transaction). */

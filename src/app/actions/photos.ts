@@ -6,6 +6,7 @@ import { etatAcces } from "@/lib/abonnement";
 import { MAX_OCTETS, MAX_PHOTOS, enregistrerFichier, supprimerFichier, typeImage } from "@/lib/photos";
 import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
+import { peutAcceder } from "@/lib/permissions";
 
 async function autorise(bienId: string) {
   const { t } = await getT();
@@ -13,7 +14,7 @@ async function autorise(bienId: string) {
   const user = await getUser();
   if (!user) redirect("/connexion");
   const membre = user.membres[0];
-  if (membre.role === "LECTURE_SEULE") retour(t("Votre rôle ne permet pas de modifier les photos."));
+  if (membre.role === "LECTURE_SEULE" || !peutAcceder(membre, "PATRIMOINE")) retour(t("Votre rôle ne permet pas de modifier les photos."));
   if (!etatAcces(membre.organisation.abonnement).ecriture) retour(t("Accès en lecture seule : activez un abonnement."));
   const bien = await db.bien.findFirst({ where: { id: bienId, organisationId: membre.organisationId, archiveLe: null } });
   if (!bien) redirect("/biens");

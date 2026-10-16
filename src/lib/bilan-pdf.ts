@@ -33,7 +33,9 @@ export async function genererBilanPdf(b: Bilan, agence: Identite): Promise<Uint8
   d.espace(4);
   const lignes: string[][] = [
     ["Loyers encaissés", f(b.encaisse)],
-    [`Commission de l'agence (${String(b.commissionPct).replace(".", ",")} %)`, `- ${f(b.commission)}`],
+    ...(b.parMandat.length > 1
+      ? b.parMandat.map((m) => [`Commission${m.libelle ? ` - ${m.libelle}` : ` - mandat ${m.numero}`} (${String(m.commissionPct).replace(".", ",")} %)`, `- ${f(m.commission)}`])
+      : [[`Commission de l'agence (${String(b.commissionPct).replace(".", ",")} %)`, `- ${f(b.commission)}`]]),
     ...b.retenues.map((r) => [`Retenue : ${r.libelle}`, `- ${f(r.montant)}`]),
     ...b.avances.filter((a) => a.prelevement > 0).map((a) => [`Remboursement d'avance${a.motif ? ` (${a.motif})` : ""} - reste ${f(a.resteApres)}`, `- ${f(a.prelevement)}`]),
   ];

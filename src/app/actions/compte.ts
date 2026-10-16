@@ -29,7 +29,9 @@ export async function majProfil(form: FormData) {
   if (!user) redirect("/connexion");
   const nom = texte(form.get("nomComplet"));
   if (nom.length < 3) retour(t("Indiquez votre prénom et nom."));
-  await db.utilisateur.update({ where: { id: user.id }, data: { nomComplet: nom } });
+  const email = texte(form.get("email")).slice(0, 120);
+  if (email && !/^[^s@]+@[^s@]+.[^s@]+$/.test(email)) retour(t("Adresse e-mail invalide."));
+  await db.utilisateur.update({ where: { id: user.id }, data: { nomComplet: nom, email: email || null, emailNotifs: form.get("emailNotifs") === "on" } });
   if (user.membres[0].role === "PROPRIETAIRE") {
     await db.organisation.update({ where: { id: user.membres[0].organisationId }, data: { nom, ninea: texte(form.get("ninea")) || null } });
   }
@@ -57,39 +59,6 @@ export async function supprimerCompteEncaissement(form: FormData) {
   retour(t("Compte d'encaissement retiré."), "ok");
 }
 
-export async function ajouterMembre(form: FormData) {
-  const { t } = await getT();
-  const { user, membre } = await proprietaire();
-  const abo = membre.organisation.abonnement;
-  const max = FORFAITS[abo?.forfait ?? "DECOUVERTE"].acces;
-  const nb = await db.membre.count({ where: { organisationId: membre.organisationId } });
-  if (nb >= max) retour(max === 1 ? t("Votre forfait ne permet qu'un seul accès. Passez au forfait Pro pour ajouter votre équipe.") : t("Votre forfait est limité à {max} accès.", { max }));
-
-  const nom = texte(form.get("nomComplet"));
-  const tel = normalizePhone(texte(form.get("telephone")));
-  const role = texte(form.get("role")) as Role;
-  const mdp = String(form.get("motDePasse") ?? "");
-  if (nom.length < 3) retour(t("Indiquez le nom de la personne."));
-  if (!tel) retour(t("Numéro invalide. Exemple : 77 123 45 67"));
-  if (role !== "GESTIONNAIRE" && role !== "LECTURE_SEULE") retour(t("Choisissez un rôle."));
-  const faible = erreurMotDePasse(mdp, tel);
-  if (faible) retour(t(faible));
-  if (await db.utilisateur.findUnique({ where: { telephone: tel! } })) retour(t("Un compte existe déjà avec ce numéro."));
-
-  const cree = await db.utilisateur.create({
-    data: {
-      telephone: tel!,
-      nomComplet: nom,
-      motDePasse: await hashPassword(mdp),
-      membres: { create: { organisationId: membre.organisationId, role } },
-    },
-  });
-  await db.journalAction.create({
-    data: { organisationId: membre.organisationId, utilisateurId: user.id, action: "equipe.ajout", cible: cree.id },
-  });
-  retour(t("{nom} peut maintenant se connecter avec son numéro et le mot de passe provisoire.", { nom }), "ok");
-}
-
 export async function retirerMembre(form: FormData) {
   const { t } = await getT();
   const { user, membre } = await proprietaire();
@@ -101,18 +70,6 @@ export async function retirerMembre(form: FormData) {
     data: { organisationId: membre.organisationId, utilisateurId: user.id, action: "equipe.retrait", cible: cible!.utilisateurId },
   });
   retour(t("Accès retiré."), "ok");
-}
-
-export async function changerRole(form: FormData) {
-  const { t } = await getT();
-  const { membre } = await proprietaire();
-  const role = texte(form.get("role")) as Role;
-  if (role !== "GESTIONNAIRE" && role !== "LECTURE_SEULE") retour(t("Rôle invalide."));
-  await db.membre.updateMany({
-    where: { id: texte(form.get("membreId")), organisationId: membre.organisationId, role: { not: "PROPRIETAIRE" } },
-    data: { role },
-  });
-  retour(t("Rôle mis à jour."), "ok");
 }
 
 export async function changerMotDePasse(form: FormData) {

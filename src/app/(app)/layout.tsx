@@ -38,7 +38,7 @@ async function Shell({ children }: { children: React.ReactNode }) {
           ? { ton: "alerte" as const, texte: t("Accès en lecture seule : vos données sont conservées. Activez un abonnement pour reprendre l'encaissement.") }
           : null;
   return (
-    <AppShell nom={user.nomComplet} libelleCompte={libelle} nbBiens={nbBiens} nbRetards={nbRetards} nbNotifs={nbNotifs} bandeau={bandeau} moisLabel={libelleMois(new Date(), locale)} simulation={modeSimulation()} agence={agence}>
+    <AppShell nom={user.nomComplet} libelleCompte={libelle} nbBiens={nbBiens} nbRetards={nbRetards} nbNotifs={nbNotifs} modulesRefuses={user.membres[0].role === "PROPRIETAIRE" ? [] : user.membres[0].modulesRefuses} bandeau={bandeau} moisLabel={libelleMois(new Date(), locale)} simulation={modeSimulation()} agence={agence}>
       {children}
     </AppShell>
   );

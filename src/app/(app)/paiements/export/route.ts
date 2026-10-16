@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import { assurerEcheances, cleMois, debutMois, depuisCle, loyersDuMois } from "@/lib/loyers";
-import { getUser } from "@/lib/session";
+import { refuseSiModule } from "@/lib/permissions";
 
 const ETAT = { PAYE: "Payé", EN_ATTENTE: "En attente", EN_RETARD: "En retard" } as const;
 const CANAL = { WAVE: "Wave", ORANGE_MONEY: "Orange Money", ESPECES: "Espèces", VIREMENT: "Virement" } as const;
@@ -14,8 +13,8 @@ const cellule = (v: string | number) => {
 
 /** Export Excel (CSV, séparateur « ; », UTF-8 avec BOM) des loyers d'un mois. */
 export async function GET(req: Request) {
-  const user = await getUser();
-  if (!user) redirect("/connexion");
+  const { user, reponse } = await refuseSiModule("LOYERS");
+  if (reponse || !user) return reponse ?? new Response("Non autorisé", { status: 401 });
   const orgId = user.membres[0].organisationId;
   const now = new Date();
   const mois = depuisCle(new URL(req.url).searchParams.get("mois") ?? undefined, now);

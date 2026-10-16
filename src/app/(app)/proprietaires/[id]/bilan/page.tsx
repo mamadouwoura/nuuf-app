@@ -175,12 +175,32 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
         </section>
       )}
 
+      {b.parMandat.length > 1 && (
+        <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-sm">
+          <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Commission par portefeuille")}</h2>
+          <ul className="flex flex-col gap-2">
+            {b.parMandat.map((m) => (
+              <li key={m.id} className="flex items-center justify-between gap-3 rounded-xl bg-surface-container-low px-3 py-2">
+                <span className="min-w-0">
+                  <span className="block truncate font-body-md text-body-md text-on-surface">{m.libelle ?? m.numero}</span>
+                  <span className="block font-body-sm text-body-sm text-on-surface-variant">{t("{pct} % sur {enc} FCFA encaissés", { pct: String(m.commissionPct).replace(".", ","), enc: fcfa(m.encaisse) })}</span>
+                </span>
+                <span className="shrink-0 font-label-lg text-label-lg font-bold text-on-surface">- {fcfa(m.commission)} FCFA</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {b.commissionAgent > 0 && (
         <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-1">
           <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">{t("Part de l'agent (interne)")}</h2>
-          <p className="font-body-md text-body-md text-on-surface">
-            {t("{nom} : {pct} % soit {montant} FCFA", { nom: b.mandat?.agentNom ?? t("Agent"), pct: String(b.mandat?.commissionAgentPct ?? 0).replace(".", ","), montant: fcfa(b.commissionAgent) })}
-          </p>
+          {b.parMandat.filter((m) => m.commissionAgent > 0).map((m) => (
+            <p key={m.id} className="font-body-md text-body-md text-on-surface">
+              {t("{nom} : {pct} % soit {montant} FCFA", { nom: m.agentNom ?? t("Agent"), pct: String(m.commissionAgentPct).replace(".", ","), montant: fcfa(m.commissionAgent) })}
+              {b.parMandat.length > 1 ? ` · ${m.libelle ?? m.numero}` : ""}
+            </p>
+          ))}
           <p className="font-body-sm text-body-sm text-on-surface-variant">{t("Marge de l'agence après l'agent : {n} FCFA. Cette part n'apparaît pas sur le compte rendu du propriétaire.", { n: fcfa(b.margeAgence) })}</p>
         </section>
       )}

@@ -41,6 +41,10 @@ async function Contenu({ searchParams }: { searchParams: Promise<{ erreur?: stri
             {t("Les propriétaires dont vous gérez les biens, avec leur mandat de gestion et leur compte rendu mensuel.")}
           </p>
         </div>
+        <Link href="/import" className="inline-flex items-center gap-1.5 h-11 px-space-md rounded-xl bg-surface-container text-primary font-label-lg text-label-lg font-semibold">
+          <span className="material-symbols-outlined text-[20px]">upload_file</span>
+          {t("Importer")}
+        </Link>
         <Link href="/bilans" className="inline-flex items-center gap-1.5 h-11 px-space-md rounded-xl bg-surface-container text-primary font-label-lg text-label-lg font-semibold">
           <span className="material-symbols-outlined text-[20px]">summarize</span>
           {t("Bilans du mois")}

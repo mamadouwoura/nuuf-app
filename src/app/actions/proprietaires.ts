@@ -12,6 +12,7 @@ import { getUser } from "@/lib/session";
 import { getT } from "@/lib/i18n/server";
 import { notifierSansEchec } from "@/lib/notifications";
 import { N_ } from "@/lib/i18n/translate";
+import { peutAcceder } from "@/lib/permissions";
 
 const texte = (v: FormDataEntryValue | null, max = 200) => String(v ?? "").trim().slice(0, max);
 const entier = (v: FormDataEntryValue | null) => Number(String(v ?? "").replace(/\D/g, "")) || 0;
@@ -25,6 +26,7 @@ async function autorise(retour: string) {
   const membre = user.membres[0];
   const vers = (m: string): never => redirect(`${retour}${retour.includes("?") ? "&" : "?"}erreur=${encodeURIComponent(m)}`);
   if (!membre || membre.role === "LECTURE_SEULE") vers(t("Votre rôle ne permet pas de modifier les propriétaires."));
+  if (!peutAcceder(membre, "GERANCE")) vers(t("Votre accès ne comprend pas ce module."));
   if (!etatAcces(membre.organisation.abonnement).ecriture) {
     redirect(`/abonnement/forfait?erreur=${encodeURIComponent(t("Votre accès est en lecture seule. Activez un abonnement pour modifier vos propriétaires."))}`);
   }
@@ -96,7 +98,7 @@ export async function detacherBien(form: FormData) {
   const id = texte(form.get("id"), 40);
   const { orgId } = await autorise(`/proprietaires/${id}`);
   const p = await proprietaireDe(orgId, id);
-  await db.bien.updateMany({ where: { id: texte(form.get("bienId"), 40), organisationId: orgId, proprietaireId: p.id }, data: { proprietaireId: null } });
+  await db.bien.updateMany({ where: { id: texte(form.get("bienId"), 40), organisationId: orgId, proprietaireId: p.id }, data: { proprietaireId: null, mandatId: null } });
   redirect(`/proprietaires/${p.id}`);
 }
 
@@ -126,8 +128,12 @@ export async function enregistrerMandat(form: FormData) {
   const sigP = texte(form.get("signatureProprietaire"), 260_000);
   if ((sigA && !signatureValide(sigA)) || (sigP && !signatureValide(sigP))) vers(t("La signature n'a pas pu être enregistrée. Signez à nouveau."));
 
-  const existant = await db.mandat.findFirst({ where: { organisationId: orgId, proprietaireId: p.id, actif: true }, orderBy: { creeLe: "desc" } });
+  // Avec un mandatId on met à jour ce portefeuille ; sans, on en crée un nouveau (un propriétaire peut en avoir plusieurs).
+  const mandatId = texte(form.get("mandatId"), 40);
+  const existant = mandatId ? await db.mandat.findFirst({ where: { id: mandatId, organisationId: orgId, proprietaireId: p.id, actif: true } }) : null;
+  if (mandatId && !existant) vers(t("Mandat introuvable."));
   const donnees = {
+    libelle: texte(form.get("libelle"), 80) || null,
     commissionPct: commissionPct!,
     debutLe: debut,
     dureeMois,
@@ -224,6 +230,40 @@ export async function annulerReversement(form: FormData) {
     ]);
   }
   redirect(`/proprietaires/${id}/bilan?mois=${cle}`);
+}
+
+/** Met fin à un mandat : ses biens retombent sur le mandat principal du propriétaire. */
+export async function terminerMandat(form: FormData) {
+  const id = texte(form.get("id"), 40);
+  const { user, orgId, t } = await autorise(`/proprietaires/${id}`);
+  const p = await proprietaireDe(orgId, id);
+  const mandatId = texte(form.get("mandatId"), 40);
+  const m = await db.mandat.findFirst({ where: { id: mandatId, organisationId: orgId, proprietaireId: p.id, actif: true } });
+  if (!m) redirect(`/proprietaires/${p.id}`);
+  await db.$transaction([
+    db.bien.updateMany({ where: { mandatId: m!.id, organisationId: orgId }, data: { mandatId: null } }),
+    db.mandat.update({ where: { id: m!.id }, data: { actif: false } }),
+    db.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "mandat.termine", cible: m!.id } }),
+  ]);
+  redirect(`/proprietaires/${p.id}?ok=${encodeURIComponent(t("Mandat terminé : ses biens suivent maintenant le mandat principal."))}`);
+}
+
+/** Affecte à un portefeuille (mandat non principal) la liste des biens cochés ; les décochés retombent sur le mandat principal. */
+export async function affecterBiens(form: FormData) {
+  const id = texte(form.get("id"), 40);
+  const { user, orgId, t } = await autorise(`/proprietaires/${id}`);
+  const p = await proprietaireDe(orgId, id);
+  const mandats = await db.mandat.findMany({ where: { organisationId: orgId, proprietaireId: p.id, actif: true }, orderBy: { creeLe: "asc" }, select: { id: true } });
+  const mandatId = texte(form.get("mandatId"), 40);
+  // Le mandat principal couvre « le reste » : on n'y affecte pas de bien explicitement.
+  if (!mandats.some((m, i) => i > 0 && m.id === mandatId)) redirect(`/proprietaires/${p.id}`);
+  const coches = form.getAll("biens").map(String).slice(0, 300);
+  await db.$transaction([
+    db.bien.updateMany({ where: { organisationId: orgId, proprietaireId: p.id, mandatId, id: { notIn: coches } }, data: { mandatId: null } }),
+    db.bien.updateMany({ where: { organisationId: orgId, proprietaireId: p.id, archiveLe: null, id: { in: coches } }, data: { mandatId } }),
+    db.journalAction.create({ data: { organisationId: orgId, utilisateurId: user.id, action: "mandat.biens", cible: mandatId } }),
+  ]);
+  redirect(`/proprietaires/${p.id}?ok=${encodeURIComponent(t("Biens du portefeuille enregistrés."))}`);
 }
 
 /** Ouvre WhatsApp avec le résumé du bilan prêt à envoyer au propriétaire. */

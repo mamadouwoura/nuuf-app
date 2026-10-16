@@ -4,8 +4,8 @@ import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import BoutonEnvoi from "@/components/BoutonEnvoi";
 import ChampsProprietaire from "@/components/ChampsProprietaire";
-import SignatureTactile from "@/components/SignatureTactile";
-import { creerAvance, detacherBien, enregistrerMandat, majProprietaire, rattacherBiens, rembourserAvance, supprimerAvance } from "@/app/actions/proprietaires";
+import FormulaireMandat from "@/components/FormulaireMandat";
+import { affecterBiens, creerAvance, detacherBien, majProprietaire, rattacherBiens, rembourserAvance, supprimerAvance, terminerMandat } from "@/app/actions/proprietaires";
 import { db } from "@/lib/db";
 import { fcfa } from "@/lib/immo";
 import { formaterDate } from "@/lib/i18n/format";
@@ -47,13 +47,13 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
     where: { id, organisationId: orgId },
     include: {
       biens: { where: { archiveLe: null }, orderBy: { designation: "asc" } },
-      mandats: { where: { actif: true }, orderBy: { creeLe: "desc" }, take: 1 },
+      mandats: { where: { actif: true }, orderBy: { creeLe: "asc" } },
       avances: { include: { remboursements: true }, orderBy: { accordeLe: "desc" } },
     },
   });
   if (!p) notFound();
   const libres = await db.bien.findMany({ where: { organisationId: orgId, archiveLe: null, proprietaireId: null }, orderBy: { designation: "asc" }, select: { id: true, designation: true, quartier: true } });
-  const mandat = p.mandats[0];
+  const mandats = p.mandats;
   const aujourdhui = new Date().toISOString().slice(0, 10);
   const moisCourant = cleMois(debutMois(new Date()));
 
@@ -131,79 +131,78 @@ async function Contenu({ params, searchParams }: { params: Promise<{ id: string 
         {libres.length === 0 && p.biens.length === 0 && <p className="font-body-sm text-body-sm text-on-surface-variant">{t("Ajoutez d'abord des biens dans « Biens ».")}</p>}
       </Bloc>
 
-      <Bloc titre={t("Mandat de gestion")} icone="contract">
-        <div className="flex flex-wrap items-center gap-2">
-          {mandat ? (
-            <>
-              <span className="px-2.5 py-1 rounded-full bg-success-container text-on-success-container font-label-md text-label-md font-bold">
-                {mandat.numero} · {String(mandat.commissionPct).replace(".", ",")} %
-              </span>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">
-                {mandat.signatureAgence && mandat.signatureProprietaire ? t("Signé par les deux parties") : t("Signature incomplète")}
-              </span>
-              <a href={`/proprietaires/${p.id}/mandat`} target="_blank" className="ml-auto inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-surface-container text-primary font-label-md text-label-md font-semibold">
-                <span className="material-symbols-outlined text-[18px]">description</span>
-                {t("Mandat PDF")}
-              </a>
-            </>
-          ) : (
-            <span className="px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-md text-label-md font-bold">{t("Mandat à établir")}</span>
-          )}
-        </div>
-        <p className="font-body-sm text-body-sm text-on-surface-variant">{tn(p.biens.length, "Le mandat couvre {n} bien.", "Le mandat couvre {n} biens.")}</p>
+      <Bloc titre={t("Mandats de gestion")} icone="contract">
+        <p className="font-body-sm text-body-sm text-on-surface-variant">
+          {t("Un mandat par portefeuille, chacun avec son taux de commission. Les biens sans portefeuille précis suivent le premier mandat.")}
+        </p>
+        {mandats.length === 0 && (
+          <span className="self-start px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-md text-label-md font-bold">{t("Mandat à établir")}</span>
+        )}
+        {mandats.map((m, i) => {
+          const principal = i === 0;
+          const siens = p.biens.filter((x) => x.mandatId === m.id || (principal && !x.mandatId));
+          return (
+            <div key={m.id} className="rounded-xl bg-surface-container-low p-space-md flex flex-col gap-space-sm">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2.5 py-1 rounded-full bg-success-container text-on-success-container font-label-md text-label-md font-bold">
+                  {m.numero} · {String(m.commissionPct).replace(".", ",")} %
+                </span>
+                {m.libelle && <span className="font-label-lg text-label-lg text-on-surface font-semibold">{m.libelle}</span>}
+                {principal && mandats.length > 1 && <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md">{t("Principal")}</span>}
+                <a href={`/proprietaires/${p.id}/mandat?m=${m.id}`} target="_blank" className="ml-auto inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-surface-container text-primary font-label-md text-label-md font-semibold">
+                  <span className="material-symbols-outlined text-[18px]">description</span>
+                  {t("Mandat PDF")}
+                </a>
+              </div>
+              <p className="font-body-sm text-body-sm text-on-surface-variant">
+                {m.signatureAgence && m.signatureProprietaire ? t("Signé par les deux parties") : t("Signature incomplète")} ·{" "}
+                {tn(siens.length, "Couvre {n} bien.", "Couvre {n} biens.")}
+                {principal && mandats.length > 1 ? ` ${t("(biens non affectés à un autre portefeuille)")}` : ""}
+              </p>
+              {peutEcrire && !principal && p.biens.length > 0 && (
+                <details>
+                  <summary className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md font-semibold cursor-pointer select-none">
+                    <span className="material-symbols-outlined text-[18px]">apartment</span>
+                    {t("Biens de ce portefeuille…")}
+                  </summary>
+                  <form action={affecterBiens} className="mt-space-sm flex flex-col gap-2">
+                    <input type="hidden" name="id" value={p.id} />
+                    <input type="hidden" name="mandatId" value={m.id} />
+                    {p.biens.map((x) => (
+                      <label key={x.id} className="flex items-center gap-3 rounded-xl bg-surface-container-lowest px-3 py-2 cursor-pointer">
+                        <input type="checkbox" name="biens" value={x.id} defaultChecked={x.mandatId === m.id} className="w-5 h-5 accent-primary" />
+                        <span className="font-body-md text-body-md text-on-surface">{x.designation} <span className="text-on-surface-variant">· {x.quartier}</span></span>
+                      </label>
+                    ))}
+                    <BoutonEnvoi enCours={t("Enregistrement…")} className="self-start h-10 px-4 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold">{t("Enregistrer les biens")}</BoutonEnvoi>
+                  </form>
+                </details>
+              )}
+              {peutEcrire && (
+                <details>
+                  <summary className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md font-semibold cursor-pointer select-none">
+                    <span className="material-symbols-outlined text-[18px]">edit</span>
+                    {t("Modifier le mandat…")}
+                  </summary>
+                  <FormulaireMandat proprietaireId={p.id} mandat={m} aujourdhui={aujourdhui} />
+                  <form action={terminerMandat} className="mt-space-sm">
+                    <input type="hidden" name="id" value={p.id} />
+                    <input type="hidden" name="mandatId" value={m.id} />
+                    <button className="h-10 px-4 rounded-xl text-error font-label-md text-label-md font-semibold hover:bg-error-container/40">{t("Mettre fin à ce mandat")}</button>
+                  </form>
+                </details>
+              )}
+            </div>
+          );
+        })}
         {peutEcrire && (
-          <form action={enregistrerMandat} className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
-            <input type="hidden" name="id" value={p.id} />
-            <div>
-              <label htmlFor="commissionPct" className={LABEL}>{t("Commission (% des loyers encaissés)")}</label>
-              <input id="commissionPct" name="commissionPct" inputMode="decimal" required defaultValue={mandat ? String(mandat.commissionPct).replace(".", ",") : "10"} className={CHAMP} />
-            </div>
-            <div>
-              <label htmlFor="debutLe" className={LABEL}>{t("Début du mandat")}</label>
-              <input id="debutLe" name="debutLe" type="date" required defaultValue={mandat ? mandat.debutLe.toISOString().slice(0, 10) : aujourdhui} className={CHAMP} />
-            </div>
-            <div>
-              <label htmlFor="dureeMois" className={LABEL}>{t("Durée (mois)")}</label>
-              <input id="dureeMois" name="dureeMois" inputMode="numeric" defaultValue={mandat?.dureeMois ?? 12} className={CHAMP} />
-            </div>
-            <div>
-              <label htmlFor="jourReversement" className={LABEL}>{t("Reversement avant le (jour du mois)")}</label>
-              <input id="jourReversement" name="jourReversement" inputMode="numeric" defaultValue={mandat?.jourReversement ?? 10} className={CHAMP} />
-            </div>
-            <div>
-              <label htmlFor="plafondTravaux" className={LABEL}>{t("Travaux sans accord préalable (FCFA)")}</label>
-              <input id="plafondTravaux" name="plafondTravaux" inputMode="numeric" defaultValue={mandat?.plafondTravaux ?? ""} placeholder="50 000" className={CHAMP} />
-            </div>
-            <div>
-              <label htmlFor="preavisMois" className={LABEL}>{t("Préavis de résiliation (mois)")}</label>
-              <input id="preavisMois" name="preavisMois" inputMode="numeric" defaultValue={mandat?.preavisMois ?? 1} className={CHAMP} />
-            </div>
-            <div>
-              <label htmlFor="agentNom" className={LABEL}>{t("Agent apporteur (facultatif)")}</label>
-              <input id="agentNom" name="agentNom" defaultValue={mandat?.agentNom ?? ""} maxLength={80} placeholder={t("Nom de l'agent")} className={CHAMP} />
-            </div>
-            <div>
-              <label htmlFor="commissionAgentPct" className={LABEL}>{t("Part de l'agent (% des loyers, prélevée sur la commission)")}</label>
-              <input id="commissionAgentPct" name="commissionAgentPct" inputMode="decimal" defaultValue={mandat && mandat.commissionAgentPct > 0 ? String(mandat.commissionAgentPct).replace(".", ",") : ""} placeholder="2" className={CHAMP} />
-            </div>
-            <label className="sm:col-span-2 flex items-center gap-3 rounded-xl bg-surface-container-low px-3 py-3 cursor-pointer">
-              <input type="checkbox" name="reconduction" defaultChecked={mandat?.reconduction ?? true} className="w-5 h-5 accent-primary" />
-              <span className="font-body-md text-body-md text-on-surface">{t("Renouvellement par tacite reconduction")}</span>
-            </label>
-            <div>
-              <p className={LABEL}>{t("Signature de l'agence")}</p>
-              <SignatureTactile nom="signatureAgence" existante={mandat?.signatureAgence ?? null} />
-            </div>
-            <div>
-              <p className={LABEL}>{t("Signature du propriétaire")}</p>
-              <SignatureTactile nom="signatureProprietaire" existante={mandat?.signatureProprietaire ?? null} />
-            </div>
-            <div className="sm:col-span-2">
-              <BoutonEnvoi enCours={t("Enregistrement…")} className="h-11 px-space-lg rounded-xl bg-primary text-on-primary font-label-lg text-label-lg font-bold">
-                {mandat ? t("Mettre à jour le mandat") : t("Établir le mandat")}
-              </BoutonEnvoi>
-            </div>
-          </form>
+          <details open={mandats.length === 0}>
+            <summary className="inline-flex items-center gap-2 h-11 px-space-md rounded-xl bg-primary text-on-primary font-label-lg text-label-lg font-bold cursor-pointer select-none">
+              <span className="material-symbols-outlined text-[20px]">add</span>
+              {mandats.length === 0 ? t("Établir le mandat") : t("Ajouter un portefeuille")}
+            </summary>
+            <FormulaireMandat proprietaireId={p.id} mandat={null} aujourdhui={aujourdhui} />
+          </details>
         )}
       </Bloc>
 

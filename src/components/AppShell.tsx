@@ -9,6 +9,7 @@ import { N_ } from "@/lib/i18n/translate";
 import LangueSwitch from "@/components/LangueSwitch";
 import ThemeToggle from "@/components/ThemeToggle";
 import Tutoriel from "@/components/Tutoriel";
+import { moduleDeChemin } from "@/lib/modules";
 
 const NAV = [
   { href: "/tableau-de-bord", icon: "grid_view", label: N_("Tableau de bord") },
@@ -56,6 +57,7 @@ export default function AppShell({
   nbBiens,
   nbRetards,
   nbNotifs,
+  modulesRefuses,
   bandeau,
   moisLabel,
   simulation,
@@ -67,6 +69,8 @@ export default function AppShell({
   nbBiens: number;
   nbRetards: number;
   nbNotifs: number;
+  /** Modules retirés à ce collaborateur : leurs entrées disparaissent du menu. */
+  modulesRefuses: string[];
   bandeau: { ton: "info" | "alerte"; texte: string } | null;
   moisLabel: string;
   simulation: boolean;
@@ -76,8 +80,13 @@ export default function AppShell({
   const { t, tn } = useT();
   const pathname = usePathname();
   const EXCLUS_BAILLEUR = ["/proprietaires", "/bilans", "/tresorerie"];
-  const navigation = agence ? NAV : NAV.filter((l) => !EXCLUS_BAILLEUR.includes(l.href));
-  const plusLiens = agence ? PLUS : PLUS.filter((l) => !EXCLUS_BAILLEUR.includes(l.href));
+  const permis = (l: { href: string }) => {
+    const m = moduleDeChemin(l.href);
+    return !m || !modulesRefuses.includes(m);
+  };
+  const navigation = (agence ? NAV : NAV.filter((l) => !EXCLUS_BAILLEUR.includes(l.href))).filter(permis);
+  const plusLiens = (agence ? PLUS : PLUS.filter((l) => !EXCLUS_BAILLEUR.includes(l.href))).filter(permis);
+  const barre = BARRE.filter(permis);
   const [plus, setPlus] = useState(false);
   const [confirmer, setConfirmer] = useState(false);
   return (
@@ -204,7 +213,7 @@ export default function AppShell({
       </div>
       <nav aria-label={t("Navigation principale")} className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-surface-container-low border-t border-outline-variant/40 pb-safe">
         <ul className="flex items-stretch justify-around">
-          {BARRE.map((n) => {
+          {barre.map((n) => {
             const actif = pathname === n.href || pathname.startsWith(n.href + "/");
             return (
               <li key={n.href} className="flex-1">

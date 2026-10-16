@@ -96,6 +96,8 @@ model Organisation {
   proprietaires       Proprietaire[]
   transactions        Transaction[]
   notifications       Notification[]
+  invitations         Invitation[]
+  importsApercu       ImportApercu[]
   logo                LogoOrganisation?
 }
 
@@ -116,6 +118,8 @@ model Utilisateur {
   motDePasse   String // hash
   telVerifieLe DateTime?
   creeLe       DateTime  @default(now())
+  email        String? // facultatif : reçoit les notifications par e-mail
+  emailNotifs  Boolean   @default(true)
   // Incrémenté à chaque changement de mot de passe : coupe toutes les sessions ouvertes.
   sessionVersion Int      @default(0)
 
@@ -164,6 +168,8 @@ model Membre {
   organisationId String
   utilisateurId  String
   role           Role
+  // Modules interdits à ce membre (PATRIMOINE, LOYERS, GERANCE, TRESORERIE, STATISTIQUES). Vide = tout est permis. Sans effet pour le propriétaire du compte.
+  modulesRefuses String[]  @default([])
   creeLe         DateTime @default(now())
 
   organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
@@ -248,6 +254,7 @@ model Bien {
   creeLe         DateTime  @default(now())
   archiveLe      DateTime?
   proprietaireId String? // propriétaire pour le compte duquel une agence gère ce bien
+  mandatId       String? // portefeuille précis ; vide = mandat principal du propriétaire
 
   organisation Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   proprietaire Proprietaire? @relation(fields: [proprietaireId], references: [id], onDelete: SetNull)
@@ -256,6 +263,7 @@ model Bien {
 
   @@index([organisationId])
   @@index([proprietaireId])
+  mandat Mandat? @relation(fields: [mandatId], references: [id], onDelete: SetNull)
 }
 
 // Un propriétaire dont l'agence gère les biens (mandat de gestion).
@@ -292,6 +300,7 @@ model Mandat {
   organisationId        String
   proprietaireId        String
   numero                String // MG-2026-001, séquentiel par organisation
+  libelle               String? // nom du portefeuille (ex. « Résidence Almadies »)
   commissionPct         Float // pourcentage des loyers encaissés
   debutLe               DateTime
   dureeMois             Int       @default(12)
@@ -309,6 +318,7 @@ model Mandat {
   creeLe                DateTime  @default(now())
 
   proprietaire Proprietaire @relation(fields: [proprietaireId], references: [id], onDelete: Cascade)
+  biens        Bien[]
 
   @@unique([organisationId, numero])
   @@index([proprietaireId])
@@ -629,6 +639,7 @@ model Notification {
   texte          String?
   lien           String? // chemin interne vers l'écran concerné
   donnees        Json? // variables du modèle de texte, traduit à l'affichage
+  emailEnvoyeLe  DateTime? // envoi par e-mail déjà fait (jamais deux fois)
   luLe           DateTime?
   creeLe         DateTime  @default(now())
 
@@ -647,4 +658,36 @@ model PreferenceNotification {
   utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
 
   @@id([utilisateurId, categorie])
+}
+
+// Invitation d'un collaborateur : lien à usage unique (le jeton n'est stocké que haché), valable 7 jours.
+model Invitation {
+  id             String    @id @default(cuid())
+  organisationId String
+  jetonHash      String    @unique
+  nomComplet     String
+  telephone      String
+  role           Role
+  modulesRefuses String[]  @default([])
+  expireLe       DateTime
+  accepteeLe     DateTime?
+  creeLe         DateTime  @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@index([organisationId, accepteeLe])
+}
+
+// Fichier d'import en attente de confirmation : l'aperçu est recalculé depuis ce texte, jamais depuis le navigateur.
+model ImportApercu {
+  id             String   @id @default(cuid())
+  organisationId String
+  utilisateurId  String
+  type           String // proprietaires | biens
+  csv            String
+  creeLe         DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@index([utilisateurId, creeLe])
 }
