@@ -6,6 +6,7 @@ import { MOIS_D_AVANCE } from "@/lib/loyers";
 import { MOTIFS_FIN } from "@/lib/motifs";
 import { ficheComplete } from "@/lib/fiche";
 import Chargement from "@/components/Chargement";
+import SectionAvenants from "@/components/SectionAvenants";
 import Link from "next/link";
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
@@ -109,7 +110,7 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
       )}
 
       {erreur && <p role="alert" className="rounded-xl bg-error-container text-on-error-container px-space-md py-2 font-body-md text-body-md">{erreur}</p>}
-      {ok && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">{ok === "avance" ? t("Loyer encaissé d'avance : la quittance est disponible dans Quittances.") : t("Modifications enregistrées.")}</p>}
+      {ok && <p className="rounded-xl bg-success-container text-on-success-container px-space-md py-2 font-body-md text-body-md">{ok === "avance" ? t("Loyer encaissé d'avance : la quittance est disponible dans Quittances.") : ok === "avenant" ? t("Avenant enregistré : le PDF est disponible dans « Contrat et avenants ».") : t("Modifications enregistrées.")}</p>}
 
       {bien.photos.length > 0 && (
         <section className="grid grid-cols-2 md:grid-cols-4 gap-space-sm">
@@ -169,6 +170,8 @@ async function Fiche({ params, searchParams }: { params: Promise<{ id: string }>
               <span className="font-body-sm text-body-sm text-on-surface-variant">{t("Bail actif")}</span>
             </div>
           </section>
+
+          <SectionAvenants bienId={id} bailId={bail.id} debutLe={bail.debutLe} peutEcrire={peutEcrire} />
 
           <section className="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md">
             <div className="flex items-center justify-between">

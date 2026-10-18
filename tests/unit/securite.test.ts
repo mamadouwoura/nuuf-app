@@ -49,7 +49,7 @@ describe("jetons signés", () => {
     const [corps, sig] = t.split(".");
     const faux = Buffer.from(JSON.stringify({ uid: "admin", exp: Date.now() + 60_000 })).toString("base64url");
     expect(verify(`${faux}.${sig}`)).toBeNull();
-    expect(verify(`${corps}.x${sig.slice(1)}`)).toBeNull();
+    expect(verify(`${corps}.${sig[0] === "x" ? "y" : "x"}${sig.slice(1)}`)).toBeNull(); // premier caractère toujours différent de l'original
     expect(verify("nimporte quoi")).toBeNull();
     expect(verify(undefined)).toBeNull();
   });

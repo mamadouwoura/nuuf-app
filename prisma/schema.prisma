@@ -463,9 +463,29 @@ model Bail {
   bien      Bien       @relation(fields: [bienId], references: [id], onDelete: Cascade)
   locataire Locataire  @relation(fields: [locataireId], references: [id], onDelete: Restrict)
   echeances Echeance[]
+  avenants  Avenant[]
 
   @@index([bienId])
   @@index([locataireId])
+}
+
+// Avenant à un bail : modification écrite du contrat (loyer, durée ou clause), numérotée par bail.
+model Avenant {
+  id            String    @id @default(cuid())
+  bailId        String
+  numero        Int
+  type          String // LOYER | DUREE | CLAUSE
+  effetLe       DateTime // 1er jour du mois de prise d'effet
+  ancienLoyer   Int?
+  nouveauLoyer  Int?
+  ancienneFinLe DateTime?
+  nouvelleFinLe DateTime?
+  clause        String?
+  creeLe        DateTime  @default(now())
+
+  bail Bail @relation(fields: [bailId], references: [id], onDelete: Cascade)
+
+  @@unique([bailId, numero])
 }
 
 // Un loyer attendu pour un mois donné.
