@@ -51,12 +51,12 @@ describe("prolongation et prorata", () => {
     expect(r.getTime()).toBe(prolonger(a, false, now).getTime());
   });
   it("passage en forfait plus cher : le temps déjà payé est converti au prorata", () => {
-    // 30 jours restants à 10 000/mois valent 30 * 10/25 = 12 jours de forfait Pro à 25 000/mois.
+    // 30 jours restants à 9 900/mois valent 30 * 9 900/24 900 jours de forfait Pro à 24 900/mois.
     const a = abo({ forfait: "BAILLEUR", annuel: false, statut: "ACTIF", periodeFinLe: dans(30) });
     const r = finApresPaiement(a, { forfait: "PRO", annuel: false, nbLogements: 20 }, now);
     const finMois = new Date(now);
     finMois.setUTCMonth(finMois.getUTCMonth() + 1);
-    expect((r.getTime() - finMois.getTime()) / JOUR).toBeCloseTo(12, 5);
+    expect((r.getTime() - finMois.getTime()) / JOUR).toBeCloseTo((30 * 9_900) / 24_900, 5);
   });
   it("sortie d'essai : la nouvelle période démarre aujourd'hui", () => {
     const a = abo({ forfait: "DECOUVERTE", annuel: false, statut: "ESSAI", periodeFinLe: null });

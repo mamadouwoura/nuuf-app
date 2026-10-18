@@ -35,7 +35,7 @@ const CARTES = [
     code: "AGENCE" as const,
     titre: N_("Agence"),
     pour: N_("Agences et cabinets de gestion"),
-    points: [N_("15 000 FCFA jusqu'à 20 logements"), N_("25 000 FCFA de 21 à 50 logements"), N_("puis 300 FCFA par logement supplémentaire"), N_("15 accès avec rôles"), N_("Logements illimités")],
+    points: [N_("14 900 FCFA jusqu'à 20 logements"), N_("24 900 FCFA de 21 à 50 logements"), N_("puis 300 FCFA par logement supplémentaire"), N_("15 accès avec rôles"), N_("Logements illimités")],
   },
 ];
 

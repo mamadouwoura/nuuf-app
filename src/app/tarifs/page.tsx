@@ -34,7 +34,7 @@ const PLANS = [
     nom: N_("Agence"),
     pour: N_("Agences et cabinets de gestion"),
     logements: N_("Logements illimités"),
-    points: [N_("Tout le forfait Pro"), N_("15 accès avec rôles"), N_("15 000 FCFA jusqu'à 20 logements"), N_("25 000 FCFA de 21 à 50 logements"), N_("puis 300 FCFA par logement supplémentaire")],
+    points: [N_("Tout le forfait Pro"), N_("15 accès avec rôles"), N_("14 900 FCFA jusqu'à 20 logements"), N_("24 900 FCFA de 21 à 50 logements"), N_("puis 300 FCFA par logement supplémentaire")],
   },
 ];
 
@@ -84,7 +84,7 @@ async function Contenu({ searchParams }: { searchParams: Promise<Params> }) {
                   <span className="font-display-currency text-display-currency text-primary">{fcfa(prix)}</span>
                   <span className="font-label-currency-unit text-label-currency-unit text-on-surface-variant">FCFA / {annuel ? t("an") : t("mois")}</span>
                 </div>
-                {p.code === "AGENCE" && <p className="font-body-sm text-body-sm text-on-surface-variant -mt-2">{t("jusqu'à 20 logements, puis 25 000 FCFA jusqu'à 50")}</p>}
+                {p.code === "AGENCE" && <p className="font-body-sm text-body-sm text-on-surface-variant -mt-2">{t("jusqu'à 20 logements, puis 24 900 FCFA jusqu'à 50")}</p>}
                 <ul className="flex flex-col gap-2 flex-1">
                   {p.points.map((x) => (
                     <li key={x} className="flex items-start gap-2 font-body-md text-body-md text-on-surface">
