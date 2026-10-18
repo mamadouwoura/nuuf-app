@@ -1,4 +1,6 @@
 import DemoMobile from "@/components/DemoMobile";
+import RangeeDefilante from "@/components/RangeeDefilante";
+import { IllustrationBien, IllustrationPaiement, IllustrationQuittance, IllustrationProtection } from "@/components/Illustrations";
 import { lienContact } from "@/components/PublicLayout";
 import { getT } from "@/lib/i18n/server";
 
@@ -189,6 +191,7 @@ export default async function Accueil() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
       
       <div className="relative bg-surface-container-lowest p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+      <IllustrationBien className="mb-6" />
       <div className="space-y-4">
       <div className="w-14 h-14 rounded-2xl bg-surface-container text-primary flex items-center justify-center font-headline-md text-headline-md font-bold">
                     1
@@ -205,6 +208,7 @@ export default async function Accueil() {
       </div>
       
       <div className="relative bg-surface-container-lowest p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+      <IllustrationPaiement className="mb-6" />
       <div className="space-y-4">
       <div className="w-14 h-14 rounded-2xl bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center font-headline-md text-headline-md font-bold">
                     2
@@ -221,6 +225,7 @@ export default async function Accueil() {
       </div>
       
       <div className="relative bg-surface-container-lowest p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+      <IllustrationQuittance className="mb-6" />
       <div className="space-y-4">
       <div className="w-14 h-14 rounded-2xl bg-primary-container text-on-primary flex items-center justify-center font-headline-md text-headline-md font-bold">
                     3
@@ -248,7 +253,7 @@ export default async function Accueil() {
       <h2 className="font-headline-lg text-headline-lg text-on-surface font-extrabold tracking-tight">{t("Une suite complète pensée pour les bailleurs")}</h2>
       <p className="font-body-lg text-body-lg text-on-surface-variant">{t("Plus qu'un fichier Excel : un copilote financier automatisé qui protège vos revenus locatifs.")}</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <RangeeDefilante>
       
       <div className="p-8 rounded-2xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all group">
       <div className="w-12 h-12 rounded-xl bg-surface-container text-primary flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-on-primary transition-colors">
@@ -309,7 +314,7 @@ export default async function Accueil() {
                   {t("Gérez aussi facilement un studio unique qu'un parc de dizaines de logements répartis entre plusieurs quartiers et villes.")}
                 </p>
       </div>
-      </div>
+      </RangeeDefilante>
       </div>
       </section>
       
@@ -340,6 +345,7 @@ export default async function Accueil() {
       </div>
       <div className="lg:col-span-6 relative">
       <div className="w-full h-full min-h-64 bg-gradient-to-br from-primary-container to-primary rounded-2xl" />
+      <IllustrationProtection className="absolute inset-0 !h-full" />
       <div className="absolute -bottom-4 -right-4 bg-surface-container-lowest p-4 rounded-xl shadow-lg border-none flex items-center gap-3">
       <span className="material-symbols-outlined text-primary text-[28px]">shield</span>
       <div>

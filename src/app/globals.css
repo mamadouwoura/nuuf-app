@@ -194,6 +194,131 @@ textarea {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+/* ---- Style « Papier » (style par défaut ; « classique » reste disponible depuis l'icône palette ou ?style=classique) ----
+   Inspiré d'un dossier imprimé : fond crème, cartes blanches, formes très arrondies, aucune ombre,
+   une seule famille de police. La couleur de marque reste le vert Nuuf.
+   Placé AVANT le mode sombre : le mode sombre l'emporte quand il est actif.
+   Performance : seules les propriétés transform et opacity sont animées. */
+:root[data-style="papier"] {
+  --color-surface: #f2f1ea;
+  --color-background: #f2f1ea;
+  --color-surface-bright: #f2f1ea;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f8f7f2;
+  --color-surface-container: #ecebe3;
+  --color-surface-container-high: #e6e5dc;
+  --color-surface-container-highest: #dfded4;
+  --color-surface-variant: #dfded4;
+  --color-surface-dim: #d8d7cd;
+  --color-outline-variant: #d6d5ca;
+  --color-outline: #6a6d63;
+  --color-on-surface: #1a1f1c;
+  --color-on-background: #1a1f1c;
+  --color-on-surface-variant: #505449;
+  --color-action-soft: #e3efe4;
+  --color-action-soft-hover: #d4e6d6;
+  --color-secondary-container: #ffba09;
+  --color-on-secondary-container: #3d2a00;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2.5rem;
+  --font-display-currency-mobile: var(--font-inter), Inter;
+  --font-headline-sm: var(--font-inter), Inter;
+  --font-display-currency: var(--font-inter), Inter;
+  --font-headline-lg-mobile: var(--font-inter), Inter;
+  --font-headline-md: var(--font-inter), Inter;
+  --font-headline-lg: var(--font-inter), Inter;
+  --font-label-currency-unit: var(--font-inter), Inter;
+}
+/* Sans ombres : on sépare par la couleur et par un filet fin (le focus clavier reste visible). */
+:root[data-style="papier"] [class*="shadow-"]:not(:focus-visible) { box-shadow: none !important; }
+:root[data-style="papier"] aside,
+:root[data-style="papier"] header { border-color: var(--color-outline-variant); }
+:root[data-style="papier"] .bg-surface-container-lowest[class*="rounded"] { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-outline-variant) 55%, transparent); }
+/* Une seule famille de police : la touche serif/italique de l'accueil passe en sans-serif. */
+:root[data-style="papier"] .font-serif { font-family: var(--font-inter), Inter; font-style: normal; }
+:root[data-style="papier"] .italic { font-style: normal; }
+/* Accueil : sections en grands blocs arrondis, centrés, séparés par de l'air (plus compact sur mobile). */
+:root[data-style="papier"] section.w-full[class*="py-"],
+:root[data-style="papier"] section.relative.w-full {
+  width: auto;
+  margin: 0.75rem 0.75rem 0;
+  border-radius: 2.5rem;
+  overflow: hidden;
+}
+@media (min-width: 1024px) {
+  :root[data-style="papier"] section.w-full[class*="py-"],
+  :root[data-style="papier"] section.relative.w-full { margin: 1.25rem 1.25rem 0; }
+}
+:root[data-style="papier"] #fonctionnalites { background: var(--color-surface-container-low); }
+.illu-papier { display: none; }
+:root[data-style="papier"] .illu-papier { display: block; }
+/* Haut de page de l'accueil et teintes pastel des blocs. */
+:root[data-style="papier"] section.relative.w-full.bg-background { background: color-mix(in srgb, var(--color-primary-container) 16%, var(--color-surface)); }
+:root[data-style="papier"] #comment-ca-marche { background: color-mix(in srgb, var(--color-info-text) 12%, var(--color-surface)); }
+:root[data-style="papier"] #faq { background: color-mix(in srgb, var(--color-secondary-container) 14%, var(--color-surface)); }
+/* Application : contenu centré sur 1200 px, menu en panneau arrondi, plus d'air entre les blocs (bureau). */
+@media (min-width: 1024px) {
+  :root[data-style="papier"] {
+    --spacing-space-lg: 1.75rem;
+    --spacing-gutter-desktop: 2rem;
+  }
+  :root[data-style="papier"] aside { left: 0.75rem; top: 0.75rem; bottom: 0.75rem; height: auto; width: 17rem; border-radius: 2rem; border: 1px solid var(--color-outline-variant); }
+  :root[data-style="papier"] main > div.flex.flex-col.w-full { max-width: 1200px; margin-inline: auto; }
+}
+/* Barres du haut : pilules flottantes, centrées, détachées du bord. */
+:root[data-style="papier"] .entete-public { background: transparent; backdrop-filter: none; padding: 0.75rem 0.75rem 0; box-shadow: none; }
+:root[data-style="papier"] .entete-public > div {
+  max-width: 68rem;
+  height: 3.5rem;
+  padding-inline: 0.5rem 0.5rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-surface-container-lowest) 92%, transparent);
+}
+:root[data-style="papier"] .entete-public nav a { border-radius: 9999px; }
+:root[data-style="papier"] .entete-public a { white-space: nowrap; }
+:root[data-style="papier"] .entete-public nav { gap: 0.25rem; }
+:root[data-style="papier"] .entete-app {
+  top: 0.75rem; left: 0.75rem; right: 0.75rem; height: 3.5rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-surface-container-lowest) 92%, transparent);
+  box-shadow: none;
+}
+@media (min-width: 1024px) {
+  :root[data-style="papier"] .entete-app { left: 18.25rem; }
+}
+:root[data-style="papier"] .entete-app input,
+:root[data-style="papier"] .entete-app a[href="/paiements"] { border-radius: 9999px; }
+:root[data-style="papier"] main { scroll-padding-top: 5rem; }
+:root[data-style="papier"] main.pt-16 { padding-top: 5.25rem; }
+/* Boutons d'action principaux en pilule. */
+:root[data-style="papier"] button[class*="bg-primary"],
+:root[data-style="papier"] a[class*="bg-primary"] { border-radius: 9999px; }
+/* Retour au toucher : léger enfoncement. */
+:root[data-style="papier"] :is(button, a[href], summary, [role="button"]) { transition: transform 0.14s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s, color 0.2s; }
+:root[data-style="papier"] :is(button, a[class*="bg-"], [role="button"]):active:not(:disabled) { transform: scale(0.96); }
+/* Les écrans entrent en douceur. */
+@keyframes papier-entre { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+:root[data-style="papier"] main { animation: papier-entre 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+/* Navigation du bas : pilule flottante, à portée du pouce. */
+:root[data-style="papier"] .nav-bas {
+  inset-inline: 0.75rem;
+  bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: 0;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-surface-container-lowest) 92%, transparent);
+  box-shadow: none;
+}
+:root[data-style="papier"] .nav-bas > ul { padding-inline: 0.25rem; }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style="papier"] main { animation: none; }
+  :root[data-style="papier"] :is(button, a[class*="bg-"], [role="button"]):active:not(:disabled) { transform: none; }
+}
+
 /* ---- Mode sombre ----
    Choix de l'utilisateur (data-theme="dark" | "light", posé par le script du <head>) ; à défaut, réglage du système. */
 :root { color-scheme: light; }

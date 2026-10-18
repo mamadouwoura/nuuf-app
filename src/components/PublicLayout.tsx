@@ -21,7 +21,7 @@ const NAV = [
 export async function PublicHeader({ actif }: { actif: "accueil" | "tarifs" }) {
   const { t } = await getT();
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+    <header className="entete-public fixed top-0 left-0 right-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
       <div className="relative h-16 md:h-20 w-full max-w-7xl mx-auto px-4 md:px-margin-tablet lg:px-margin-desktop flex items-center justify-between gap-2">
         <Link href="/" className="flex items-center gap-space-sm group shrink-0">
           <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary-container text-on-primary-container">

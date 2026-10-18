@@ -167,14 +167,12 @@ async function Liste({ searchParams }: { searchParams: Promise<Params> }) {
                   <span className="material-symbols-outlined text-[56px] text-on-primary-container opacity-70">
                     {b.type === "VILLA" ? "villa" : b.type === "COMMERCIAL" ? "storefront" : b.type === "STUDIO" ? "single_bed" : "apartment"}
                   </span>
-                  <div className="absolute top-3 left-3">
-                    <span className="px-2.5 py-1 rounded-lg bg-surface/95 backdrop-blur-md text-primary font-label-md text-label-md font-semibold shadow-sm">
+                  <div className="absolute top-3 inset-x-3 flex items-start justify-between gap-2">
+                    <span className="min-w-0 truncate px-2.5 py-1 rounded-lg bg-surface/95 backdrop-blur-md text-primary font-label-md text-label-md font-semibold shadow-sm">
                       {TYPE_LIBELLE[b.type]}
                       {b.surfaceM2 ? ` • ${b.surfaceM2} m²` : ""}
                     </span>
-                  </div>
-                  <div className="absolute top-3 right-3">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-label-md text-label-md font-bold shadow-sm ${BADGE[st.code]}`}>
+                    <span className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-label-md text-label-md font-bold shadow-sm ${BADGE[st.code]}`}>
                       <span className="material-symbols-outlined text-[15px]">{ICONE[st.code]}</span>
                       {libelleStatut(st, t)}
                     </span>

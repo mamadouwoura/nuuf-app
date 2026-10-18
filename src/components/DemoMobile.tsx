@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
+import { Decor, Pastilles, PLATEAU, FOND_ECRAN, PASTILLE_ON, PASTILLE_OFF } from "@/components/DemoDecor";
 
 const DUREE = 7000; // ms par écran
 const NB = 4;
@@ -83,7 +84,7 @@ export default function DemoMobile() {
                     aria-current={on ? "step" : undefined}
                     className={`group w-full text-left flex gap-4 rounded-2xl p-4 sm:p-5 transition-colors ${on ? "bg-surface-container-lowest shadow-md" : "hover:bg-surface-container-lowest/60"}`}
                   >
-                    <span className={`shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${on ? "bg-primary text-on-primary" : "bg-surface-container text-primary"}`}>
+                    <span className={`shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${on ? `${PASTILLE_ON[i]} text-white` : PASTILLE_OFF[i]}`}>
                       <span className="material-symbols-outlined text-[22px]">{e.icone}</span>
                     </span>
                     <span className="min-w-0 flex-1">
@@ -107,7 +108,11 @@ export default function DemoMobile() {
           </ol>
 
           <div className="lg:col-span-6 order-1 lg:order-2 flex flex-col items-center gap-4 lg:sticky lg:top-24" onMouseEnter={() => setSurvol(true)} onMouseLeave={() => setSurvol(false)}>
-            <Telephone actif={actif} t={t} />
+            <div className="relative w-full max-w-[540px] rounded-[2.5rem] px-6 pt-10 pb-12 overflow-hidden transition-colors duration-700" style={{ background: PLATEAU[actif] }}>
+              <Decor actif={actif} />
+              <div className="relative z-10 flex justify-center"><Telephone actif={actif} t={t} /></div>
+              <Pastilles actif={actif} />
+            </div>
             <button type="button" onClick={() => setArret((a) => !a)} className="inline-flex items-center gap-1.5 rounded-full bg-surface-container px-3.5 py-1.5 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">
               <span className="material-symbols-outlined text-[18px]">{arret ? "play_arrow" : "pause"}</span>
               {arret ? t("Relancer l'animation") : t("Mettre en pause")}
@@ -143,7 +148,7 @@ function Telephone({ actif, t }: { actif: number; t: T }) {
       <div className="absolute inset-x-6 -bottom-4 h-8 rounded-[50%] bg-primary/20 blur-2xl" />
       <div className="absolute left-0 top-0" style={{ width: LARG, height: HAUT, transform: `scale(${e})`, transformOrigin: "top left" }}>
       <div className="palette-claire relative w-full h-full rounded-[46px] bg-[#0f1713] p-[10px] shadow-2xl ring-1 ring-black/30">
-        <div className="relative w-full h-full rounded-[36px] bg-surface overflow-hidden">
+        <div className="relative w-full h-full rounded-[36px] bg-surface overflow-hidden transition-colors duration-700" style={{ background: FOND_ECRAN[actif] }}>
           <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-6 rounded-full bg-[#0f1713] z-20" />
           <div className="absolute top-0 inset-x-0 h-10 z-10 flex items-end justify-between px-6 pb-1 text-[10px] font-semibold text-on-surface">
             <span>9:41</span>
@@ -180,7 +185,7 @@ function Tableau({ t }: { t: T }) {
         <p className="text-[11px] text-on-surface-variant">{t("Bonjour")}</p>
         <p className="text-[17px] font-extrabold text-on-surface leading-tight">Mamadou</p>
       </div>
-      <div className="demo-entre rounded-2xl bg-primary text-on-primary p-4" style={d(120)}>
+      <div className="demo-entre rounded-2xl bg-gradient-to-br from-primary to-tertiary-container text-on-primary p-4 shadow-md" style={d(120)}>
         <p className="text-[11px] opacity-80">{t("Encaissé ce mois")}</p>
         <p className="text-[24px] font-extrabold leading-tight tabular-nums">1 250 000 <span className="text-[12px] font-bold opacity-80">FCFA</span></p>
         <div className="mt-3 flex items-end gap-1.5 h-12">
@@ -190,16 +195,16 @@ function Tableau({ t }: { t: T }) {
         </div>
       </div>
       <div className="flex gap-2">
-        {[{ n: "8", l: t("Payés") }, { n: "2", l: t("En attente") }, { n: "1", l: t("En retard") }].map((k, i) => (
-          <div key={k.l} className="demo-entre flex-1 rounded-xl bg-surface-container-low px-2 py-2 text-center" style={d(300 + i * 90)}>
-            <p className="text-[16px] font-extrabold text-on-surface leading-none">{k.n}</p>
-            <p className="text-[9.5px] text-on-surface-variant mt-1">{k.l}</p>
+        {[{ n: "8", l: t("Payés"), c: "bg-success-container text-on-success-container" }, { n: "2", l: t("En attente"), c: "bg-secondary-fixed text-on-secondary-fixed" }, { n: "1", l: t("En retard"), c: "bg-error-container text-on-error-container" }].map((k, i) => (
+          <div key={k.l} className={`demo-entre flex-1 rounded-xl px-2 py-2 text-center ${k.c}`} style={d(300 + i * 90)}>
+            <p className="text-[18px] font-extrabold leading-none">{k.n}</p>
+            <p className="text-[9.5px] font-semibold mt-1">{k.l}</p>
           </div>
         ))}
       </div>
       <div className="flex flex-col gap-2">
         {lignes.map((l, i) => (
-          <div key={l.nom} className="demo-entre flex items-center gap-2.5 rounded-xl bg-surface-container-low px-3 py-2.5" style={d(650 + i * 130)}>
+          <div key={l.nom} className="demo-entre flex items-center gap-2.5 rounded-xl bg-white px-3 py-2.5 shadow-sm" style={d(650 + i * 130)}>
             <span className="w-8 h-8 rounded-full bg-primary-container text-on-primary text-[11px] font-bold flex items-center justify-center">{l.nom.split(" ").map((m) => m[0]).join("")}</span>
             <span className="min-w-0 flex-1">
               <span className="block text-[12px] font-semibold text-on-surface truncate">{l.nom}</span>
@@ -219,12 +224,14 @@ function Tableau({ t }: { t: T }) {
 function Paiement({ t }: { t: T }) {
   return (
     <div className="h-full flex flex-col items-center text-center gap-3 pt-3">
-      <p className="demo-entre text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant" style={d(0)}>{t("Loyer d'octobre")}</p>
-      <p className="demo-entre text-[28px] font-extrabold text-on-surface tabular-nums leading-none" style={d(100)}>250 000 <span className="text-[13px] font-bold text-on-surface-variant">FCFA</span></p>
-      <div className="demo-entre w-full rounded-2xl bg-surface-container-low p-3 text-left" style={d(220)}>
+      <div className="demo-entre -mx-4 -mt-3 w-[calc(100%+2rem)] px-4 pt-6 pb-5 bg-gradient-to-br from-[#0a7fa3] to-[#1dc8ff] text-white rounded-b-3xl" style={d(0)}>
+        <p className="text-[11px] font-semibold uppercase tracking-wider opacity-90">{t("Loyer d'octobre")}</p>
+        <p className="text-[30px] font-extrabold tabular-nums leading-none mt-1">250 000 <span className="text-[13px] font-bold opacity-90">FCFA</span></p>
+      </div>
+      <div className="demo-entre w-full rounded-2xl bg-white p-3 text-left shadow-sm" style={d(220)}>
         <p className="text-[10px] text-on-surface-variant mb-2">{t("Payer avec")}</p>
         <div className="flex gap-2">
-          <span className="demo-choix flex-1 rounded-xl px-2 py-2.5 text-[12px] font-bold text-center bg-[#1dc8ff]/15 text-[#0a7fa3]" style={d(900)}>Wave</span>
+          <span className="demo-choix flex-1 rounded-xl px-2 py-2.5 text-[12px] font-bold text-center bg-[#1dc8ff]/25 text-[#066a88]" style={d(900)}>Wave</span>
           <span className="flex-1 rounded-xl px-2 py-2.5 text-[12px] font-bold text-center bg-surface-container text-on-surface-variant">Orange Money</span>
         </div>
       </div>
@@ -247,7 +254,7 @@ function Quittance({ t }: { t: T }) {
   const qr = "1110111010111011100100011101001010111010010101110100100010110101110111010111011".split("");
   return (
     <div className="h-full flex flex-col gap-3 pt-1">
-      <p className="demo-entre text-[15px] font-extrabold text-on-surface" style={d(0)}>{t("Quittance de loyer")}</p>
+      <p className="demo-entre self-start rounded-full bg-[#ffba09] px-3 py-1 text-[12px] font-extrabold text-[#1a1f1c]" style={d(0)}>{t("Quittance de loyer")}</p>
       <div className="demo-feuille relative rounded-2xl bg-surface-container-lowest p-4 shadow-lg ring-1 ring-black/5" style={d(150)}>
         <div className="flex items-start justify-between">
           <div>
@@ -277,8 +284,8 @@ function Quittance({ t }: { t: T }) {
         </div>
       </div>
       <div className="demo-entre mt-auto flex gap-2" style={d(2000)}>
-        <span className="flex-1 rounded-xl bg-primary text-on-primary text-[12px] font-bold py-2.5 text-center">{t("Envoyer sur WhatsApp")}</span>
-        <span className="rounded-xl bg-surface-container text-primary text-[12px] font-bold px-3.5 py-2.5">PDF</span>
+        <span className="flex-1 rounded-full bg-[#168a3e] text-white text-[12px] font-bold py-2.5 text-center">{t("Envoyer sur WhatsApp")}</span>
+        <span className="rounded-full bg-[#1a1f1c] text-white text-[12px] font-bold px-3.5 py-2.5">PDF</span>
       </div>
     </div>
   );
@@ -288,20 +295,20 @@ function Relance({ t }: { t: T }) {
   return (
     <div className="h-full flex flex-col gap-2.5 pt-1">
       <div className="demo-entre flex items-center gap-2.5 pb-2 border-b border-outline-variant/40" style={d(0)}>
-        <span className="w-8 h-8 rounded-full bg-primary-container text-on-primary text-[11px] font-bold flex items-center justify-center">FS</span>
+        <span className="w-8 h-8 rounded-full bg-[#168a3e] text-white text-[11px] font-bold flex items-center justify-center">FS</span>
         <span>
           <span className="block text-[12.5px] font-bold text-on-surface leading-tight">Fatou Sow</span>
           <span className="block text-[10px] text-success font-semibold">WhatsApp</span>
         </span>
       </div>
-      <div className="demo-bulle self-end max-w-[88%] rounded-2xl rounded-tr-md bg-action-soft text-on-action-soft px-3 py-2 text-[11.5px] leading-snug" style={d(500)}>
+      <div className="demo-bulle self-end max-w-[88%] rounded-2xl rounded-tr-md bg-[#d9fdd3] text-[#0b3d2e] shadow-sm px-3 py-2 text-[11.5px] leading-snug" style={d(500)}>
         {t("Bonjour Fatou, un petit rappel : le loyer de 180 000 FCFA est en attente. Vous pouvez payer ici :")}
         <span className="block mt-1.5 rounded-lg bg-surface-container-lowest/70 px-2 py-1.5 text-[10.5px] font-semibold text-primary">nuuf.sn/payer/F7K2</span>
       </div>
-      <div className="demo-bulle self-start rounded-2xl rounded-tl-md bg-surface-container px-3 py-2 text-[11.5px] text-on-surface" style={d(2000)}>
+      <div className="demo-bulle self-start rounded-2xl rounded-tl-md bg-white shadow-sm px-3 py-2 text-[11.5px] text-on-surface" style={d(2000)}>
         {t("Merci, je paie maintenant 🙏")}
       </div>
-      <div className="demo-bulle self-end max-w-[88%] rounded-2xl rounded-tr-md bg-action-soft text-on-action-soft px-3 py-2 text-[11.5px] leading-snug" style={d(3400)}>
+      <div className="demo-bulle self-end max-w-[88%] rounded-2xl rounded-tr-md bg-[#d9fdd3] text-[#0b3d2e] shadow-sm px-3 py-2 text-[11.5px] leading-snug" style={d(3400)}>
         <span className="flex items-center gap-1.5 font-bold">
           <span className="material-symbols-outlined text-[16px] text-success">check_circle</span>
           {t("Paiement reçu — quittance envoyée")}
