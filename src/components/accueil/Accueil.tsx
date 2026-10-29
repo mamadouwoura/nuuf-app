@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
+import AlertesDefilantes from "@/components/accueil/AlertesDefilantes";
 import DemoFormulaire from "@/components/accueil/DemoFormulaire";
 import RecitDefilement from "@/components/accueil/RecitDefilement";
 import Reveal from "@/components/accueil/Reveal";
@@ -32,7 +33,6 @@ async function Hero({ t }: { t: T }) {
     [t("Relance envoyée"), "Ibrahima Fall · WhatsApp", 21],
     [t("Nouveau locataire"), "Studio C1 · Ngor", 25],
   ] as const;
-  const piste = [...alertes, ...alertes];
   return (
     <section id="accueil" className="nf-hero relative mx-2 overflow-hidden rounded-[2rem] pb-10 pt-24 text-white sm:pt-32 lg:mx-3">
       <div className="nf-blob nf-blob-a" aria-hidden="true" />
@@ -78,22 +78,7 @@ async function Hero({ t }: { t: T }) {
         </div>
       </div>
       <p className="relative z-10 mt-12 text-center font-body-sm text-body-sm text-white/55">{t("Les alertes que reçoivent nos bailleurs au quotidien (exemples)")}</p>
-      <div className="nf-marquee-zone relative z-10 mt-4" aria-hidden="true">
-        <div className="nf-marquee px-3">
-          {piste.map(([titreAlerte, detail, min], i) => (
-            <div key={i} className="flex w-[19rem] shrink-0 items-center gap-3 rounded-2xl bg-white/10 px-4 py-3 text-left ring-1 ring-white/15 backdrop-blur">
-              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#aaf1d8]/20 text-[#aaf1d8]">
-                <span className="material-symbols-outlined text-[20px]">notifications</span>
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-label-lg text-label-lg font-semibold">{titreAlerte}</span>
-                <span className="block truncate font-body-sm text-body-sm text-white/65">{detail}</span>
-              </span>
-              <span className="shrink-0 font-body-sm text-[11px] text-white/45">{t("il y a {n} min", { n: min })}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <AlertesDefilantes alertes={alertes.map(([titreAlerte, detail, min]) => ({ titre: titreAlerte, detail, quand: t("il y a {n} min", { n: min }) }))} libelle={t("Les alertes que reçoivent nos bailleurs au quotidien (exemples)")} />
     </section>
   );
 }
@@ -269,12 +254,12 @@ async function Etapes({ t }: { t: T }) {
         {etapes.map((e, i) => (
           <div key={e.n} className="grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
             <Reveal className={i % 2 === 1 ? "lg:order-2" : ""}>
-              <p className="flex items-center gap-3 font-label-lg text-label-lg font-semibold text-primary">
+              <p className="flex items-center justify-center gap-3 font-label-lg text-label-lg font-semibold text-primary lg:justify-start">
                 <span className="grid size-11 place-items-center rounded-full bg-surface-container-lowest text-on-surface ring-1 ring-outline-variant/60">{e.n}</span>
                 {e.qui}
               </p>
-              <h3 className="mt-5 text-balance font-extrabold leading-[1.06] tracking-[-0.03em] text-on-surface text-[clamp(1.8rem,3.6vw,2.9rem)]">{e.titre}</h3>
-              <p className="mt-4 max-w-md text-pretty font-body-lg text-body-lg text-on-surface-variant">{e.texte}</p>
+              <h3 className="mt-5 text-balance text-center font-extrabold leading-[1.06] tracking-[-0.03em] text-on-surface text-[clamp(1.8rem,3.6vw,2.9rem)] lg:text-left">{e.titre}</h3>
+              <p className="mx-auto mt-4 max-w-md text-pretty text-center font-body-lg text-body-lg text-on-surface-variant lg:mx-0 lg:text-left">{e.texte}</p>
             </Reveal>
             <Reveal delai={90} className={i % 2 === 1 ? "lg:order-1" : ""}>
               <div className="grid min-h-[22rem] place-items-center rounded-[2rem] bg-gradient-to-br from-surface-container-low to-surface-container p-6 ring-1 ring-outline-variant/40 sm:p-10">{e.visuel}</div>
@@ -397,17 +382,17 @@ async function Demo({ t }: { t: T }) {
   return (
     <section id="demo" className="mx-auto max-w-6xl scroll-mt-24 px-5 pb-24 sm:pb-28">
       <div className="grid gap-10 rounded-[2rem] bg-surface-container-low p-6 ring-1 ring-outline-variant/50 sm:p-10 lg:grid-cols-2 lg:gap-14">
-        <Reveal>
+        <Reveal className="text-center lg:text-left">
           <p className={eyebrow}>{t("Démo avec l'équipe Nuuf")}</p>
           <h2 className="mt-4 text-balance font-extrabold leading-[1.05] tracking-[-0.035em] text-on-surface text-[clamp(1.9rem,4.2vw,3.1rem)]">
             {t("Pas sûr que ça marche pour votre parc ?")}
             <br />
             <span className="text-primary-container">{t("On regarde ensemble. Gratuitement.")}</span>
           </h2>
-          <p className="mt-5 max-w-md text-pretty font-body-lg text-body-lg text-on-surface-variant">
+          <p className="mx-auto mt-5 max-w-md text-pretty font-body-lg text-body-lg text-on-surface-variant lg:mx-0">
             {t("En visio ou chez vous, nous vous montrons Nuuf avec vos propres cas : quelques biens, un propriétaire, un loyer en retard. Vous posez toutes vos questions.")}
           </p>
-          <ul className="mt-6 flex flex-wrap gap-2">
+          <ul className="mt-6 flex flex-wrap justify-center gap-2 lg:justify-start">
             {[t("Sans jargon"), t("Sans engagement"), t("Sans pression")].map((x, i) => (
               <li key={x} className="inline-flex items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-2 font-label-lg text-label-lg font-semibold text-on-surface ring-1 ring-outline-variant/60">
                 <span className="font-label-md text-label-md text-primary">0{i + 1}</span>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import LangueSwitch from "@/components/LangueSwitch";
+import ThemeToggle from "@/components/ThemeToggle";
 import { useT } from "@/lib/i18n/client";
 
 /** Menu des écrans étroits : liens du site, connexion et langue (le bouton « hamburger » n'existe qu'en dessous de 768 px). */
@@ -42,6 +43,9 @@ export default function MenuMobile({ liens }: { liens: { href: string; label: st
               <span className="material-symbols-outlined text-[20px] mr-2">login</span>
               {t("Se connecter")}
             </Link>
+            <div className="md:hidden mt-1 border-t border-outline-variant/40 pt-space-sm">
+              <ThemeToggle ligne />
+            </div>
             <div className="sm:hidden flex items-center justify-between px-space-md pt-space-sm mt-1 border-t border-outline-variant/40">
               <span className="font-label-md text-label-md text-on-surface-variant">{t("Langue")}</span>
               <LangueSwitch />

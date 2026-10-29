@@ -603,3 +603,16 @@ textarea {
   .nf-reveal-vu { animation: none; }
   .nf-recit-ligne { opacity: 1; transform: none; filter: none; transition: none; }
 }
+
+/* Mobile : animations plus légères (pas de flou, déplacements courts, halos immobiles) pour rester fluide sur les téléphones modestes. */
+@keyframes nf-reveal-m { from { opacity: 0; transform: translate3d(0, 24px, 0); } to { opacity: 1; transform: none; } }
+@keyframes nf-entree-m { from { opacity: 0; transform: translate3d(0, 14px, 0); } to { opacity: 1; transform: none; } }
+@media (max-width: 767px) {
+  .nf-reveal-cache { transform: translate3d(0, 24px, 0); filter: none; }
+  .nf-reveal-vu { animation-name: nf-reveal-m; animation-duration: 0.55s; }
+  .nf-blob { filter: blur(44px); animation: none; opacity: 0.45; }
+  :root[data-style="papier"] main > div > * { animation-name: nf-entree-m; animation-duration: 0.4s; }
+  :root[data-style="papier"] main > div > :nth-child(n + 2) { animation-delay: 40ms; }
+  :root[data-style="papier"] main > div > :nth-child(n + 4) { animation-delay: 80ms; }
+}
+.nf-alertes::-webkit-scrollbar { display: none; }

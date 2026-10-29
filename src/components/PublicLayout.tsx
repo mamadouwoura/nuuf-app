@@ -35,11 +35,11 @@ export async function PublicHeader({ actif }: { actif: "accueil" | "tarifs" | "a
         </div>
         <div className="flex items-center gap-2">
           <div className="hidden sm:block"><LangueSwitch /></div>
-          <ThemeToggle />
+          <div className="hidden md:block"><ThemeToggle /></div>
           <Link href="/connexion" className="hidden h-11 items-center rounded-full bg-surface-container-lowest px-5 font-label-lg text-label-lg font-semibold text-on-surface ring-1 ring-outline-variant/60 sm:inline-flex">
             {t("Se connecter")}
           </Link>
-          <Link href={`${base}#demo`} className="inline-flex h-11 items-center rounded-full bg-[#082d23] px-5 font-label-lg text-label-lg font-bold text-white transition-transform active:scale-[0.98]">
+          <Link href={`${base}#demo`} className="inline-flex h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-[#082d23] px-4 font-label-lg text-label-lg font-bold text-white transition-transform active:scale-[0.98] sm:px-5">
             {t("Voir une démo")}
           </Link>
           <MenuMobile liens={liens.map(({ href, label }) => ({ href, label }))} />
@@ -56,21 +56,21 @@ export async function PublicFooter() {
   const titre = "mb-3 font-label-md text-label-md font-bold uppercase tracking-[0.18em] text-on-surface";
   return (
     <footer id="contact" className="mx-2 mb-2 rounded-[2rem] bg-surface-container-low px-6 py-12 ring-1 ring-outline-variant/50 lg:mx-3 lg:px-14">
-      <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-6xl gap-10 text-center md:grid-cols-[1.4fr_1fr_1fr_1fr] md:text-left">
         <div>
           <p className="text-[1.75rem] font-extrabold tracking-tight text-primary">nuuf<span className="text-secondary-container">.</span></p>
-          <p className="mt-3 max-w-xs font-body-md text-body-md text-on-surface-variant">
+          <p className="mx-auto mt-3 max-w-xs font-body-md text-body-md text-on-surface-variant md:mx-0">
             {t("La gestion locative simplifiée au Sénégal : encaissement des loyers par Wave et Orange Money, quittances et relances automatiques.")}
           </p>
         </div>
-        <nav aria-label={t("Navigation")} className="flex flex-col gap-2">
+        <nav aria-label={t("Navigation")} className="flex flex-col items-center gap-2 md:items-start">
           <h4 className={titre}>{t("Navigation")}</h4>
           <Link href="/#comment-ca-marche" className={lien}>{t("Comment ça marche")}</Link>
           <Link href="/tarifs" className={lien}>{t("Tarifs")}</Link>
           <Link href="/#demo" className={lien}>{t("Démo")}</Link>
           <Link href="/connexion" className={lien}>{t("Se connecter")}</Link>
         </nav>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col items-center gap-2 md:items-start">
           <h4 className={titre}>{t("Contact")}</h4>
           {WA && (
             <a href={lienContact} target="_blank" rel="noopener" className={`${lien} flex items-center gap-2`}>
@@ -84,14 +84,14 @@ export async function PublicFooter() {
           )}
           {!WA && !MAIL && <span className={lien}>{t("Écrivez-nous depuis votre espace une fois connecté.")}</span>}
         </div>
-        <nav aria-label={t("Informations légales")} className="flex flex-col gap-2">
+        <nav aria-label={t("Informations légales")} className="flex flex-col items-center gap-2 md:items-start">
           <h4 className={titre}>{t("Légal")}</h4>
           <Link href="/legal/cgu" className={lien}>{t("Conditions d'utilisation")}</Link>
           <Link href="/legal/confidentialite" className={lien}>{t("Confidentialité")}</Link>
           <Link href="/legal/mentions-legales" className={lien}>{t("Mentions légales")}</Link>
         </nav>
       </div>
-      <div className="mx-auto mt-10 max-w-6xl border-t border-outline-variant/50 pt-6 font-body-sm text-body-sm text-on-surface-variant">
+      <div className="mx-auto mt-10 max-w-6xl border-t border-outline-variant/50 pt-6 text-center font-body-sm text-body-sm text-on-surface-variant md:text-left">
         <p>{t("Nuuf est un outil de gestion : il ne détient jamais vos fonds. Les résultats dépendent de votre activité et de vos locataires.")}</p>
         <p className="mt-2">{t("© Nuuf. Tous droits réservés.")}</p>
       </div>

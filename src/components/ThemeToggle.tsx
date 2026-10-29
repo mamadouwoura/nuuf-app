@@ -37,11 +37,23 @@ function choisir(theme: Theme) {
 }
 
 /** Un seul clic : bascule entre le mode clair et le mode sombre. Le choix est mémorisé sur l'appareil. */
-export default function ThemeToggle() {
+export default function ThemeToggle({ ligne = false }: { ligne?: boolean }) {
   const { t } = useT();
   const theme = useSyncExternalStore(sAbonner, lire, () => "light" as Theme);
   const suivant: Theme = theme === "dark" ? "light" : "dark";
   const titre = suivant === "dark" ? t("Passer en mode sombre") : t("Passer en mode clair");
+  if (ligne) {
+    return (
+      <button
+        type="button"
+        onClick={() => choisir(suivant)}
+        className="flex h-12 w-full items-center gap-3 rounded-xl px-space-md text-left font-label-lg text-label-lg text-on-surface hover:bg-surface-container-low"
+      >
+        <span className="material-symbols-outlined text-[22px] text-primary">{suivant === "dark" ? "dark_mode" : "light_mode"}</span>
+        {titre}
+      </button>
+    );
+  }
   return (
     <button
       type="button"

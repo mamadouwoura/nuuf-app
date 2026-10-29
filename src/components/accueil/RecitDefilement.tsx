@@ -36,7 +36,7 @@ export default function RecitDefilement({ lignes, final }: { lignes: [string, st
   }, []);
 
   return (
-    <section ref={section} aria-label={`${lignes[0]} ${lignes[1]} ${final}`} className="relative h-[260vh]">
+    <section ref={section} aria-label={`${lignes[0]} ${lignes[1]} ${final}`} className="relative h-[200vh] md:h-[260vh]">
       <div className="sticky top-0 h-screen flex flex-col items-center justify-center gap-7 px-5 text-center overflow-hidden">
         <p className="nf-recit-ligne font-headline-lg text-[clamp(1.6rem,4.2vw,3.25rem)] font-semibold tracking-tight text-on-surface" data-on={etape >= 1} aria-hidden="true">
           {lignes[0]}

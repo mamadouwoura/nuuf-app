@@ -179,7 +179,7 @@ export default function AppShell({
           </form>
           <div className="flex items-center gap-1 sm:gap-space-sm shrink-0">
             <div className="hidden sm:block"><LangueSwitch /></div>
-            <ThemeToggle />
+            <div className="hidden lg:block"><ThemeToggle /></div>
             <Link href="/notifications" aria-label={nbNotifs > 0 ? tn(nbNotifs, "{n} notification non lue", "{n} notifications non lues") : t("Notifications")} className="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors">
               <span className="material-symbols-outlined text-[22px]">notifications</span>
               {nbNotifs > 0 && <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-error text-on-error font-label-md text-[10px] font-bold flex items-center justify-center ring-2 ring-surface">{nbNotifs > 99 ? "99+" : nbNotifs}</span>}
@@ -247,6 +247,7 @@ export default function AppShell({
               <span className="font-label-md text-label-md text-on-surface-variant">{t("Langue")}</span>
               <LangueSwitch />
             </div>
+            <ThemeToggle ligne />
             {plusLiens.map((n) => (
               <Link key={n.href} href={n.href} onClick={() => setPlus(false)} className="flex items-center gap-3 px-space-md py-3 rounded-xl text-on-surface hover:bg-surface-container-low">
                 <span className="material-symbols-outlined text-[22px] text-primary">{n.icon}</span>
