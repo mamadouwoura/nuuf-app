@@ -19,7 +19,7 @@ export default async function PageLegale({ titre, maj, children }: { titre: stri
   const { t } = await getT();
   return (
     <>
-      <PublicHeader actif="accueil" />
+      <PublicHeader actif="autre" />
       <main className="w-full max-w-3xl mx-auto px-margin md:px-margin-tablet pt-32 pb-space-xl flex flex-col gap-space-lg">
         <div>
           <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">{titre}</h1>

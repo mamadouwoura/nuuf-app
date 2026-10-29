@@ -1,4 +1,4 @@
-import Accueil from "@/components/Accueil";
+import Accueil from "@/components/accueil/Accueil";
 import { PublicFooter, PublicHeader } from "@/components/PublicLayout";
 
 export default function Home() {

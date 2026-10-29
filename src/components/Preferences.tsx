@@ -1,6 +1,5 @@
 import LangueSwitch from "./LangueSwitch";
 import ThemeToggle from "./ThemeToggle";
-import StyleToggle from "./StyleToggle";
 
 /** Langue + thème. `flottant` : pastille fixée en haut à droite, pour les écrans sans barre d'en-tête. */
 export default function Preferences({ flottant = false }: { flottant?: boolean }) {
@@ -8,7 +7,6 @@ export default function Preferences({ flottant = false }: { flottant?: boolean }
     <>
       <LangueSwitch />
       <ThemeToggle />
-      <StyleToggle />
     </>
   );
   if (!flottant) return <div className="flex items-center gap-1">{contenu}</div>;

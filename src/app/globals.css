@@ -251,13 +251,11 @@ textarea {
   :root[data-style="papier"] section.w-full[class*="py-"],
   :root[data-style="papier"] section.relative.w-full { margin: 1.25rem 1.25rem 0; }
 }
-:root[data-style="papier"] #fonctionnalites { background: var(--color-surface-container-low); }
 .illu-papier { display: none; }
 :root[data-style="papier"] .illu-papier { display: block; }
-/* Haut de page de l'accueil et teintes pastel des blocs. */
-:root[data-style="papier"] section.relative.w-full.bg-background { background: color-mix(in srgb, var(--color-primary-container) 16%, var(--color-surface)); }
-:root[data-style="papier"] #comment-ca-marche { background: color-mix(in srgb, var(--color-info-text) 12%, var(--color-surface)); }
-:root[data-style="papier"] #faq { background: color-mix(in srgb, var(--color-secondary-container) 14%, var(--color-surface)); }
+/* Accueil : tous les blocs prennent la teinte du premier (haut de page), sauf l'appel final en vert plein. */
+:root[data-style="papier"] section.relative.w-full.bg-background,
+:root[data-style="papier"] section.w-full[class*="py-"]:not(.bg-primary) { background: color-mix(in srgb, var(--color-primary-container) 16%, var(--color-surface)); }
 /* Application : contenu centré sur 1200 px, menu en panneau arrondi, plus d'air entre les blocs (bureau). */
 @media (min-width: 1024px) {
   :root[data-style="papier"] {
@@ -267,19 +265,7 @@ textarea {
   :root[data-style="papier"] aside { left: 0.75rem; top: 0.75rem; bottom: 0.75rem; height: auto; width: 17rem; border-radius: 2rem; border: 1px solid var(--color-outline-variant); }
   :root[data-style="papier"] main > div.flex.flex-col.w-full { max-width: 1200px; margin-inline: auto; }
 }
-/* Barres du haut : pilules flottantes, centrées, détachées du bord. */
-:root[data-style="papier"] .entete-public { background: transparent; backdrop-filter: none; padding: 0.75rem 0.75rem 0; box-shadow: none; }
-:root[data-style="papier"] .entete-public > div {
-  max-width: 68rem;
-  height: 3.5rem;
-  padding-inline: 0.5rem 0.5rem;
-  border: 1px solid var(--color-outline-variant);
-  border-radius: 9999px;
-  background: color-mix(in srgb, var(--color-surface-container-lowest) 92%, transparent);
-}
-:root[data-style="papier"] .entete-public nav a { border-radius: 9999px; }
-:root[data-style="papier"] .entete-public a { white-space: nowrap; }
-:root[data-style="papier"] .entete-public nav { gap: 0.25rem; }
+/* Barre du haut de l'application : pilule flottante, détachée du bord. */
 :root[data-style="papier"] .entete-app {
   top: 0.75rem; left: 0.75rem; right: 0.75rem; height: 3.5rem;
   border: 1px solid var(--color-outline-variant);
@@ -301,8 +287,19 @@ textarea {
 :root[data-style="papier"] :is(button, a[href], summary, [role="button"]) { transition: transform 0.14s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s, color 0.2s; }
 :root[data-style="papier"] :is(button, a[class*="bg-"], [role="button"]):active:not(:disabled) { transform: scale(0.96); }
 /* Les écrans entrent en douceur. */
-@keyframes papier-entre { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-:root[data-style="papier"] main { animation: papier-entre 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+/* Les pages de l'application entrent par blocs, l'un après l'autre (montée, léger flou), comme sur l'accueil. */
+@keyframes nf-entree { from { opacity: 0; transform: translate3d(0, 28px, 0) scale(0.985); filter: blur(5px); } to { opacity: 1; transform: none; filter: none; } }
+:root[data-style="papier"] main > div > * { animation: nf-entree 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+:root[data-style="papier"] main > div > :nth-child(2) { animation-delay: 60ms; }
+:root[data-style="papier"] main > div > :nth-child(3) { animation-delay: 120ms; }
+:root[data-style="papier"] main > div > :nth-child(4) { animation-delay: 180ms; }
+:root[data-style="papier"] main > div > :nth-child(5) { animation-delay: 240ms; }
+:root[data-style="papier"] main > div > :nth-child(n + 6) { animation-delay: 300ms; }
+/* Titres : plus gras et plus serrés, comme sur l'accueil. */
+:root[data-style="papier"] h1 { font-weight: 800; letter-spacing: -0.035em; }
+:root[data-style="papier"] h2 { letter-spacing: -0.02em; }
+/* Liens du menu latéral en pilule. */
+:root[data-style="papier"] aside nav a { border-radius: 9999px; }
 /* Navigation du bas : pilule flottante, à portée du pouce. */
 :root[data-style="papier"] .nav-bas {
   inset-inline: 0.75rem;
@@ -315,7 +312,7 @@ textarea {
 }
 :root[data-style="papier"] .nav-bas > ul { padding-inline: 0.25rem; }
 @media (prefers-reduced-motion: reduce) {
-  :root[data-style="papier"] main { animation: none; }
+  :root[data-style="papier"] main > div > * { animation: none; }
   :root[data-style="papier"] :is(button, a[class*="bg-"], [role="button"]):active:not(:disabled) { transform: none; }
 }
 
@@ -535,3 +532,74 @@ textarea {
 .demo-onde { opacity: 0; animation: demo-onde 1s ease-out forwards; }
 .demo-pixel { opacity: 0; animation: demo-pixel 0.25s ease-out forwards; }
 .demo-choix { animation: demo-entre 0.4s ease-out both; box-shadow: 0 0 0 2px #1dc8ff55; }
+
+/* ======================================================================
+   Page d'accueil « Nouveau » : structure et animations inspirées d'une page de référence,
+   écrites pour Nuuf (couleurs vertes de la marque). Préfixe nf-. Seuls transform et opacity
+   sont animés en continu ; tout s'arrête si l'appareil demande moins d'animations.
+   ====================================================================== */
+@keyframes nf-drift-a { to { transform: translate3d(120px, 60px, 0) scale(1.12); } }
+@keyframes nf-drift-b { to { transform: translate3d(-90px, 80px, 0) scale(0.92); } }
+@keyframes nf-reveal { from { opacity: 0; transform: translate3d(0, 56px, 0) scale(0.96); filter: blur(10px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes nf-float { 50% { transform: translate3d(0, -10px, 0); } }
+@keyframes nf-marquee { to { transform: translate3d(-50%, 0, 0); } }
+@keyframes nf-pop { from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes nf-type { 0%, 8% { max-width: 0; } 30%, 88% { max-width: calc(var(--w, 14ch) * 1.25); } 100% { max-width: 0; } }
+@keyframes nf-caret { 50% { opacity: 0; } }
+@keyframes nf-travel { 0% { left: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { left: calc(100% - 9px); opacity: 0; } }
+@keyframes nf-ring { 0%, 100% { box-shadow: 0 0 0 0 rgba(33, 122, 99, 0); } 50% { box-shadow: 0 0 0 8px rgba(33, 122, 99, 0.16); } }
+@keyframes nf-sheen { from { transform: translateX(-130%) skewX(-12deg); } to { transform: translateX(130%) skewX(-12deg); } }
+@keyframes nf-s1 { 0%, 42% { opacity: 1; } 50%, 94% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes nf-s2 { 0%, 42% { opacity: 0; transform: scale(0.96); } 50%, 94% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@keyframes nf-top { 0%, 35% { border-color: transparent; box-shadow: none; } 45%, 92% { border-color: #3fb98f; box-shadow: 0 16px 30px -18px rgba(11, 94, 70, 0.6); } 100% { border-color: transparent; box-shadow: none; } }
+@keyframes nf-notif1 { 0%, 6% { opacity: 0; transform: translate3d(0, -34px, 0) scale(0.92); } 14%, 90% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translate3d(0, -10px, 0); } }
+@keyframes nf-notif2 { 0%, 28% { opacity: 0; transform: translate3d(0, -34px, 0) scale(0.92); } 36%, 90% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translate3d(0, -10px, 0); } }
+@keyframes nf-notif3 { 0%, 50% { opacity: 0; transform: translate3d(0, -34px, 0) scale(0.92); } 58%, 90% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translate3d(0, -10px, 0); } }
+@keyframes nf-ligne { 0%, 1% { opacity: 0; transform: translate3d(0, 100%, 0); } 4%, 22% { opacity: 1; transform: none; } 26%, 100% { opacity: 0; transform: translate3d(0, -100%, 0); } }
+@keyframes nf-spin { to { transform: rotate(360deg); } }
+@keyframes nf-dash { to { stroke-dashoffset: -18; } }
+
+.nf-hero { background: radial-gradient(120% 90% at 50% 0%, #1d7a60 0%, #0f4a39 45%, #082d23 100%); isolation: isolate; contain: paint; }
+.nf-blob { position: absolute; border-radius: 9999px; filter: blur(70px); opacity: 0.55; will-change: transform; pointer-events: none; z-index: -1; }
+.nf-blob-a { width: 46vw; height: 46vw; left: -10vw; top: 10%; background: #2fae85; animation: nf-drift-a 14s ease-in-out infinite alternate; }
+.nf-blob-b { width: 40vw; height: 40vw; right: -8vw; bottom: -10%; background: #0e8a68; animation: nf-drift-b 17s ease-in-out infinite alternate; }
+.nf-sombre { background: radial-gradient(120% 120% at 20% 0%, #1b6f5a 0%, #0c3f31 55%, #072a20 100%); contain: paint; isolation: isolate; }
+.nf-lignes { display: grid; }
+.nf-lignes > span { grid-area: 1 / 1; opacity: 0; animation: nf-ligne 12s infinite; }
+.nf-lignes > span:nth-child(2) { animation-delay: 3s; }
+.nf-lignes > span:nth-child(3) { animation-delay: 6s; }
+.nf-lignes > span:nth-child(4) { animation-delay: 9s; }
+.nf-lignes-masque { overflow: hidden; }
+.nf-marquee { display: flex; width: max-content; gap: 12px; animation: nf-marquee 48s linear infinite; }
+.nf-marquee-zone:hover .nf-marquee { animation-play-state: paused; }
+.nf-marquee-zone { -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent); overflow: hidden; }
+.nf-reveal-cache { opacity: 0; transform: translate3d(0, 56px, 0) scale(0.96); filter: blur(10px); }
+.nf-reveal-vu { animation: nf-reveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.nf-flotte { animation: nf-float 6s ease-in-out infinite; }
+.nf-typer { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; max-width: 0; animation: nf-type 7s steps(24, end) infinite; }
+.nf-caret { display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -2px; background: currentColor; animation: nf-caret 0.9s steps(1) infinite; }
+.nf-trajet { position: relative; height: 2px; }
+.nf-point { position: absolute; top: -3px; width: 9px; height: 9px; border-radius: 9999px; background: #1b6f5a; animation: nf-travel 3.2s ease-in-out infinite; }
+.nf-anneau { animation: nf-ring 2.4s ease-in-out infinite; }
+.nf-lueur { position: relative; overflow: hidden; }
+.nf-lueur::after { content: ""; position: absolute; inset: 0; width: 40%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent); animation: nf-sheen 2.6s ease-in-out infinite; }
+.nf-couche-1 { animation: nf-s1 8s infinite; }
+.nf-couche-2 { animation: nf-s2 8s infinite; }
+.nf-n1 { animation: nf-notif1 9s infinite; }
+.nf-n2 { animation: nf-notif2 9s infinite; }
+.nf-n3 { animation: nf-notif3 9s infinite; }
+.nf-ligne-vedette { border: 1.5px solid transparent; animation: nf-top 8s infinite; }
+.nf-recit-ligne { opacity: 0.12; transform: translate3d(0, 24px, 0); filter: blur(6px); transition: opacity 0.6s, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), filter 0.6s; }
+.nf-recit-ligne[data-on="true"] { opacity: 1; transform: none; filter: none; }
+.nf-pop { animation: nf-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.nf-tourne { animation: nf-spin 0.8s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .nf-blob, .nf-marquee, .nf-flotte, .nf-typer, .nf-caret, .nf-point, .nf-anneau, .nf-lueur::after, .nf-couche-1, .nf-couche-2, .nf-n1, .nf-n2, .nf-n3, .nf-ligne-vedette, .nf-lignes > span, .nf-tourne { animation: none !important; }
+  .nf-typer { max-width: none; }
+  .nf-lignes > span:first-child { opacity: 1; }
+  .nf-couche-2, .nf-n1, .nf-n2, .nf-n3 { opacity: 1; }
+  .nf-couche-1 { opacity: 0; }
+  .nf-reveal-cache { opacity: 1; transform: none; filter: none; }
+  .nf-reveal-vu { animation: none; }
+  .nf-recit-ligne { opacity: 1; transform: none; filter: none; transition: none; }
+}

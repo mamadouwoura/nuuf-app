@@ -50,26 +50,28 @@ async function Contenu() {
 
   return (
     <>
-      <section className="flex flex-col xl:flex-row xl:items-center justify-between gap-space-md mb-space-xl">
-        <div>
+      <section className="nf-hero relative overflow-hidden rounded-[2rem] p-6 sm:p-8 text-white flex flex-col xl:flex-row xl:items-center justify-between gap-space-md mb-space-xl">
+        <div className="nf-blob nf-blob-a" aria-hidden="true" />
+        <div className="nf-blob nf-blob-b" aria-hidden="true" />
+        <div className="relative">
           <div className="flex flex-wrap items-center gap-x-space-sm gap-y-1">
-            <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight">{t("Bonjour {prenom}", { prenom })} 👋</h1>
+            <h1 className="font-headline-lg text-headline-lg text-white tracking-tight">{t("Bonjour {prenom}", { prenom })} 👋</h1>
             {forfait && (
-              <span className="inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-container-high text-primary">
+              <span className="inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/15 text-white ring-1 ring-white/25">
                 {forfait === "PRO" ? t("Bailleur Pro") : forfait === "AGENCE" ? t("Agence") : forfait === "DECOUVERTE" ? t("Essai") : t("Bailleur")}
               </span>
             )}
           </div>
-          <p className="font-body-lg text-body-lg text-on-surface-variant mt-1">
-            {t("Voici la situation consolidée de vos loyers pour")} <span className="font-semibold text-on-surface">{libelleMois(mois, locale)}</span>.
+          <p className="font-body-lg text-body-lg text-white/75 mt-1">
+            {t("Voici la situation consolidée de vos loyers pour")} <span className="font-semibold text-white">{libelleMois(mois, locale)}</span>.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-space-sm">
-          <Link href="/paiements" className="flex items-center gap-2 px-space-md h-11 rounded-xl bg-surface-container-lowest text-primary hover:bg-surface-container transition-all shadow-sm font-label-lg text-label-lg">
+        <div className="relative flex flex-wrap items-center gap-space-sm">
+          <Link href="/paiements" className="flex items-center gap-2 px-space-md h-11 rounded-full bg-white/10 text-white ring-1 ring-white/25 hover:bg-white/15 transition-all font-label-lg text-label-lg">
             <span className="material-symbols-outlined text-[20px]">payments</span>
             <span>{t("Saisir espèces")}</span>
           </Link>
-          <Link href="/biens/nouveau" className="flex items-center gap-2 px-space-md h-11 rounded-xl bg-primary text-on-primary hover:bg-primary-container transition-all shadow-md font-label-lg text-label-lg">
+          <Link href="/biens/nouveau" className="flex items-center gap-2 px-space-md h-11 rounded-full bg-white text-[#082d23] hover:bg-white/90 transition-all font-label-lg text-label-lg font-bold">
             <span className="material-symbols-outlined text-[20px]">add_circle</span>
             <span>{t("Ajouter un bien")}</span>
           </Link>

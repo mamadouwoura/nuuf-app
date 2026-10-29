@@ -26,7 +26,7 @@ export default function AdminShell({ nom, simulation, children }: { nom: string;
         <div>
           <div className="px-space-lg pt-space-lg pb-space-md flex items-center gap-2">
             <span className="font-headline-md text-headline-md tracking-tight font-extrabold text-primary">nuuf</span>
-            <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant font-label-md text-label-md">ops</span>
+            <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md">ops</span>
           </div>
           <div className="mx-space-md mb-space-md p-3 rounded-xl bg-surface-container flex items-center gap-2 text-on-surface">
             <span className="material-symbols-outlined text-[20px] text-primary">shield</span>
@@ -64,8 +64,8 @@ export default function AdminShell({ nom, simulation, children }: { nom: string;
           </p>
         </div>
       </aside>
-      <div className="lg:pl-64 flex flex-col min-h-screen">
-        <header className="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-gutter lg:px-gutter-desktop">
+      <div className="lg:pl-72 flex flex-col min-h-screen">
+        <header className="entete-app fixed top-0 left-0 lg:left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-gutter lg:px-gutter-desktop">
           <span className="lg:hidden flex items-center gap-2 shrink-0">
             <span className="font-headline-md text-headline-md tracking-tight font-extrabold text-primary">nuuf</span>
             <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant font-label-md text-label-md">ops</span>
@@ -83,7 +83,7 @@ export default function AdminShell({ nom, simulation, children }: { nom: string;
           <div className="flex flex-col w-full pt-space-md gap-space-lg">{children}</div>
         </main>
       </div>
-      <nav aria-label={t("Navigation principale")} className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-surface-container-low border-t border-outline-variant/40 pb-safe">
+      <nav aria-label={t("Navigation principale")} className="nav-bas lg:hidden fixed bottom-0 inset-x-0 z-50 bg-surface-container-low border-t border-outline-variant/40 pb-safe">
         <ul className="flex items-stretch justify-around">
           {NAV.map((n) => {
             const actif = n.exact ? pathname === n.href : pathname.startsWith(n.href);

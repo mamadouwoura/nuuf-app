@@ -13,7 +13,9 @@ export default async function Inscription({ erreur }: { erreur?: string }) {
       <main className="w-full min-h-screen bg-background"><div className="flex flex-col w-full min-h-screen">
       <div className="grid grid-cols-1 lg:grid-cols-12 min-h-screen w-full">
       
-      <div className="palette-claire lg:col-span-5 xl:col-span-5 bg-tertiary text-on-tertiary flex flex-col justify-between p-6 sm:p-8 lg:p-12 relative overflow-hidden">
+      <div className="palette-claire lg:col-span-5 xl:col-span-5 nf-hero text-on-tertiary flex flex-col justify-between p-6 sm:p-8 lg:p-12 lg:m-3 lg:rounded-[2rem] relative overflow-hidden">
+      <div className="nf-blob nf-blob-a" aria-hidden="true"></div>
+      <div className="nf-blob nf-blob-b" aria-hidden="true"></div>
       
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-primary-container/40 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-secondary/30 rounded-full blur-3xl pointer-events-none"></div>

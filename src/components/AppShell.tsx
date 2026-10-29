@@ -8,7 +8,6 @@ import { useT } from "@/lib/i18n/client";
 import { N_ } from "@/lib/i18n/translate";
 import LangueSwitch from "@/components/LangueSwitch";
 import ThemeToggle from "@/components/ThemeToggle";
-import StyleToggle from "@/components/StyleToggle";
 import Tutoriel from "@/components/Tutoriel";
 import { moduleDeChemin } from "@/lib/modules";
 import { verrouillerMaintenant } from "@/app/actions/pin";
@@ -181,7 +180,6 @@ export default function AppShell({
           <div className="flex items-center gap-1 sm:gap-space-sm shrink-0">
             <div className="hidden sm:block"><LangueSwitch /></div>
             <ThemeToggle />
-            <StyleToggle />
             <Link href="/notifications" aria-label={nbNotifs > 0 ? tn(nbNotifs, "{n} notification non lue", "{n} notifications non lues") : t("Notifications")} className="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors">
               <span className="material-symbols-outlined text-[22px]">notifications</span>
               {nbNotifs > 0 && <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-error text-on-error font-label-md text-[10px] font-bold flex items-center justify-center ring-2 ring-surface">{nbNotifs > 99 ? "99+" : nbNotifs}</span>}

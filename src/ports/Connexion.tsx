@@ -14,7 +14,9 @@ export default async function Connexion({ erreur, info }: { erreur?: string; inf
       <main className="w-full min-h-screen bg-background"><div className="flex flex-col w-full">
       <div className="grid grid-cols-1 lg:grid-cols-12 w-full lg:min-h-[960px] lg:h-screen lg:overflow-hidden">
       
-      <div className="lg:col-span-7 palette-claire bg-[#175a4a] text-on-primary hidden lg:flex flex-col justify-between p-6 sm:p-10 lg:p-12 relative overflow-y-auto">
+      <div className="lg:col-span-7 palette-claire nf-hero text-on-primary hidden lg:flex flex-col justify-between p-6 sm:p-10 lg:p-12 lg:m-3 lg:rounded-[2rem] relative overflow-y-auto">
+      <div className="nf-blob nf-blob-a" aria-hidden="true"></div>
+      <div className="nf-blob nf-blob-b" aria-hidden="true"></div>
       
       <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-primary-fixed opacity-10 blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-10 right-0 w-80 h-80 rounded-full bg-secondary-container opacity-15 blur-3xl pointer-events-none"></div>
