@@ -47,14 +47,14 @@ services:
         condition: service_completed_successfully
     networks: [interne, web]
 
-  # Planificateur : déclenche chaque jour les relances automatiques (J-3, J+1, J+5).
+  # Planificateur : déclenche chaque heure les relances automatiques (règles et heure d'envoi choisies par chaque organisation) et les relances programmées.
   cron:
     image: curlimages/curl:8.10.1
     restart: unless-stopped
     env_file: .env.production
     entrypoint: ["/bin/sh", "-c"]
     command:
-      - 'while true; do sleep 86400; curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" http://app:3000/api/cron/relances || true; done'
+      - 'while true; do sleep 3600; curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" http://app:3000/api/cron/relances || true; done'
     depends_on:
       - app
     networks: [interne]

@@ -98,6 +98,8 @@ model Organisation {
   notifications       Notification[]
   invitations         Invitation[]
   importsApercu       ImportApercu[]
+  reglesRelance       RegleRelance[]
+  relancesProgrammees RelanceProgrammee[]
   logo                LogoOrganisation?
 }
 
@@ -502,6 +504,7 @@ model Echeance {
   bail      Bail       @relation(fields: [bailId], references: [id], onDelete: Cascade)
   paiements Paiement[]
   relances  Relance[]
+  relancesProgrammees RelanceProgrammee[]
 
   @@unique([bailId, mois])
 
@@ -583,11 +586,40 @@ model JournalAction {
 
 // Réglages des relances automatiques (envoi réel branché en phase 2 via WhatsApp Cloud API).
 model ParametresRelance {
-  organisationId String  @id
-  avantEcheance  Boolean @default(true) // J-3
-  apresJ1        Boolean @default(true)
-  apresJ5        Boolean @default(true)
+  organisationId String       @id
   canal          CanalMessage @default(WHATSAPP)
+  heureEnvoi     Int          @default(9) // heure de Dakar (GMT), à partir de laquelle les relances automatiques partent
+  modeleAvant    String? // texte personnalisé (avant ou le jour de l'échéance) ; vide = texte par défaut
+  modeleRetard   String? // texte personnalisé (après l'échéance) ; vide = texte par défaut
+}
+
+// Règles de relance automatique d'une organisation : un décalage en jours par rapport à l'échéance (négatif = avant).
+model RegleRelance {
+  id             String  @id @default(cuid())
+  organisationId String
+  jours          Int
+  actif          Boolean @default(true)
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, jours])
+}
+
+// Relance programmée à une date et une heure précises pour un loyer donné.
+model RelanceProgrammee {
+  id             String    @id @default(cuid())
+  organisationId String
+  echeanceId     String
+  envoiLe        DateTime
+  envoyeeLe      DateTime?
+  annuleeLe      DateTime?
+  creeLe         DateTime  @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  echeance     Echeance     @relation(fields: [echeanceId], references: [id], onDelete: Cascade)
+
+  @@index([envoiLe])
+  @@index([echeanceId])
 }
 
 // Échecs de connexion récents (limitation des essais de mot de passe par numéro).
