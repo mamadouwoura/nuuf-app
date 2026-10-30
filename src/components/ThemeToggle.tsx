@@ -7,25 +7,20 @@ type Theme = "light" | "dark";
 const CLE = "nuuf_theme";
 
 const abonnes = new Set<() => void>();
-const systemeSombre = () => typeof matchMedia === "function" && matchMedia("(prefers-color-scheme: dark)").matches;
-
-/** Thème réellement affiché : le choix mémorisé, sinon le réglage de l'appareil. */
+/** Thème réellement affiché : le choix mémorisé, sinon le mode clair (le réglage de l'appareil n'impose pas le sombre). */
 function lire(): Theme {
   try {
     const v = localStorage.getItem(CLE);
     if (v === "light" || v === "dark") return v;
   } catch {}
-  return systemeSombre() ? "dark" : "light";
+  return "light";
 }
 function sAbonner(rappel: () => void) {
   abonnes.add(rappel);
   window.addEventListener("storage", rappel);
-  const mq = matchMedia("(prefers-color-scheme: dark)");
-  mq.addEventListener("change", rappel);
   return () => {
     abonnes.delete(rappel);
     window.removeEventListener("storage", rappel);
-    mq.removeEventListener("change", rappel);
   };
 }
 function choisir(theme: Theme) {

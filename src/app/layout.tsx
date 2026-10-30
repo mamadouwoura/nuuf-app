@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" data-style="papier" suppressHydrationWarning className={`${inter.variable} ${jakarta.variable} antialiased`}>
+    <html lang="fr" data-style="papier" data-theme="light" suppressHydrationWarning className={`${inter.variable} ${jakarta.variable} antialiased`}>
       <head>
         <link rel="preload" href="/fonts/material-symbols-v2.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_THEME }} />
