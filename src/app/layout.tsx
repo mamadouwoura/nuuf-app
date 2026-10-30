@@ -1,14 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import { Suspense } from "react";
 import LocaleBoundary from "@/components/LocaleBoundary";
 import "./globals.css";
 
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
-const jakarta = Plus_Jakarta_Sans({
+// Polices intégrées au projet (versions variables, caractères latins : français et anglais) : la construction du site
+// ne dépend plus d'un téléchargement chez Google, qui échouait quand la connexion était instable.
+const inter = localFont({
+  src: "./polices/inter-latin.woff2",
+  variable: "--font-inter",
+  weight: "100 900",
+  display: "swap",
+  fallback: ["system-ui", "Arial", "sans-serif"],
+});
+const jakarta = localFont({
+  src: "./polices/jakarta-latin.woff2",
   variable: "--font-jakarta",
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: "200 800",
+  display: "swap",
+  fallback: ["system-ui", "Arial", "sans-serif"],
 });
 
 export const viewport: Viewport = {
