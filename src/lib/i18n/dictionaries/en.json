@@ -1806,5 +1806,6 @@
   "Mois du loyer": "Rent month",
   "Date d'échéance": "Due date",
   "Jours de retard": "Days late",
-  "Lien de paiement": "Payment link"
+  "Lien de paiement": "Payment link",
+  "Trop de tentatives de paiement. Patientez une heure ou contactez votre bailleur.": "Too many payment attempts. Please wait an hour or contact your landlord."
 }

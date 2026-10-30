@@ -2,9 +2,14 @@
 {$DOMAINE} {
 	encode zstd gzip
 
-	# Aucun upload dans l'application : on borne les corps de requête.
+	# Les photos de biens et documents de locataires passent par l'application (25 Mo au plus, comme dans next.config.ts) :
+	# on borne les corps de requête juste au-dessus. Le webhook des opérateurs n'a besoin que de quelques Ko.
 	request_body {
-		max_size 2MB
+		max_size 26MB
+	}
+	@webhook path /api/webhooks/*
+	request_body @webhook {
+		max_size 64KB
 	}
 
 	reverse_proxy app:3000 {

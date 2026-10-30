@@ -30,3 +30,23 @@ export async function plafondInscriptionsAtteint() {
   ]);
   return comptes + attente >= entier(process.env.INSCRIPTIONS_MAX_PAR_HEURE, 100);
 }
+
+/**
+ * Ménage périodique (appelé par le cron) : supprime ce qui ne sert plus et garde la base légère et à jour
+ * (échecs de connexion, codes expirés, sessions échues, inscriptions abandonnées, aperçus d'import, traces de codes).
+ */
+export async function purgerDonneesPeriodiques(maintenant = new Date()) {
+  const il = (jours: number) => new Date(maintenant.getTime() - jours * 86_400_000);
+  const [tentatives, codes, sessions, inscriptions, apercus, traces] = await Promise.all([
+    db.tentativeConnexion.deleteMany({ where: { creeLe: { lt: il(1) } } }),
+    db.codeOtp.deleteMany({ where: { expireLe: { lt: il(2) } } }),
+    db.sessionUtilisateur.deleteMany({ where: { expireLe: { lt: maintenant } } }),
+    db.inscriptionEnAttente.deleteMany({ where: { expireLe: { lt: il(1) } } }),
+    db.importApercu.deleteMany({ where: { creeLe: { lt: il(1) } } }),
+    db.message.deleteMany({ where: { type: "OTP", creeLe: { lt: il(7) } } }),
+  ]);
+  return {
+    tentatives: tentatives.count, codes: codes.count, sessions: sessions.count,
+    inscriptions: inscriptions.count, apercus: apercus.count, traces: traces.count,
+  };
+}

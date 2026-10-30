@@ -40,18 +40,23 @@ export async function appliquerResultat(reference: string, statut: "CONFIRME" | 
   if (paiement.statut !== "INITIE") return { jeton, paiementId: paiement.id, statut: paiement.statut };
 
   if (statut === "ECHEC") {
-    await db.paiement.update({ where: { id: paiement.id }, data: { statut: "ECHEC" } });
-    return { jeton, paiementId: paiement.id, statut: "ECHEC" as const };
+    await db.paiement.updateMany({ where: { id: paiement.id, statut: "INITIE" }, data: { statut: "ECHEC" } });
+    const actuel = await db.paiement.findUnique({ where: { id: paiement.id }, select: { statut: true } });
+    return { jeton, paiementId: paiement.id, statut: actuel?.statut ?? ("ECHEC" as const) };
   }
+  // Le passage INITIE -> CONFIRME est réservé en une seule opération : si deux notifications arrivent en même
+  // temps, une seule gagne et émet la quittance (l'autre ne trouve plus le paiement à l'état INITIE).
   await db.$transaction(async (tx) => {
-    await tx.paiement.update({ where: { id: paiement.id }, data: { statut: "CONFIRME", recuLe: new Date() } });
+    const reserve = await tx.paiement.updateMany({ where: { id: paiement.id, statut: "INITIE" }, data: { statut: "CONFIRME", recuLe: new Date() } });
+    if (reserve.count === 0) return;
     await solderEtQuittancer(tx, {
       organisationId: paiement.echeance.bail.bien.organisationId,
       echeanceId: paiement.echeanceId,
       paiementId: paiement.id,
     });
   });
-  return { jeton, paiementId: paiement.id, statut: "CONFIRME" as const };
+  const final = await db.paiement.findUnique({ where: { id: paiement.id }, select: { statut: true } });
+  return { jeton, paiementId: paiement.id, statut: final?.statut ?? ("CONFIRME" as const) };
 }
 
 /** Paiement d'abonnement Nuuf : active ou prolonge le forfait choisi. */
@@ -61,13 +66,15 @@ async function appliquerResultatAbonnement(reference: string, statut: "CONFIRME"
   const dejaPayee = Boolean(f.payeeLe);
   if (statut === "CONFIRME" && !dejaPayee) {
     const fin = finApresPaiement(f.abonnement, f);
-    await db.$transaction([
-      db.factureAbonnement.update({ where: { id: f.id }, data: { payeeLe: new Date(), periodeFin: fin } }),
-      db.abonnement.update({
+    // La facture n'est marquée payée qu'une fois : une seconde notification simultanée ne prolonge pas deux fois l'abonnement.
+    await db.$transaction(async (tx) => {
+      const reserve = await tx.factureAbonnement.updateMany({ where: { id: f.id, payeeLe: null }, data: { payeeLe: new Date(), periodeFin: fin } });
+      if (reserve.count === 0) return;
+      await tx.abonnement.update({
         where: { id: f.abonnementId },
         data: { forfait: f.forfait, annuel: f.annuel, statut: "ACTIF", periodeFinLe: fin, essaiFinLe: null, graceFinLe: null },
-      }),
-    ]);
+      });
+    });
   }
   return { jeton: null, paiementId: f.id, statut: statut === "CONFIRME" || dejaPayee ? ("CONFIRME" as const) : ("ECHEC" as const), abonnement: true as const };
 }

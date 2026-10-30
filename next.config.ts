@@ -14,6 +14,9 @@ const csp = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
+  "worker-src 'self'",
+  "manifest-src 'self'",
+  "upgrade-insecure-requests",
 ].join("; ");
 
 const nextConfig: NextConfig = {
@@ -53,6 +56,10 @@ const nextConfig: NextConfig = {
           { key: "X-Frame-Options", value: "DENY" },
           // Les liens de paiement contiennent un jeton secret : ne jamais le transmettre aux sites tiers.
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // Isole la page des autres fenêtres et sites (fuites inter-origines, attaques de type Spectre).
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+          { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
           ...(prod
             ? [

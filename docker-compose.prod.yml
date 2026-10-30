@@ -45,6 +45,11 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+    # Durcissement : aucun privilège supplémentaire ne peut être obtenu dans le conteneur, aucune capacité Linux inutile.
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     networks: [interne, web]
 
   # Planificateur : déclenche chaque heure les relances automatiques (règles et heure d'envoi choisies par chaque organisation) et les relances programmées.

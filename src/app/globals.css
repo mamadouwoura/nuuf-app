@@ -168,7 +168,8 @@ textarea {
   font-style: normal;
   font-weight: 400;
   font-display: block;
-  src: url("/fonts/material-symbols.woff2") format("woff2");
+  /* Sous-ensemble : seules les icônes listées dans scripts/icones-utilisees.txt (21 Ko au lieu de 1,1 Mo). Pour en ajouter, régénérer via Google Fonts (paramètre icon_names) et changer le nom du fichier. */
+  src: url("/fonts/material-symbols-v2.woff2") format("woff2");
 }
 
 .material-symbols-outlined {

@@ -21,6 +21,10 @@ export async function initierPaiement(form: FormData) {
   const reste = e.montantDu - e.paiements.reduce((s, p) => s + p.montant, 0);
   if (reste <= 0) redirect(`/paiement/${jeton}`);
 
+  // Le lien est public : on borne les tentatives en attente pour qu'un lien ne puisse pas remplir la base.
+  const enAttente = await db.paiement.count({ where: { echeanceId: e.id, statut: "INITIE", creeLe: { gte: new Date(Date.now() - 3_600_000) } } });
+  if (enAttente >= 5) retour(t("Trop de tentatives de paiement. Patientez une heure ou contactez votre bailleur."));
+
   const transaction = await initierTransaction({ canal, montant: reste, telephone: e.bail.locataire.telephone });
   await db.paiement.create({
     data: { echeanceId: e.id, montant: reste, canal, statut: "INITIE", referenceOperateur: transaction.reference },
